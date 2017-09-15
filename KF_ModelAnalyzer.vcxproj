@@ -18,6 +18,100 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="2DDrawComponent.cpp" />
+    <ClCompile Include="2DMeshComponent.cpp" />
+    <ClCompile Include="3DMeshComponent.cpp" />
+    <ClCompile Include="3DMeshDrawComponent.cpp" />
+    <ClCompile Include="3DRigidbodyComponent.cpp" />
+    <ClCompile Include="actionGameCamera.cpp" />
+    <ClCompile Include="actorBehaviorComponent.cpp" />
+    <ClCompile Include="animatorComponent.cpp" />
+    <ClCompile Include="boxColliderComponent.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="colliderComponent.cpp" />
+    <ClCompile Include="debugManager.cpp" />
+    <ClCompile Include="drawComponent.cpp" />
+    <ClCompile Include="editorCamera.cpp" />
+    <ClCompile Include="fade.cpp" />
+    <ClCompile Include="fieldColliderComponent.cpp" />
+    <ClCompile Include="gameObject.cpp" />
+    <ClCompile Include="gameObjectActor.cpp" />
+    <ClCompile Include="gameObjectManager.cpp" />
+    <ClCompile Include="gameObjectSpawner.cpp" />
+    <ClCompile Include="inputDX.cpp" />
+    <ClCompile Include="inputManager.cpp" />
+    <ClCompile Include="KF_CollisionSystem.cpp" />
+    <ClCompile Include="KF_CollisionUtility.cpp" />
+    <ClCompile Include="KF_Math.cpp" />
+    <ClCompile Include="KF_PhysicsSystem.cpp" />
+    <ClCompile Include="KF_Utility.cpp" />
+    <ClCompile Include="KF_UtilityDX.cpp" />
+    <ClCompile Include="KF_UtilityFBX.cpp" />
+    <ClCompile Include="lightManager.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="manager.cpp" />
+    <ClCompile Include="materialManager.cpp" />
+    <ClCompile Include="meshManager.cpp" />
+    <ClCompile Include="mode.cpp" />
+    <ClCompile Include="modeModelAnalyzer.cpp" />
+    <ClCompile Include="rendererDX.cpp" />
+    <ClCompile Include="renderState.cpp" />
+    <ClCompile Include="textureManager.cpp" />
+    <ClCompile Include="transformComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="2DDrawComponent.h" />
+    <ClInclude Include="2DMeshComponent.h" />
+    <ClInclude Include="3DMeshComponent.h" />
+    <ClInclude Include="3DMeshDrawComponent.h" />
+    <ClInclude Include="3DRigidbodyComponent.h" />
+    <ClInclude Include="AABBColliderComponent.h" />
+    <ClInclude Include="actionGameCamera.h" />
+    <ClInclude Include="actorBehaviorComponent.h" />
+    <ClInclude Include="animatorComponent.h" />
+    <ClInclude Include="behaviorComponent.h" />
+    <ClInclude Include="boxColliderComponent.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="colliderComponent.h" />
+    <ClInclude Include="component.h" />
+    <ClInclude Include="debugManager.h" />
+    <ClInclude Include="drawComponent.h" />
+    <ClInclude Include="editorCamera.h" />
+    <ClInclude Include="fade.h" />
+    <ClInclude Include="fieldColliderComponent.h" />
+    <ClInclude Include="gameObject.h" />
+    <ClInclude Include="gameObjectActor.h" />
+    <ClInclude Include="gameObjectManager.h" />
+    <ClInclude Include="gameObjectSpawner.h" />
+    <ClInclude Include="inputDX.h" />
+    <ClInclude Include="inputManager.h" />
+    <ClInclude Include="KF_CollisionSystem.h" />
+    <ClInclude Include="KF_CollisionUtility.h" />
+    <ClInclude Include="KF_Math.h" />
+    <ClInclude Include="KF_PhysicsSystem.h" />
+    <ClInclude Include="KF_Utility.h" />
+    <ClInclude Include="KF_UtilityDX.h" />
+    <ClInclude Include="KF_UtilityFBX.h" />
+    <ClInclude Include="lightManager.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="manager.h" />
+    <ClInclude Include="materialManager.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="meshComponent.h" />
+    <ClInclude Include="meshManager.h" />
+    <ClInclude Include="mode.h" />
+    <ClInclude Include="modeModelAnalyzer.h" />
+    <ClInclude Include="motionInfo.h" />
+    <ClInclude Include="OBBColliderComponent.h" />
+    <ClInclude Include="rendererDX.h" />
+    <ClInclude Include="renderState.h" />
+    <ClInclude Include="rigidbodyComponent.h" />
+    <ClInclude Include="sphereColliderComponent.h" />
+    <ClInclude Include="stageSpawner.h" />
+    <ClInclude Include="textureManager.h" />
+    <ClInclude Include="transformComponent.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{D8A76917-484D-4AD0-BCB3-F6020CCEF40D}</ProjectGuid>
@@ -30,14 +124,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -72,12 +166,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\</OutDir>
+    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
+    <IncludePath>$(DXSDK_DIR)include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\</OutDir>
+    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
+    <IncludePath>$(DXSDK_DIR)include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -89,9 +191,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalIncludeDirectories>D:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>D:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,11 +221,15 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalIncludeDirectories>D:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\Program Files\Autodesk\FBX\FBX SDK\2018.1.1\lib\vs2015\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,9 +248,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

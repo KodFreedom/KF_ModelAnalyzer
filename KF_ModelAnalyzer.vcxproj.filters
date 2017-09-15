@@ -13,10 +13,342 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\KF_Utility">
+      <UniqueIdentifier>{e90c13ea-32fa-4960-b4c6-335c9bd59d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\KF_Utility">
+      <UniqueIdentifier>{a7ea41fc-35fd-4b9c-9204-7f6ef8f0f77b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base">
+      <UniqueIdentifier>{3475dcd9-5367-45b7-bcbf-2aabc1eea1e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Base">
+      <UniqueIdentifier>{d80c69a4-cbae-482f-9841-577371cd2cef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base\Manager">
+      <UniqueIdentifier>{c084a567-497c-444c-ba2a-9444a0c08562}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base\Camera">
+      <UniqueIdentifier>{d1f0f45b-d0e6-4259-b5e1-f936a230134b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\KF_Physics">
+      <UniqueIdentifier>{c1f82d87-0713-4017-ae78-e43acb0abce8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component">
+      <UniqueIdentifier>{a173cd80-65eb-41ea-a862-c986dd4d3743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base\GameObject">
+      <UniqueIdentifier>{25294499-41e4-4b3b-b749-4752c36014be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base\Mode">
+      <UniqueIdentifier>{7a32ed6e-1182-4464-8b5b-e0529d64f70b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Component">
+      <UniqueIdentifier>{b8f515e6-dc48-438f-8f6e-df0de36cccbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Base\Manager">
+      <UniqueIdentifier>{d31ac07c-89d8-4744-8500-857c9ba95194}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Base\Camera">
+      <UniqueIdentifier>{daa9d211-452c-477b-9190-a2e6d56e96fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Base\GameObject">
+      <UniqueIdentifier>{ecb8d386-4501-41d9-95b9-28b116bbe9d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\KF_Physics">
+      <UniqueIdentifier>{880e7033-3266-4e2a-8dc9-286faf8f26d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Base\Mode">
+      <UniqueIdentifier>{ae3b2d1a-7c73-4ab7-86cd-e3b42f95be39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component\Collider">
+      <UniqueIdentifier>{df4acc5b-1d9d-4a4e-8b79-103b0e24b57a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component\Mesh">
+      <UniqueIdentifier>{d90b7ff0-0f34-4764-be70-af20eff3940e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component\Draw">
+      <UniqueIdentifier>{481d66a2-f5c8-44c8-8a1f-ed3d48e5b185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component\Behavior">
+      <UniqueIdentifier>{ec0303dd-9a65-4a95-83c5-7c886cb17f12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component\Rigidbody">
+      <UniqueIdentifier>{796b9731-8a41-4780-8f45-5807eb298278}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="KF_UtilityDX.cpp">
+      <Filter>ソース ファイル\KF_Utility</Filter>
     </ClCompile>
+    <ClCompile Include="KF_Math.cpp">
+      <Filter>ソース ファイル\KF_Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="KF_Utility.cpp">
+      <Filter>ソース ファイル\KF_Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="rendererDX.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="renderState.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="fade.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="transformComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="fieldColliderComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="drawComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="colliderComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="boxColliderComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="animatorComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="actorBehaviorComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="3DRigidbodyComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="3DMeshDrawComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="3DMeshComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="2DMeshComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="2DDrawComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="actionGameCamera.cpp">
+      <Filter>ソース ファイル\Base\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>ソース ファイル\Base\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="editorCamera.cpp">
+      <Filter>ソース ファイル\Base\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="gameObject.cpp">
+      <Filter>ソース ファイル\Base\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameObjectActor.cpp">
+      <Filter>ソース ファイル\Base\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameObjectManager.cpp">
+      <Filter>ソース ファイル\Base\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameObjectSpawner.cpp">
+      <Filter>ソース ファイル\Base\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="debugManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="inputManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="inputDX.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="lightManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="manager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="materialManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="meshManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="textureManager.cpp">
+      <Filter>ソース ファイル\Base\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="KF_CollisionSystem.cpp">
+      <Filter>ソース ファイル\KF_Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="KF_CollisionUtility.cpp">
+      <Filter>ソース ファイル\KF_Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="KF_PhysicsSystem.cpp">
+      <Filter>ソース ファイル\KF_Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mode.cpp">
+      <Filter>ソース ファイル\Base\Mode</Filter>
+    </ClCompile>
+    <ClCompile Include="modeModelAnalyzer.cpp">
+      <Filter>ソース ファイル\Base\Mode</Filter>
+    </ClCompile>
+    <ClCompile Include="KF_UtilityFBX.cpp">
+      <Filter>ソース ファイル\KF_Utility</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="KF_Math.h">
+      <Filter>ヘッダー ファイル\KF_Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_Utility.h">
+      <Filter>ヘッダー ファイル\KF_Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_UtilityDX.h">
+      <Filter>ヘッダー ファイル\KF_Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="rendererDX.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="fade.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="motionInfo.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="renderState.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="stageSpawner.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="editorCamera.h">
+      <Filter>ヘッダー ファイル\Base\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>ヘッダー ファイル\Base\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="actionGameCamera.h">
+      <Filter>ヘッダー ファイル\Base\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="debugManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="inputManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="inputDX.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="lightManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="materialManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="manager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="meshManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="textureManager.h">
+      <Filter>ヘッダー ファイル\Base\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_CollisionSystem.h">
+      <Filter>ヘッダー ファイル\KF_Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_CollisionUtility.h">
+      <Filter>ヘッダー ファイル\KF_Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_PhysicsSystem.h">
+      <Filter>ヘッダー ファイル\KF_Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="transformComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="component.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="animatorComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="gameObject.h">
+      <Filter>ヘッダー ファイル\Base\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameObjectActor.h">
+      <Filter>ヘッダー ファイル\Base\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameObjectManager.h">
+      <Filter>ヘッダー ファイル\Base\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameObjectSpawner.h">
+      <Filter>ヘッダー ファイル\Base\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="mode.h">
+      <Filter>ヘッダー ファイル\Base\Mode</Filter>
+    </ClInclude>
+    <ClInclude Include="modeModelAnalyzer.h">
+      <Filter>ヘッダー ファイル\Base\Mode</Filter>
+    </ClInclude>
+    <ClInclude Include="colliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="boxColliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="AABBColliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="OBBColliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="sphereColliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="fieldColliderComponent.h">
+      <Filter>ヘッダー ファイル\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="3DMeshComponent.h">
+      <Filter>ヘッダー ファイル\Component\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="2DMeshComponent.h">
+      <Filter>ヘッダー ファイル\Component\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="meshComponent.h">
+      <Filter>ヘッダー ファイル\Component\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="drawComponent.h">
+      <Filter>ヘッダー ファイル\Component\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="3DMeshDrawComponent.h">
+      <Filter>ヘッダー ファイル\Component\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="2DDrawComponent.h">
+      <Filter>ヘッダー ファイル\Component\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="actorBehaviorComponent.h">
+      <Filter>ヘッダー ファイル\Component\Behavior</Filter>
+    </ClInclude>
+    <ClInclude Include="behaviorComponent.h">
+      <Filter>ヘッダー ファイル\Component\Behavior</Filter>
+    </ClInclude>
+    <ClInclude Include="3DRigidbodyComponent.h">
+      <Filter>ヘッダー ファイル\Component\Rigidbody</Filter>
+    </ClInclude>
+    <ClInclude Include="rigidbodyComponent.h">
+      <Filter>ヘッダー ファイル\Component\Rigidbody</Filter>
+    </ClInclude>
+    <ClInclude Include="KF_UtilityFBX.h">
+      <Filter>ヘッダー ファイル\KF_Utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
