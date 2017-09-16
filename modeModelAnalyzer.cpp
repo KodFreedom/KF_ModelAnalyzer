@@ -12,7 +12,7 @@
 #include "lightManager.h"
 #include "inputManager.h"
 #include "modeModelAnalyzer.h"
-#include "editorCamera.h"
+#include "modelAnalyzerCamera.h"
 
 //gameobject
 #include "gameObjectSpawner.h"
@@ -24,7 +24,9 @@
 //--------------------------------------------------------------------------------
 //  コンストラクタ
 //--------------------------------------------------------------------------------
-CModeModelAnalyzer::CModeModelAnalyzer() : CMode()
+CModeModelAnalyzer::CModeModelAnalyzer()
+	: CMode()
+	, m_pModelAnalyzer(nullptr)
 {
 
 }
@@ -46,12 +48,14 @@ void CModeModelAnalyzer::Init(void)
 	CMain::GetManager()->GetLightManager()->CreateDirectionalLight(CKFVec3(0.5f, -0.5f, 0.5f));
 
 	//カメラの初期化
-	m_pCamera = new CEditorCamera;
+	m_pCamera = new CModelAnalyzerCamera;
 	m_pCamera->Init();
 
 	CMain::GetManager()->GetInputManager()->SetEditorMode(true);
 
 	//ゲームオブジェクトの初期化
+	CGameObjectSpawner::CreateGrid();
+	m_pModelAnalyzer = CGameObjectSpawner::CreateModelAnalyzer();
 	//CGameObject3D::CreateSkyBox(CKFVec3(0.0f), CKFVec3(0.0f), CKFVec3(1.0f));
 }
 

@@ -172,21 +172,21 @@ void CKFCollisionSystem::Update(void)
 void CKFCollisionSystem::LateUpdate(void)
 {
 #ifdef _DEBUG
-	auto pDebug = CMain::GetManager()->GetDebugManager();
-	pDebug->DisplayAlways("ColliderèÓïÒ : \n");
-	for (int nCntMode = 0; nCntMode < MODE_MAX; ++nCntMode)
-	{
-		pDebug->DisplayAlways(toString((COL_MODE)nCntMode) + " : ");
-		for (int nCntType = 0; nCntType < COL_MAX; ++nCntType)
-		{
-			int nNumCol = (int)m_alistCollider[nCntMode][nCntType].size();
-			pDebug->DisplayAlways(
-				toString((COL_TYPE)nCntType) +
-				"-" +
-				to_string(nNumCol) + "    ");
-		}
-		pDebug->DisplayAlways('\n');
-	}
+	//auto pDebug = CMain::GetManager()->GetDebugManager();
+	//pDebug->DisplayAlways("ColliderèÓïÒ : \n");
+	//for (int nCntMode = 0; nCntMode < MODE_MAX; ++nCntMode)
+	//{
+	//	pDebug->DisplayAlways(toString((COL_MODE)nCntMode) + " : ");
+	//	for (int nCntType = 0; nCntType < COL_MAX; ++nCntType)
+	//	{
+	//		int nNumCol = (int)m_alistCollider[nCntMode][nCntType].size();
+	//		pDebug->DisplayAlways(
+	//			toString((COL_TYPE)nCntType) +
+	//			"-" +
+	//			to_string(nNumCol) + "    ");
+	//	}
+	//	pDebug->DisplayAlways('\n');
+	//}
 #endif
 }
 

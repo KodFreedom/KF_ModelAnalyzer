@@ -19,6 +19,8 @@
 #include "AABBColliderComponent.h"
 #include "fieldColliderComponent.h"
 #include "3DRigidbodyComponent.h"
+#include "modelAnalyzerBehaviorComponent.h"
+#include "modelAnalyzerDrawComponent.h"
 
 //--------------------------------------------------------------------------------
 //  クラス
@@ -148,30 +150,42 @@ CGameObject* CGameObjectSpawner::CreateXModel(const string& strPath, const CKFVe
 }
 
 //--------------------------------------------------------------------------------
-//  Cube生成処理
+//  Grid生成処理
 //--------------------------------------------------------------------------------
-CGameObject* CGameObjectSpawner::CreateGoal(const CKFVec3& vPos)
+CGameObject* CGameObjectSpawner::CreateGrid(void)
 {
 	auto pObj = new CGameObject(GOM::PRI_3D);
 
-	//Tag
-	pObj->SetTag("Goal");
+	//コンポネント
+	auto pMesh = new C3DMeshComponent(pObj);
+	pMesh->SetMeshName("grid");
+	pObj->SetMeshComponent(pMesh);
+	auto pDraw = new C3DMeshDrawComponent(pMesh, pObj);
+	pDraw->SetRenderState(&CDrawComponent::s_lightOffRenderState);
+	pObj->SetDrawComponent(pDraw);
+	
+	//初期化
+	pObj->Init();
+	return pObj;
+}
 
-	//コライダー
-	auto pCollider = new CAABBColliderComponent(pObj, CS::STATIC, CKFVec3(8.5f, 6.0f, 9.25f));
-	pCollider->SetOffset(CKFVec3(0.55f, 5.55f, 0.0f));
-	pCollider->SetTrigger(true);
-	pCollider->SetTag("Goal");
-	pObj->AddCollider(pCollider);
+//--------------------------------------------------------------------------------
+//  ModelAnalyzer生成処理
+//--------------------------------------------------------------------------------
+CGameObject* CGameObjectSpawner::CreateModelAnalyzer(void)
+{
+	auto pObj = new CGameObject(GOM::PRI_3D);
 
-	//パラメーター
-	auto pTrans = pObj->GetTransformComponent();
-	pTrans->SetPos(vPos);
-	pTrans->SetPosNext(vPos);
+	//コンポネント
+	auto pBehavior = new CModelAnalyzerBehaviorComponent(pObj);
+	pObj->AddBehavior(pBehavior);
+	auto pDraw = new CModelAnalyzerDrawComponent(pBehavior, pObj);
+	pObj->SetDrawComponent(pDraw);
 
 	//初期化
 	pObj->Init();
 
+	pBehavior->ChangeModel("data/MODEL/dude.fbx");
 	return pObj;
 }
 

@@ -58,9 +58,38 @@ struct UVSET
 	vector<unsigned short>	vecUVIdx;
 };
 
+#ifdef USING_DIRECTX
+struct VtxDX
+{
+	VERTEX_3D				vtx;
+	vector<BornRefarence>	vecBornRefarence;
+
+	bool operator==(const VtxDX& vValue) const;
+};
+#endif
+
 struct Mesh
 {
-	Mesh() : nMaterialIndex(-1) {}
+	Mesh()
+		: nMaterialIndex(-1) 
+#ifdef USING_DIRECTX
+		, m_nNumVtx(0)
+		, m_nNumIdx(0)
+		, m_nNumPolygon(0)
+		, m_pVtxBuffer(nullptr)
+		, m_pIdxBuffer(nullptr)
+#endif
+	{
+		vecPoint.clear();
+		vecNormal.clear();
+		vecUVSet.clear();
+		vecPoint.clear();
+		vecNormalIdx.clear();
+		vecMtx.clear();
+#ifdef USING_DIRECTX
+		m_vecVtx.clear();
+#endif
+	}
 
 	vector<ControlPoint>	vecPoint;
 	vector<CKFVec3>			vecNormal;
@@ -69,6 +98,15 @@ struct Mesh
 	vector<unsigned short>	vecNormalIdx;
 	int						nMaterialIndex;
 	vector<CKFMtx44>		vecMtx;
+
+#ifdef USING_DIRECTX
+	int						m_nNumVtx;
+	int						m_nNumIdx;
+	int						m_nNumPolygon;
+	vector<VtxDX>			m_vecVtx;
+	LPDIRECT3DVERTEXBUFFER9 m_pVtxBuffer;	// 頂点バッファへのポインタ
+	LPDIRECT3DINDEXBUFFER9	m_pIdxBuffer;	// インデックスへのポインタ
+#endif
 };
 
 //--------------------------------------------------------------------------------
@@ -105,7 +143,9 @@ public:
 	vector<Mesh>	vecMesh;
 
 	void Release(void);
-	void RecursiveDraw(const bool& bDrawNormal);
+	void RecursiveUpdate(void);
+	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
+	void RecursiveRecalculateVtx(void);
 
 private:
 	void		analyzePos(FbxMesh* pMesh);
@@ -121,8 +161,10 @@ class CKFUtilityFBX
 {
 public:
 	static CMyNode*	Load(const string& strFilePath);
-	static void		ReCalculateVtx(CMyNode* pNode);
-
+	
+#ifdef USING_DIRECTX
+	static int		FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx);
+#endif
 private:
 	CKFUtilityFBX() {}
 	~CKFUtilityFBX() {}

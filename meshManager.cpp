@@ -355,6 +355,7 @@ CMesh* CMeshManager::createMesh(const string& strName)
 	if (strName._Equal("cube")) { createCube(pMesh); }
 	else if (strName._Equal("sphere")) { createSphere(pMesh); }
 	else if (strName._Equal("skyBox")) { createSkyBox(pMesh); }
+	else if (strName._Equal("grid")) { createGrid(pMesh); }
 	else if (strName.find("Field") != string::npos) { loadField(strName, pMesh); }
 	return pMesh;
 }
@@ -1034,6 +1035,111 @@ void CMeshManager::createSkyBox(CMesh* pMesh)
 }
 
 //--------------------------------------------------------------------------------
+//  SkyBoxの作成
+//--------------------------------------------------------------------------------
+void CMeshManager::createGrid(CMesh* pMesh)
+{
+	int nNumGrid = 30;
+	int nNumVtxPerAxis = (nNumGrid + 1) * 2;
+	pMesh->m_nNumVtx = nNumVtxPerAxis * 2 + 6;
+	pMesh->m_nNumIdx = pMesh->m_nNumVtx + 6;
+	pMesh->m_nNumPolygon = pMesh->m_nNumVtx / 2;
+	pMesh->m_drawType = DRAW_TYPE::DT_LINELIST;
+
+	if (!createBuffer(pMesh)) { return; }
+
+#ifdef USING_DIRECTX
+	CKFVec3 vStart = CKFVec3(-(float)nNumGrid * 0.5f, 0.0f, -(float)nNumGrid * 0.5f);
+
+	//仮想アドレスを取得するためのポインタ
+	VERTEX_3D *pVtx;
+
+	//頂点バッファをロックして、仮想アドレスを取得する
+	pMesh->m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
+	
+	//Z
+	for (int nCntZ = 0; nCntZ < nNumVtxPerAxis / 2; ++nCntZ)
+	{
+		pVtx[nCntZ * 2].vPos = vStart + CKFVec3(0.0f, 0.0f, (float)nCntZ);
+		pVtx[nCntZ * 2].vUV = CKFVec2(0.0f);
+		pVtx[nCntZ * 2].ulColor = CKFMath::sc_cWhite;
+		pVtx[nCntZ * 2].vNormal = CKFMath::sc_vZero;
+
+		pVtx[nCntZ * 2 + 1].vPos = vStart + CKFVec3((float)nNumGrid, 0.0f, (float)nCntZ);
+		pVtx[nCntZ * 2 + 1].vUV = CKFVec2(0.0f);
+		pVtx[nCntZ * 2 + 1].ulColor = CKFMath::sc_cWhite;
+		pVtx[nCntZ * 2 + 1].vNormal = CKFMath::sc_vZero;
+	}
+
+	//X
+	int nOffset = nNumVtxPerAxis;
+	for (int nCntX = 0; nCntX < nNumVtxPerAxis / 2; ++nCntX)
+	{
+		pVtx[nOffset + nCntX * 2].vPos = vStart + CKFVec3((float)nCntX, 0.0f, 0.0f);
+		pVtx[nOffset + nCntX * 2].vUV = CKFVec2(0.0f);
+		pVtx[nOffset + nCntX * 2].ulColor = CKFMath::sc_cWhite;
+		pVtx[nOffset + nCntX * 2].vNormal = CKFMath::sc_vZero;
+
+		pVtx[nOffset + nCntX * 2 + 1].vPos = vStart + CKFVec3((float)nCntX, 0.0f, (float)nNumGrid);
+		pVtx[nOffset + nCntX * 2 + 1].vUV = CKFVec2(0.0f);
+		pVtx[nOffset + nCntX * 2 + 1].ulColor = CKFMath::sc_cWhite;
+		pVtx[nOffset + nCntX * 2 + 1].vNormal = CKFMath::sc_vZero;
+	}
+
+	//Axis
+	nOffset = nNumVtxPerAxis * 2;
+	float fAxisLength = 1000.0f;
+
+	//X
+	pVtx[nOffset].vPos = CKFVec3(0.0f, 0.0f, 0.0f);
+	pVtx[nOffset].vUV = CKFVec2(0.0f);
+	pVtx[nOffset].ulColor = CKFMath::sc_cRed;
+	pVtx[nOffset].vNormal = CKFMath::sc_vZero;
+
+	pVtx[nOffset + 1].vPos = CKFVec3(fAxisLength, 0.0f, 0.0f);
+	pVtx[nOffset + 1].vUV = CKFVec2(0.0f);
+	pVtx[nOffset + 1].ulColor = CKFMath::sc_cRed;
+	pVtx[nOffset + 1].vNormal = CKFMath::sc_vZero;
+
+	//Y
+	pVtx[nOffset + 2].vPos = CKFVec3(0.0f, 0.0f, 0.0f);
+	pVtx[nOffset + 2].vUV = CKFVec2(0.0f);
+	pVtx[nOffset + 2].ulColor = CKFMath::sc_cGreen;
+	pVtx[nOffset + 2].vNormal = CKFMath::sc_vZero;
+
+	pVtx[nOffset + 3].vPos = CKFVec3(0.0f, fAxisLength, 0.0f);
+	pVtx[nOffset + 3].vUV = CKFVec2(0.0f);
+	pVtx[nOffset + 3].ulColor = CKFMath::sc_cGreen;
+	pVtx[nOffset + 3].vNormal = CKFMath::sc_vZero;
+
+	//Z
+	pVtx[nOffset + 4].vPos = CKFVec3(0.0f, 0.0f, 0.0f);
+	pVtx[nOffset + 4].vUV = CKFVec2(0.0f);
+	pVtx[nOffset + 4].ulColor = CKFMath::sc_cBlue;
+	pVtx[nOffset + 4].vNormal = CKFMath::sc_vZero;
+
+	pVtx[nOffset + 5].vPos = CKFVec3(0.0f, 0.0f, fAxisLength);
+	pVtx[nOffset + 5].vUV = CKFVec2(0.0f);
+	pVtx[nOffset + 5].ulColor = CKFMath::sc_cBlue;
+	pVtx[nOffset + 5].vNormal = CKFMath::sc_vZero;
+
+	//仮想アドレス解放
+	pMesh->m_pVtxBuffer->Unlock();
+
+	//インデックス
+	WORD *pIdx;
+	pMesh->m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
+
+	for (int nCnt = 0; nCnt < pMesh->m_nNumIdx; ++nCnt)
+	{
+		pIdx[nCnt] = nCnt;
+	}
+
+	pMesh->m_pIdxBuffer->Unlock();
+#endif
+}
+
+//--------------------------------------------------------------------------------
 //  バッファの作成
 //--------------------------------------------------------------------------------
 void CMeshManager::loadField(const string& strFileName, CMesh* pMesh)
@@ -1086,7 +1192,7 @@ void CMeshManager::loadField(const string& strFileName, CMesh* pMesh)
 bool CMeshManager::createBuffer(CMesh* pMesh)
 {
 #ifdef USING_DIRECTX
-	LPDIRECT3DDEVICE9 pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
+	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
 	HRESULT hr;
 
 	//頂点バッファ

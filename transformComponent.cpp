@@ -24,8 +24,8 @@
 CTransformComponent::CTransformComponent(CGameObject* const pGameObj) : CComponent(pGameObj)
 	, m_vPos(CKFMath::sc_vZero)
 	, m_vPosNext(CKFMath::sc_vZero)
-	, m_vScale(CKFMath::sc_vZero)
-	, m_vScaleNext(CKFMath::sc_vZero)
+	, m_vScale(CKFMath::sc_vOne)
+	, m_vScaleNext(CKFMath::sc_vOne)
 	, m_vForward(CKFMath::sc_vForward)
 	, m_vUp(CKFMath::sc_vUp)
 	, m_vRight(CKFMath::sc_vRight)
@@ -408,6 +408,11 @@ void  CTransformComponent::calculateMtxThis(void)
 {
 	//íPà çsóÒÇ…èâä˙âª
 	CKFMath::MtxIdentity(m_mtxThis);
+
+	//ägèk
+	m_mtxThis.m_af[0][0] = m_vScale.m_fX;
+	m_mtxThis.m_af[1][1] = m_vScale.m_fY;
+	m_mtxThis.m_af[2][2] = m_vScale.m_fZ;
 
 	//âÒì]
 	m_mtxThis *= GetMatrixRot();

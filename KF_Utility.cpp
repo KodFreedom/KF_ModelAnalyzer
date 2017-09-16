@@ -160,3 +160,19 @@ void CKFUtility::AnalyzeTexPath(const string& strTexPath, string& strName, strin
 	GetStrToken(strCpy, "\\/", strName);
 	reverse(strName.begin(), strName.end());
 }
+
+//--------------------------------------------------------------------------------
+//	関数名：CorrectTexType
+//  関数説明：アクション（移動、跳ぶ、攻撃）
+//	引数：	vDirection：移動方向
+//			bJump：跳ぶフラグ
+//	戻り値：なし
+//--------------------------------------------------------------------------------
+void CKFUtility::CorrectTexType(string& strTexType)
+{
+	if (strTexType._Equal("psd")
+		|| strTexType._Equal("PSD"))
+	{
+		strTexType = "png";
+	}
+}

@@ -11,6 +11,36 @@
 #include "KF_Utility.h"
 #include "manager.h"
 #include "textureManager.h"
+#include "rendererDX.h"
+
+//--------------------------------------------------------------------------------
+//  構造体
+//--------------------------------------------------------------------------------
+#ifdef USING_DIRECTX
+//--------------------------------------------------------------------------------
+//  VtxDX
+//--------------------------------------------------------------------------------
+bool VtxDX::operator==(const VtxDX& vValue) const
+{
+	if (vtx.vPos == vValue.vtx.vPos
+		&& vtx.vNormal == vValue.vtx.vNormal
+		&& vtx.vUV == vValue.vtx.vUV
+		&& vtx.ulColor == vValue.vtx.ulColor
+		&& vecBornRefarence.size() == vValue.vecBornRefarence.size())
+	{
+		for (int nCnt = 0; nCnt < (int)vecBornRefarence.size(); ++nCnt)
+		{
+			if (vecBornRefarence[nCnt].fWeight != vValue.vecBornRefarence[nCnt].fWeight
+				|| vecBornRefarence[nCnt].ucIndex != vValue.vecBornRefarence[nCnt].ucIndex)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+#endif
 
 //--------------------------------------------------------------------------------
 //  クラス
@@ -53,6 +83,11 @@ void CMyNode::Release(void)
 			UVSet.vecUVIdx.clear();
 		}
 		mesh.vecUVSet.clear();
+
+#ifdef USING_DIRECTX
+		SAFE_RELEASE(mesh.m_pVtxBuffer);
+		SAFE_RELEASE(mesh.m_pIdxBuffer);
+#endif
 	}
 	vecMesh.clear();
 
@@ -71,91 +106,298 @@ void CMyNode::Release(void)
 }
 
 //--------------------------------------------------------------------------------
+//  RecursiveUpdate
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveUpdate(void)
+{
+	for (auto& mesh : vecMesh)
+	{
+		if (mesh.vecMtx.empty()) { continue; }
+
+#ifdef USING_DIRECTX
+		// 骨あり（つまりワンスキンなど）
+		// 頂点の座標変換 
+		CKFMtx44 mtx;
+		VERTEX_3D* pVtx;
+		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
+		
+//#pragma omp parallel for 
+		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
+		{
+			auto& vtxDX = mesh.m_vecVtx[nCnt];
+			ZeroMemory(&mtx, sizeof(CKFMtx44));
+			for (auto& bornRefarence : vtxDX.vecBornRefarence)
+			{
+				mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;
+			}
+			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
+		}
+
+		mesh.m_pVtxBuffer->Unlock();
+#endif
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveUpdate();
+	}
+}
+
+//--------------------------------------------------------------------------------
 //  RecursiveDraw
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveDraw(const bool& bDrawNormal)
+void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 {
-	//glPushMatrix();
-	//glScalef(vScale.m_fX, vScale.m_fY, vScale.m_fZ);
-	//glRotatef(vRot.m_fZ, 0.0f, 0.0f, 1.0f);
-	//glRotatef(vRot.m_fX, 1.0f, 0.0f, 0.0f);
-	//glRotatef(vRot.m_fY, 0.0f, 1.0f, 0.0f);
-	//glTranslatef(vTrans.m_fX, vTrans.m_fY, vTrans.m_fZ);
+#ifdef USING_DIRECTX
+	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
 
-	////Mesh
-	//for (auto& mesh : vecMesh)
-	//{
-	//	//Texture
-	//	if (!vecTex.empty())
-	//	{
-	//		glBindTexture(GL_TEXTURE_2D, vecTex[mesh.nMaterialIndex].nID);
-	//	}
+	CKFMtx44 mtxThis;
 
-	//	// ポリゴン描画         
-	//	glBegin(GL_TRIANGLES);
+	//拡縮
+	mtxThis.m_af[0][0] = vScale.m_fX;
+	mtxThis.m_af[1][1] = vScale.m_fY;
+	mtxThis.m_af[2][2] = vScale.m_fZ;
 
-	//	if (mesh.vecMtx.empty())
-	//	{// 骨なし（つまり剛体の塊）             
-	//		for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
-	//		{
-	//			glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
-	//			glNormal3f(
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
-	//			glTexCoord2f(
-	//				mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
-	//				mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
-	//			glVertex3f(
-	//				mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fX,
-	//				mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fY,
-	//				mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fZ);
-	//		}
-	//	}
-	//	else
-	//	{// 骨あり（つまりワンスキンなど） 
-	//	 // 頂点の座標変換 
-	//		vector<CKFVec3> vecPos;
-	//		vecPos.reserve(mesh.vecPoint.size());
-	//		CKFMtx44 mtx;
-	//		for (auto& point : mesh.vecPoint)
-	//		{
-	//			ZeroMemory(&mtx, sizeof(CKFMtx44));
-	//			for (auto& bornRefarence : point.vecBornRefarence)
-	//			{
-	//				mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;
-	//			}
-	//			CKFVec3 vPos = point.vPos;
-	//			CKFMath::Vec3TransformCoord(&vPos, mtx);
-	//			vecPos.push_back(vPos);
-	//		}
+	//回転
+	CKFMtx44 mtxRot;
+	CKFMath::MtxRotationYawPitchRoll(mtxRot, vRot);
 
-	//		for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
-	//		{
-	//			glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
-	//			glNormal3f(
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
-	//				mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
-	//			glTexCoord2f(
-	//				mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
-	//				mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
-	//			glVertex3f(
-	//				vecPos[mesh.vecPointIdx[nCnt]].m_fX,
-	//				vecPos[mesh.vecPointIdx[nCnt]].m_fY,
-	//				vecPos[mesh.vecPointIdx[nCnt]].m_fZ);
-	//		}
-	//	}
+	//平行移動
+	CKFMtx44 mtxPos;
+	CKFMath::MtxTranslation(mtxPos, vTrans);
+	mtxThis *= mtxPos;
 
-	//	glEnd();
-	//}
+	//親の行列とかける
+	mtxThis *= mtxParent;
 
-	////Child
-	//for (auto pNode : listChild)
-	//{
-	//	pNode->RecursiveDraw(bDrawNormal);
-	//}
-	//glPopMatrix();
+	//Mesh
+	for (auto& mesh : vecMesh)
+	{
+		//Texture
+		if (!vecTex.empty())
+		{
+			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(vecTex[mesh.nMaterialIndex].strName);
+			pDevice->SetTexture(0, pTexture);
+		}
+
+		D3DXMATRIX mtx = mtxThis;
+		pDevice->SetTransform(D3DTS_WORLD, &mtx);
+
+		// 頂点バッファをデータストリームに設定
+		pDevice->SetStreamSource(
+			0,						//ストリーム番号
+			mesh.m_pVtxBuffer,		//頂点バッファ
+			0,						//オフセット（開始位置）
+			sizeof(VERTEX_3D));		//ストライド量
+
+		// 頂点インデックスの設定
+		pDevice->SetIndices(mesh.m_pIdxBuffer);
+
+		// 頂点フォーマットの設定
+		pDevice->SetFVF(FVF_VERTEX_3D);
+
+		// マテリアルの設定
+		//D3DMATERIAL9 mat = CMain::GetManager()->GetMaterialManager()->GetMaterial(m_usMatID);
+		//pDevice->SetMaterial(&mat);
+
+		//プリミティブ描画
+		pDevice->DrawIndexedPrimitive(
+			D3DPT_TRIANGLELIST,
+			0,
+			0,
+			mesh.m_nNumVtx,
+			0,
+			mesh.m_nNumPolygon);
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveDraw(bDrawNormal, mtxThis);
+	}
+#else
+	glPushMatrix();
+	glScalef(vScale.m_fX, vScale.m_fY, vScale.m_fZ);
+	glRotatef(vRot.m_fZ, 0.0f, 0.0f, 1.0f);
+	glRotatef(vRot.m_fX, 1.0f, 0.0f, 0.0f);
+	glRotatef(vRot.m_fY, 0.0f, 1.0f, 0.0f);
+	glTranslatef(vTrans.m_fX, vTrans.m_fY, vTrans.m_fZ);
+
+	//Mesh
+	for (auto& mesh : vecMesh)
+	{
+		//Texture
+		if (!vecTex.empty())
+		{
+			glBindTexture(GL_TEXTURE_2D, vecTex[mesh.nMaterialIndex].nID);
+		}
+
+		// ポリゴン描画         
+		glBegin(GL_TRIANGLES);
+
+		if (mesh.vecMtx.empty())
+		{// 骨なし（つまり剛体の塊）             
+			for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
+			{
+				glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
+				glNormal3f(
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
+				glTexCoord2f(
+					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
+					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
+				glVertex3f(
+					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fX,
+					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fY,
+					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fZ);
+			}
+		}
+		else
+		{// 骨あり（つまりワンスキンなど） 
+		 // 頂点の座標変換 
+			vector<CKFVec3> vecPos;
+			vecPos.reserve(mesh.vecPoint.size());
+			CKFMtx44 mtx;
+			for (auto& point : mesh.vecPoint)
+			{
+				ZeroMemory(&mtx, sizeof(CKFMtx44));
+				for (auto& bornRefarence : point.vecBornRefarence)
+				{
+					mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;
+				}
+				CKFVec3 vPos = point.vPos;
+				CKFMath::Vec3TransformCoord(&vPos, mtx);
+				vecPos.push_back(vPos);
+			}
+
+			for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
+			{
+				glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
+				glNormal3f(
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
+					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
+				glTexCoord2f(
+					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
+					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
+				glVertex3f(
+					vecPos[mesh.vecPointIdx[nCnt]].m_fX,
+					vecPos[mesh.vecPointIdx[nCnt]].m_fY,
+					vecPos[mesh.vecPointIdx[nCnt]].m_fZ);
+			}
+		}
+
+		glEnd();
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveDraw(bDrawNormal);
+	}
+	glPopMatrix();
+#endif
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveRecalculateVtx
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveRecalculateVtx(void)
+{
+#ifdef USING_DIRECTX
+	for (auto& mesh : vecMesh)
+	{
+		list<VtxDX> listVtx;
+		list<int> listIdx;
+
+		for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
+		{
+			VtxDX vtxDX;
+			auto& point = mesh.vecPoint[mesh.vecPointIdx[nCnt]];
+			vtxDX.vtx.ulColor = CKFMath::sc_cWhite;
+			vtxDX.vtx.vNormal = mesh.vecNormal[mesh.vecNormalIdx[nCnt]];
+			vtxDX.vtx.vUV = mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]];
+			vtxDX.vtx.vPos = point.vPos;
+			vtxDX.vecBornRefarence.assign(point.vecBornRefarence.begin(), point.vecBornRefarence.end());
+
+			int nIdx = CKFUtilityFBX::FindRepetition(listVtx, vtxDX);
+			if (nIdx >= 0) { listIdx.push_back(nIdx); }
+			else
+			{
+				listIdx.push_back((int)listVtx.size());
+				listVtx.push_back(vtxDX);
+			}
+		}
+
+		mesh.m_nNumVtx = (int)listVtx.size();
+		mesh.m_nNumIdx = (int)listIdx.size();
+		mesh.m_nNumPolygon = mesh.m_nNumIdx / 3;
+
+		auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
+		HRESULT hr;
+
+		//頂点バッファ
+		hr = pDevice->CreateVertexBuffer(
+			sizeof(VERTEX_3D) * mesh.m_nNumVtx,	//作成したい頂点バッファのサイズ
+			D3DUSAGE_WRITEONLY,					//頂点バッファの使用方法
+			FVF_VERTEX_3D,						//書かなくても大丈夫
+			D3DPOOL_MANAGED,					//メモリ管理方法(managed：デバイスにお任せ)
+			&mesh.m_pVtxBuffer,					//頂点バッファのポインタ
+			NULL);
+
+		if (FAILED(hr))
+		{
+			MessageBox(NULL, "CMeshManager : CreateVertexBuffer ERROR!!", "エラー", MB_OK | MB_ICONWARNING);
+			continue;
+		}
+
+		VERTEX_3D *pVtx;
+		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
+		mesh.m_vecVtx.reserve(mesh.m_nNumVtx);
+		auto itrVtx = listVtx.begin();
+		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+		{
+			mesh.m_vecVtx.push_back(*itrVtx);
+			pVtx[nCnt] = itrVtx->vtx;
+			++itrVtx;
+		}
+		mesh.m_pVtxBuffer->Unlock();
+
+		//インデックスバッファの作成
+		hr = pDevice->CreateIndexBuffer(
+			sizeof(WORD) * mesh.m_nNumIdx,
+			D3DUSAGE_WRITEONLY,
+			D3DFMT_INDEX16,
+			D3DPOOL_MANAGED,
+			&mesh.m_pIdxBuffer,
+			NULL);
+
+		if (FAILED(hr))
+		{
+			MessageBox(NULL, "CMeshManager : CreateIndexBuffer ERROR!!", "エラー", MB_OK | MB_ICONWARNING);
+			continue;
+		}
+
+		WORD *pIdx;
+		mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
+		auto itrIdx = listIdx.begin();
+		for (int nCnt = 0; nCnt < mesh.m_nNumIdx; ++nCnt)
+		{
+			pIdx[nCnt] = *itrIdx;
+			++itrIdx;
+		}
+		mesh.m_pIdxBuffer->Unlock();
+
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveRecalculateVtx();
+	}
+#endif
 }
 
 //--------------------------------------------------------------------------------
@@ -382,8 +624,11 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 				//テクスチャファイル名
 				string strPath = pTexture->GetFileName();
 				string strType;
+				
 				CKFUtility::AnalyzeTexPath(strPath, vecTex[nCnt].strName, strType);
-				//vecTex[nCnt].nID = CKFTexture2D::LoadTGA("data/textures/" + strFileName + '/' + vecTex[nCnt].strName + ".tga");
+				CKFUtility::CorrectTexType(strType);
+				vecTex[nCnt].strName += '.' + strType;
+				CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
 
 				//UVSet名
 				vecTex[nCnt].strUVSetName = pTexture->UVSet.Get().Buffer();
@@ -410,12 +655,13 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 					//テクスチャファイル名
 					string strPath = pTexture->GetFileName();
 					string strType;
-					CKFUtility::AnalyzeTexPath(strPath, vecTex[nCntTex].strName, strType);
-					vecTex[nCntTex].strName += '.' + strType;
-					CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCntTex].strName);
+					CKFUtility::AnalyzeTexPath(strPath, vecTex[nCnt].strName, strType);
+					CKFUtility::CorrectTexType(strType);
+					vecTex[nCnt].strName += '.' + strType;
+					CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
 
 					//UVSet名
-					vecTex[nCntTex].strUVSetName = pTexture->UVSet.Get().Buffer();
+					vecTex[nCnt].strUVSetName = pTexture->UVSet.Get().Buffer();
 
 					++nCntTex;
 				}
@@ -571,6 +817,9 @@ FbxAMatrix CMyNode::getGeometry(FbxNode* pNode)
 //  CKFUtilityFBX
 //
 //--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//  Load
+//--------------------------------------------------------------------------------
 CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 {
 	//FBX読込実験コード
@@ -618,6 +867,23 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 
 	return pRootNode;
 }
+
+#ifdef USING_DIRECTX
+//--------------------------------------------------------------------------------
+//  FindRepetition
+//	重ねたら番号を返す、そうじゃないなら-1を返す
+//--------------------------------------------------------------------------------
+int CKFUtilityFBX::FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx)
+{
+	int nCnt = 0;
+	for (auto itr = listVtx.begin(); itr != listVtx.end(); ++itr, ++nCnt)
+	{
+		if (vtx == *itr) { return nCnt; }
+	}
+
+	return -1;
+}
+#endif
 
 //--------------------------------------------------------------------------------
 //  RecursiveNode

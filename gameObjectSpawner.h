@@ -27,7 +27,8 @@ public:
 	static CGameObject* CreateCube(const CKFVec3& vPos, const CKFVec3& vRot, const CKFVec3& vScale);
 	static CGameObject* CreateXModel(const string& strPath, const CKFVec3& vPos, const CKFVec3& vRot, const CKFVec3& vScale);
 	static CGameObject* CreateModel(const string& strFilePath, const CKFVec3& vPos, const CKFQuaternion& qRot, const CKFVec3& vScale);
-	static CGameObject* CreateGoal(const CKFVec3& vPos);
+	static CGameObject* CreateGrid(void);
+	static CGameObject* CreateModelAnalyzer(void);
 
 private:
 	CGameObjectSpawner() {}

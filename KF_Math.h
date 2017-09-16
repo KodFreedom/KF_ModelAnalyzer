@@ -131,6 +131,8 @@ public:
 	//éZèpââéZéq
 	CKFMtx44& operator=(const CKFMtx44& mtxValue);
 	CKFMtx44 operator*(const CKFMtx44& mtxValue) const;
+	CKFMtx44 operator*(const float& fValue) const;
+	void operator+=(const CKFMtx44& mtxValue);
 	void operator*=(const CKFMtx44& mtxValue);
 };
 
@@ -254,6 +256,7 @@ public:
 	//  íËêîíËã`
 	//--------------------------------------------------------------------------------
 	static const CKFVec3	sc_vZero;
+	static const CKFVec3	sc_vOne;
 	static const CKFVec3	sc_vUp;
 	static const CKFVec3	sc_vDown;
 	static const CKFVec3	sc_vLeft;
@@ -262,6 +265,10 @@ public:
 	static const CKFVec3	sc_vBack;
 	static const CKFColor	sc_cWhite;
 	static const CKFColor	sc_cBlack;
+	static const CKFColor	sc_cRed;
+	static const CKFColor	sc_cBlue;
+	static const CKFColor	sc_cGreen;
+
 	//--------------------------------------------------------------------------------
 	//  ä÷êîíËã`
 	//--------------------------------------------------------------------------------

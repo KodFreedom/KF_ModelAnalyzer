@@ -14,6 +14,7 @@
 //--------------------------------------------------------------------------------
 //  ‘O•ûéŒ¾
 //--------------------------------------------------------------------------------
+class CGameObject;
 
 //--------------------------------------------------------------------------------
 //  ƒNƒ‰ƒXéŒ¾
@@ -29,5 +30,9 @@ public:
 	void	Update(void) override;
 	void	LateUpdate(void) override;
 	void	EndMode(void) override {}
+
+	auto	GetModelAnalyzer(void) { return m_pModelAnalyzer; }
+
 private:
+	CGameObject* m_pModelAnalyzer;
 };

@@ -198,6 +198,15 @@
     <ClCompile Include="KF_UtilityFBX.cpp">
       <Filter>ソース ファイル\KF_Utility</Filter>
     </ClCompile>
+    <ClCompile Include="modelAnalyzerCamera.cpp">
+      <Filter>ソース ファイル\Base\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="modelAnalyzerDrawComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="modelAnalyzerBehaviorComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KF_Math.h">
@@ -349,6 +358,15 @@
     </ClInclude>
     <ClInclude Include="KF_UtilityFBX.h">
       <Filter>ヘッダー ファイル\KF_Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="modelAnalyzerCamera.h">
+      <Filter>ヘッダー ファイル\Base\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="modelAnalyzerBehaviorComponent.h">
+      <Filter>ヘッダー ファイル\Component\Behavior</Filter>
+    </ClInclude>
+    <ClInclude Include="modelAnalyzerDrawComponent.h">
+      <Filter>ヘッダー ファイル\Component\Draw</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

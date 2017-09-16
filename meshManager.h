@@ -62,6 +62,7 @@ private:
 	void	createCube(CMesh* pMesh);
 	void	createSphere(CMesh* pMesh);
 	void	createSkyBox(CMesh* pMesh);
+	void	createGrid(CMesh* pMesh);
 	void	loadField(const string& strFileName, CMesh* pMesh);
 	bool	createBuffer(CMesh* pMesh);
 

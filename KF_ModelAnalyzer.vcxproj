@@ -54,6 +54,9 @@
     <ClCompile Include="materialManager.cpp" />
     <ClCompile Include="meshManager.cpp" />
     <ClCompile Include="mode.cpp" />
+    <ClCompile Include="modelAnalyzerBehaviorComponent.cpp" />
+    <ClCompile Include="modelAnalyzerCamera.cpp" />
+    <ClCompile Include="modelAnalyzerDrawComponent.cpp" />
     <ClCompile Include="modeModelAnalyzer.cpp" />
     <ClCompile Include="rendererDX.cpp" />
     <ClCompile Include="renderState.cpp" />
@@ -101,6 +104,9 @@
     <ClInclude Include="meshComponent.h" />
     <ClInclude Include="meshManager.h" />
     <ClInclude Include="mode.h" />
+    <ClInclude Include="modelAnalyzerBehaviorComponent.h" />
+    <ClInclude Include="modelAnalyzerCamera.h" />
+    <ClInclude Include="modelAnalyzerDrawComponent.h" />
     <ClInclude Include="modeModelAnalyzer.h" />
     <ClInclude Include="motionInfo.h" />
     <ClInclude Include="OBBColliderComponent.h" />
