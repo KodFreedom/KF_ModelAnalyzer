@@ -30,7 +30,6 @@
     <ClCompile Include="boxColliderComponent.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="colliderComponent.cpp" />
-    <ClCompile Include="debugManager.cpp" />
     <ClCompile Include="drawComponent.cpp" />
     <ClCompile Include="editorCamera.cpp" />
     <ClCompile Include="fade.cpp" />
@@ -39,6 +38,10 @@
     <ClCompile Include="gameObjectActor.cpp" />
     <ClCompile Include="gameObjectManager.cpp" />
     <ClCompile Include="gameObjectSpawner.cpp" />
+    <ClCompile Include="ImGui\imgui.cpp" />
+    <ClCompile Include="ImGui\imgui_demo.cpp" />
+    <ClCompile Include="ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ImGui\imgui_impl_dx9.cpp" />
     <ClCompile Include="inputDX.cpp" />
     <ClCompile Include="inputManager.cpp" />
     <ClCompile Include="KF_CollisionSystem.cpp" />
@@ -78,7 +81,6 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="colliderComponent.h" />
     <ClInclude Include="component.h" />
-    <ClInclude Include="debugManager.h" />
     <ClInclude Include="drawComponent.h" />
     <ClInclude Include="editorCamera.h" />
     <ClInclude Include="fade.h" />
@@ -87,6 +89,13 @@
     <ClInclude Include="gameObjectActor.h" />
     <ClInclude Include="gameObjectManager.h" />
     <ClInclude Include="gameObjectSpawner.h" />
+    <ClInclude Include="ImGui\imconfig.h" />
+    <ClInclude Include="ImGui\imgui.h" />
+    <ClInclude Include="ImGui\imgui_impl_dx9.h" />
+    <ClInclude Include="ImGui\imgui_internal.h" />
+    <ClInclude Include="ImGui\stb_rect_pack.h" />
+    <ClInclude Include="ImGui\stb_textedit.h" />
+    <ClInclude Include="ImGui\stb_truetype.h" />
     <ClInclude Include="inputDX.h" />
     <ClInclude Include="inputManager.h" />
     <ClInclude Include="KF_CollisionSystem.h" />

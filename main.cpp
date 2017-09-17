@@ -8,18 +8,18 @@
 #include "manager.h"
 #include "inputManager.h"
 
-#ifdef _DEBUG
-#include "debugManager.h"
-#endif
+#include "ImGui\imgui.h"
+#include "ImGui\imgui_impl_dx9.h"
 
 //--------------------------------------------------------------------------------
 //  静的メンバ変数宣言
 //--------------------------------------------------------------------------------
 CManager*	CMain::m_pManager = nullptr;
 
-#ifdef _DEBUG
-unsigned int	CMain::m_unFPS = 0;
-#endif
+//--------------------------------------------------------------------------------
+//	extern関数
+//--------------------------------------------------------------------------------
+extern LRESULT ImGui_ImplDX9_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //--------------------------------------------------------------------------------
 //	メイン関数
@@ -97,7 +97,7 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 		hInstance,		//インスタンスハンドル
 		NULL);			//ウインドウ作成データ
 
-						//Manager生成
+	//Manager生成
 	m_pManager = new CManager;
 
 	if (!m_pManager->Init(hInstance, hWnd, true))
@@ -105,25 +105,21 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 		return -1;
 	};
 
-	//FPS
-#ifdef _DEBUG
-	unsigned int unFrameCount = 0;
-#endif
-	DWORD dwCurrentTime;//現時間
-	DWORD dwExecLastTime;//実行終了時時間
-	DWORD dwFPSLastTime;
-
-	//分解能を設定
-	timeBeginPeriod(1);
-
-	//各カウンター初期化
-	dwCurrentTime = 0;
-	dwExecLastTime =
-		dwFPSLastTime = timeGetTime();//システム時刻をミリ秒単位で取得
-
-									  //ウインドウの表示
+	//ウインドウの表示
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
+	
+	//時間カウンタ
+	LARGE_INTEGER nFrequency;
+	LARGE_INTEGER nCurrentTime;
+	LARGE_INTEGER nExecLastTime;
+	LARGE_INTEGER nFPSLastTime;
+	memset(&nFrequency, 0x00, sizeof nFrequency);
+	memset(&nCurrentTime, 0x00, sizeof nCurrentTime);
+	memset(&nExecLastTime, 0x00, sizeof nExecLastTime);
+	memset(&nFPSLastTime, 0x00, sizeof nFPSLastTime);
+	QueryPerformanceCounter(&nExecLastTime);
+	nFPSLastTime = nExecLastTime;
 
 	//メッセージループ
 	for (;;)
@@ -143,24 +139,13 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 		}
 		else
 		{
-			dwCurrentTime = timeGetTime();
+			QueryPerformanceFrequency(&nFrequency);
+			QueryPerformanceCounter(&nCurrentTime);
+			double dTime = (double)(nCurrentTime.QuadPart - nExecLastTime.QuadPart) * 1000.0 / (double)nFrequency.QuadPart;
 
-			if ((dwCurrentTime - dwExecLastTime) >= TIMER_INTERVAL)
+			if (dTime >= TIMER_INTERVAL)
 			{
-				dwExecLastTime = dwCurrentTime;//処理した時間
-
-#ifdef _DEBUG
-				if ((dwCurrentTime - dwFPSLastTime) >= 500)//0.5秒ごとに実行
-				{
-					m_unFPS = (unFrameCount * 1000) / (dwCurrentTime - dwFPSLastTime);
-					dwFPSLastTime = dwCurrentTime;
-					unFrameCount = 0;
-				}
-
-				//Debug表示
-				m_pManager->GetDebugManager()->DisplayAlways("FPS : " + to_string(m_unFPS) + '\n');
-				unFrameCount++;
-#endif//_DEBUG
+				nExecLastTime = nCurrentTime;
 
 				// 更新処理
 				m_pManager->Update();
@@ -185,9 +170,6 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 	//第二引数：アプリケーションインスタン
 	UnregisterClass(CLASS_NAME, wcex.hInstance);
 
-	// 分解能を戻す
-	timeEndPeriod(1);
-
 	return (int)msg.wParam;
 }
 
@@ -202,6 +184,11 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 //--------------------------------------------------------------------------------
 LRESULT CALLBACK CMain::wndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplDX9_WndProcHandler(hWnd, uMsg, wParam, lParam))
+	{
+		//return true;
+	}
+
 	switch (uMsg) {
 	case WM_KEYDOWN:		//esp key
 		if (LOWORD(wParam) == VK_ESCAPE) { closeApp(hWnd); }

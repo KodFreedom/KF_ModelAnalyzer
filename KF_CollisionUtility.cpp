@@ -22,10 +22,6 @@
 #include "behaviorComponent.h"
 #include "transformComponent.h"
 
-#ifdef _DEBUG
-#include "debugManager.h"
-#endif
-
 //--------------------------------------------------------------------------------
 //
 //  Õ“Ë”»’èŠÖ”

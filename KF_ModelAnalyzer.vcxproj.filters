@@ -76,6 +76,12 @@
     <Filter Include="ヘッダー ファイル\Component\Rigidbody">
       <UniqueIdentifier>{796b9731-8a41-4780-8f45-5807eb298278}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\ImGui">
+      <UniqueIdentifier>{55c71e97-e401-409f-a3dc-86745f770890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\ImGui">
+      <UniqueIdentifier>{919fcbd3-274d-408d-bcf0-851eaa988f19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KF_UtilityDX.cpp">
@@ -156,9 +162,6 @@
     <ClCompile Include="gameObjectSpawner.cpp">
       <Filter>ソース ファイル\Base\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="debugManager.cpp">
-      <Filter>ソース ファイル\Base\Manager</Filter>
-    </ClCompile>
     <ClCompile Include="inputManager.cpp">
       <Filter>ソース ファイル\Base\Manager</Filter>
     </ClCompile>
@@ -207,6 +210,18 @@
     <ClCompile Include="modelAnalyzerBehaviorComponent.cpp">
       <Filter>ソース ファイル\Component</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_demo.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KF_Math.h">
@@ -247,9 +262,6 @@
     </ClInclude>
     <ClInclude Include="actionGameCamera.h">
       <Filter>ヘッダー ファイル\Base\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="debugManager.h">
-      <Filter>ヘッダー ファイル\Base\Manager</Filter>
     </ClInclude>
     <ClInclude Include="inputManager.h">
       <Filter>ヘッダー ファイル\Base\Manager</Filter>
@@ -367,6 +379,27 @@
     </ClInclude>
     <ClInclude Include="modelAnalyzerDrawComponent.h">
       <Filter>ヘッダー ファイル\Component\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\stb_rect_pack.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\stb_textedit.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\stb_truetype.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx9.h">
+      <Filter>ヘッダー ファイル\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

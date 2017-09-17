@@ -143,7 +143,7 @@ string CKFUtility::GetFileName(const string& strFilePath)
 //			bJump：跳ぶフラグ
 //	戻り値：なし
 //--------------------------------------------------------------------------------
-void CKFUtility::AnalyzeTexPath(const string& strTexPath, string& strName, string& strType)
+void CKFUtility::AnalyzeFilePath(const string& strTexPath, string& strName, string& strType)
 {
 	auto strCpy = strTexPath;
 

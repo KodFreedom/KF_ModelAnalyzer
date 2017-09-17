@@ -39,6 +39,10 @@ public:
 
 	//Get関数
 	auto	GetDevice(void) { return m_pD3DDevice; }
+	auto	GetBGColor(void) const { return m_cBGColor; }
+
+	//Set関数
+	void	SetBGColor(const CKFColor& cColor) { m_cBGColor = cColor; }
 
 private:
 	//--------------------------------------------------------------------------------
@@ -60,5 +64,6 @@ private:
 	//--------------------------------------------------------------------------------
 	LPDIRECT3D9			m_pD3D;			// Direct3Dオブジェクト
 	LPDIRECT3DDEVICE9	m_pD3DDevice;	// Deviceオブジェクト(描画に必要)
+	CKFColor			m_cBGColor;		// 背景色
 };
 #endif

@@ -25,7 +25,6 @@
 #ifdef _DEBUG
 #include "rendererDX.h"
 #include "textureManager.h"
-#include "debugManager.h"
 #endif
 
 //--------------------------------------------------------------------------------

@@ -24,10 +24,9 @@
 #include "KF_CollisionSystem.h"
 #include "KF_PhysicsSystem.h"
 
-//Debug処理
-#ifdef _DEBUG
-#include "debugManager.h"
-#endif
+//ImGui
+#include "ImGui\imgui.h"
+#include "ImGui\imgui_impl_dx9.h"
 
 //--------------------------------------------------------------------------------
 //  静的メンバー変数宣言
@@ -51,9 +50,6 @@ CManager::CManager()
 	, m_pFade(nullptr)
 	, m_pCollisionSystem(nullptr)
 	, m_pPhysicsSystem(nullptr)
-#ifdef _DEBUG
-	, m_pDebugManager(nullptr)
-#endif
 {
 }
 
@@ -77,10 +73,8 @@ bool CManager::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 		return false;
 	}
 
-#ifdef _DEBUG
-	//Debugマネージャの生成
-	m_pDebugManager = CDebugManager::Create();
-#endif
+	// Setup ImGui binding
+	ImGui_ImplDX9_Init(hWnd, m_pRenderer->GetDevice());
 
 	//入力の生成
 	m_pInputManager = new CInputManager;
@@ -175,10 +169,8 @@ void CManager::Uninit(void)
 	//入力マネージャの破棄
 	SAFE_RELEASE(m_pInputManager);
 
-#ifdef _DEBUG
-	//Debugマネージャの破棄
-	SAFE_RELEASE(m_pDebugManager);
-#endif
+	//ImGui
+	ImGui_ImplDX9_Shutdown();
 
 	//レンダラーの破棄
 	SAFE_RELEASE(m_pRenderer);
@@ -189,6 +181,9 @@ void CManager::Uninit(void)
 //--------------------------------------------------------------------------------
 void CManager::Update(void)
 {
+	//ImGui
+	ImGui_ImplDX9_NewFrame();
+
 	//入力更新
 	m_pInputManager->Update();
 
@@ -218,11 +213,6 @@ void CManager::LateUpdate(void)
 
 	//Fade更新
 	m_pFade->Update();
-
-#ifdef _DEBUG
-	//Debugマネージャの更新
-	m_pDebugManager->Update();
-#endif
 }
 
 //--------------------------------------------------------------------------------
@@ -242,10 +232,8 @@ void CManager::Draw(void)
 		//Fade描画
 		m_pFade->Draw();
 
-#ifdef _DEBUG
-		//Debug表示
-		m_pDebugManager->Draw();
-#endif
+		//ImGui
+		ImGui::Render();
 
 		m_pRenderer->EndDraw();
 	}

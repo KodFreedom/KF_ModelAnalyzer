@@ -38,12 +38,21 @@ public:
 
 	auto GetRootNode(void) { return m_pRootNode; }
 	void ChangeModel(const string& strFilePath);
+	void SaveModel(void);
 
 private:
 	//--------------------------------------------------------------------------------
 	//  ä÷êîíËã`
 	//--------------------------------------------------------------------------------
 	void		releaseModel(void);
+
+	//ImGui
+	void		showMainMenuBar(void);
+	void		showMainMenuFile(void);
+	void		showMainWindow(void);
+	void		showModelInfoWindow(void);
+	void		showNodeInfo(CMyNode* pNode);
+	void		showNodeNowWindow(void);
 
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
@@ -55,4 +64,11 @@ private:
 	bool		m_bSaved;
 	string		m_strFileName;
 	CMyNode*	m_pRootNode;
+
+	//ImGui
+	bool		m_bModelInfoWindow;
+	CMyNode*	m_pNodeNow;
+	CKFVec3		m_vNodeNowCorrectTrans;
+	CKFVec3		m_vNodeNowCorrectRot;
+	CKFVec3		m_vNodeNowCorrectScale;
 };

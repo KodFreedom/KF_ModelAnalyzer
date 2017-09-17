@@ -96,6 +96,7 @@ public:
 	auto		GetTransformComponent(void) const { return m_pTransform; }
 	auto&		GetBehaviorComponent(void) { return m_listpBehavior; }
 	auto		GetMeshComponent(void) const { return m_pMesh; }
+	auto		GetDrawComponent(void) const { return m_pDraw; }
 	auto		GetRigidbodyComponent(void) const { return m_pRigidbody; }
 	auto&		GetColliderComponent(void) const { return m_listpCollider; }
 	const auto&	GetName(void) const { return m_strName; }

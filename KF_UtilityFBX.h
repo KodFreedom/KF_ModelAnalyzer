@@ -10,6 +10,7 @@
 //  インクルードファイル
 //--------------------------------------------------------------------------------
 #include "main.h"
+#include "KF_CollisionSystem.h"
 
 //--------------------------------------------------------------------------------
 //  構造体定義
@@ -109,6 +110,14 @@ struct Mesh
 #endif
 };
 
+struct COL_INFO
+{//コライダー
+	CS::COL_TYPE	colType;
+	CKFVec3			vOffsetPos;
+	CKFVec3			vOffsetRot;
+	CKFVec3			vOffsetScale;
+};
+
 //--------------------------------------------------------------------------------
 //  クラス定義
 //--------------------------------------------------------------------------------
@@ -121,12 +130,14 @@ public:
 		: vTrans(CKFVec3(0.0f))
 		, vRot(CKFVec3(0.0f))
 		, vScale(CKFVec3(0.0f))
+		, materialID(1)
 	{
 		listChild.clear();
 		strName.clear();
 		vecAttributeName.clear();
 		vecTex.clear();
 		vecMesh.clear();
+		listCollider.clear();
 	}
 	~CMyNode() {}
 
@@ -142,10 +153,16 @@ public:
 	vector<Texture>	vecTex;
 	vector<Mesh>	vecMesh;
 
+	//Collider
+	list<COL_INFO>	listCollider;
+	unsigned short	materialID;		//Collider Mat
+
 	void Release(void);
 	void RecursiveUpdate(void);
 	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
 	void RecursiveRecalculateVtx(void);
+	void RecursiveReverseTexV(void);
+	void RecalculateVtxByMatrix(const CKFMtx44& mtx);
 
 private:
 	void		analyzePos(FbxMesh* pMesh);
@@ -155,6 +172,11 @@ private:
 	void		analyzeMaterial(FbxMesh* pMesh);
 	void		analyzeCluster(FbxMesh* pMesh);
 	FbxAMatrix	getGeometry(FbxNode* pNode);
+
+#ifdef USING_DIRECTX
+	static LPD3DXMESH s_pMeshSphere;
+	static LPD3DXMESH s_pMeshCube;
+#endif
 };
 
 class CKFUtilityFBX

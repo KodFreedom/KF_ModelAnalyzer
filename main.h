@@ -60,8 +60,8 @@ using namespace std;
 #define SCREEN_WIDTH		(1280)								//ウインドウ幅
 #define SCREEN_HEIGHT		(720)								//ウインドウ高さ
 #define FRAME_PER_SECOND	(60)								
-#define TIMER_INTERVAL		(1000.0f / FRAME_PER_SECOND)		//更新間隔
-#define DELTA_TIME			(TIMER_INTERVAL * 0.001f)			//更新間隔(秒単位)
+#define TIMER_INTERVAL		(1000.0 / FRAME_PER_SECOND)		//更新間隔
+#define DELTA_TIME			((float)TIMER_INTERVAL * 0.001f)			//更新間隔(秒単位)
 #define CLASS_NAME			"KF_Framework"						//クラスの名前
 #define WINDOW_NAME			"フレームワーク"					//ウインドウの名前
 
@@ -121,8 +121,4 @@ private:
 	//  変数定義
 	//--------------------------------------------------------------------------------
 	static CManager*		m_pManager;
-
-#ifdef _DEBUG
-	static unsigned int		m_unFPS;		//FPSカウンタ
-#endif
 };

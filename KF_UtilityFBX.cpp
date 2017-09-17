@@ -11,7 +11,16 @@
 #include "KF_Utility.h"
 #include "manager.h"
 #include "textureManager.h"
+#include "materialManager.h"
 #include "rendererDX.h"
+
+//--------------------------------------------------------------------------------
+//  静的メンバ変数
+//--------------------------------------------------------------------------------
+#ifdef USING_DIRECTX
+LPD3DXMESH CMyNode::s_pMeshSphere = nullptr;
+LPD3DXMESH CMyNode::s_pMeshCube = nullptr;
+#endif
 
 //--------------------------------------------------------------------------------
 //  構造体
@@ -87,6 +96,8 @@ void CMyNode::Release(void)
 #ifdef USING_DIRECTX
 		SAFE_RELEASE(mesh.m_pVtxBuffer);
 		SAFE_RELEASE(mesh.m_pIdxBuffer);
+		SAFE_RELEASE(s_pMeshCube);
+		SAFE_RELEASE(s_pMeshSphere);
 #endif
 	}
 	vecMesh.clear();
@@ -162,6 +173,7 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 	//回転
 	CKFMtx44 mtxRot;
 	CKFMath::MtxRotationYawPitchRoll(mtxRot, vRot);
+	mtxThis *= mtxRot;
 
 	//平行移動
 	CKFMtx44 mtxPos;
@@ -210,6 +222,62 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 			0,
 			mesh.m_nNumPolygon);
 	}
+
+	//Draw Collider
+	if(!s_pMeshSphere)
+	{
+		CMain::GetManager()->GetTextureManager()->UseTexture("polygon.png");
+		D3DXCreateSphere(pDevice, 1.0f, 10, 10, &s_pMeshSphere, nullptr); 
+	}
+	if(!s_pMeshCube){ D3DXCreateBox(pDevice, 1.0f, 1.0f, 1.0f, &s_pMeshCube, nullptr); }
+	auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture("polygon.png");
+	D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(materialID);
+	D3DMATERIAL9 matDef;
+	pDevice->GetMaterial(&matDef);
+	pDevice->SetTexture(0, pTexture);
+	pDevice->SetMaterial(&material);
+	for (auto& col : listCollider)
+	{
+		CKFMtx44 mtxCol;
+
+		//拡縮
+		mtxCol.m_af[0][0] = col.vOffsetScale.m_fX;
+		mtxCol.m_af[1][1] = col.vOffsetScale.m_fY;
+		mtxCol.m_af[2][2] = col.vOffsetScale.m_fZ;
+
+		//回転
+		CKFMath::MtxRotationYawPitchRoll(mtxRot, col.vOffsetRot);
+		mtxCol *= mtxRot;
+
+		//平行移動
+		CKFMath::MtxTranslation(mtxPos, col.vOffsetPos);
+		mtxCol *= mtxPos;
+		mtxCol *= mtxThis;
+
+		if (col.colType == CS::COL_SPHERE)
+		{
+			D3DXMATRIX mtx = mtxCol;
+			pDevice->SetTransform(D3DTS_WORLD, &mtx);
+			s_pMeshSphere->DrawSubset(0);
+		}
+		else if (col.colType == CS::COL_AABB)
+		{
+			mtxCol.m_af[0][1] = mtxCol.m_af[0][2]
+				= mtxCol.m_af[1][0] = mtxCol.m_af[1][2]
+				= mtxCol.m_af[2][0] = mtxCol.m_af[2][1] = 0.0f;
+			D3DXMATRIX mtx = mtxCol;
+			pDevice->SetTransform(D3DTS_WORLD, &mtx);
+			s_pMeshCube->DrawSubset(0);
+		}
+		else if (col.colType == CS::COL_OBB) 
+		{
+			D3DXMATRIX mtx = mtxCol;
+			pDevice->SetTransform(D3DTS_WORLD, &mtx);
+			s_pMeshCube->DrawSubset(0);
+		}
+	}
+	pDevice->SetTexture(0, nullptr);
+	pDevice->SetMaterial(&matDef);
 
 	//Child
 	for (auto pNode : listChild)
@@ -389,15 +457,70 @@ void CMyNode::RecursiveRecalculateVtx(void)
 			++itrIdx;
 		}
 		mesh.m_pIdxBuffer->Unlock();
-
 	}
+#endif
 
 	//Child
 	for (auto pNode : listChild)
 	{
 		pNode->RecursiveRecalculateVtx();
 	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveReverseTexV
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveReverseTexV(void)
+{
+#ifdef USING_DIRECTX
+	for (auto& mesh : vecMesh)
+	{
+		VERTEX_3D *pVtx;
+		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
+		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+		{
+			auto& fTexV = mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
+			fTexV = 1.0f - fTexV;
+			pVtx[nCnt].vUV.m_fY = fTexV;
+		}
+		mesh.m_pVtxBuffer->Unlock();
+	}
 #endif
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveReverseTexV();
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveReverseTexV
+//--------------------------------------------------------------------------------
+void CMyNode::RecalculateVtxByMatrix(const CKFMtx44& mtx)
+{
+#ifdef USING_DIRECTX
+	for (auto& mesh : vecMesh)
+	{
+		VERTEX_3D *pVtx;
+		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
+		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+		{
+			auto& vtx = mesh.m_vecVtx[nCnt].vtx;
+			vtx.vPos = CKFMath::Vec3TransformCoord(vtx.vPos, mtx);
+			vtx.vNormal = CKFMath::Vec3TransformNormal(vtx.vNormal, mtx);
+			CKFMath::VecNormalize(vtx.vNormal);
+			pVtx[nCnt].vPos = vtx.vPos;
+			pVtx[nCnt].vNormal = vtx.vNormal;
+		}
+		mesh.m_pVtxBuffer->Unlock();
+	}
+#endif
+
+	for (auto pChild : listChild)
+	{
+		pChild->RecalculateVtxByMatrix(mtx);
+	}
 }
 
 //--------------------------------------------------------------------------------
@@ -625,7 +748,7 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 				string strPath = pTexture->GetFileName();
 				string strType;
 				
-				CKFUtility::AnalyzeTexPath(strPath, vecTex[nCnt].strName, strType);
+				CKFUtility::AnalyzeFilePath(strPath, vecTex[nCnt].strName, strType);
 				CKFUtility::CorrectTexType(strType);
 				vecTex[nCnt].strName += '.' + strType;
 				CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
@@ -655,7 +778,7 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 					//テクスチャファイル名
 					string strPath = pTexture->GetFileName();
 					string strType;
-					CKFUtility::AnalyzeTexPath(strPath, vecTex[nCnt].strName, strType);
+					CKFUtility::AnalyzeFilePath(strPath, vecTex[nCnt].strName, strType);
 					CKFUtility::CorrectTexType(strType);
 					vecTex[nCnt].strName += '.' + strType;
 					CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
@@ -899,6 +1022,7 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	pMyNode->vRot.m_fX = static_cast<float>(pNode->LclRotation.Get()[0]);
 	pMyNode->vRot.m_fY = static_cast<float>(pNode->LclRotation.Get()[1]);
 	pMyNode->vRot.m_fZ = static_cast<float>(pNode->LclRotation.Get()[2]);
+	pMyNode->vRot /= 180.0f * KF_PI; //Degree to Radian
 	pMyNode->vScale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
 	pMyNode->vScale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
 	pMyNode->vScale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);

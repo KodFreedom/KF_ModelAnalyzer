@@ -25,10 +25,6 @@ class CFade;
 class CKFCollisionSystem;
 class CKFPhysicsSystem;
 
-#ifdef _DEBUG
-class CDebugManager;
-#endif
-
 //--------------------------------------------------------------------------------
 //  ÉNÉâÉXêÈåæ
 //--------------------------------------------------------------------------------
@@ -60,10 +56,6 @@ public:
 	auto GetCollisionSystem(void) { return m_pCollisionSystem; }
 	auto GetPhysicsSystem(void) { return m_pPhysicsSystem; }
 
-#ifdef _DEBUG
-	auto GetDebugManager(void) { return m_pDebugManager; }
-#endif
-
 private:
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
@@ -79,8 +71,4 @@ private:
 	CFade*				m_pFade;
 	CKFCollisionSystem*	m_pCollisionSystem;
 	CKFPhysicsSystem*	m_pPhysicsSystem;
-
-#ifdef _DEBUG
-	CDebugManager*		m_pDebugManager;
-#endif
 };
