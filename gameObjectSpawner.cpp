@@ -185,7 +185,7 @@ CGameObject* CGameObjectSpawner::CreateModelAnalyzer(void)
 	//‰Šú‰»
 	pObj->Init();
 
-	pBehavior->ChangeModel("data/MODEL/Medieval_Windmill.FBX");
+	pBehavior->ChangeModel("data/MODEL/Baker_house.FBX");
 	return pObj;
 }
 

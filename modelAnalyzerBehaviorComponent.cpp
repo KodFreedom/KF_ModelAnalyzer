@@ -34,7 +34,7 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	: CBehaviorComponent(pGameObj)
 	, m_bDrawNormal(false)
 	, m_bEnableCullFace(false)
-	, m_bEnableLight(false)
+	, m_bEnableLight(true)
 	, m_bReverseV(false)
 	, m_bSaved(false)
 	, m_pRootNode(nullptr)
@@ -146,7 +146,8 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::SaveModel(void)
 {
-
+	CKFUtilityFBX::Save(m_pRootNode, m_strFileName);
+	MessageBox(NULL, "セーブしました。", "SaveModel", MB_OK);
 }
 
 //--------------------------------------------------------------------------------
@@ -204,12 +205,10 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 		else { pDraw->SetRenderState(&CDrawComponent::s_lightOffRenderState); }
 	}
 
-	//static float f = 0.0f;
-	//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-
+	// Model
 	if (ImGui::Button("Model Info Window")) m_bModelInfoWindow ^= 1;
 	
-	//End
+	// End
 	ImGui::End();
 }
 
@@ -277,8 +276,6 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 
 	// End
 	ImGui::End();
-
-	//ImGui::ShowTestWindow(&m_bModelInfoWindow);
 }
 
 //--------------------------------------------------------------------------------
@@ -355,7 +352,8 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 	// Collider
 	if (ImGui::CollapsingHeader("Collider"))
 	{
-		const char* listbox_items[] =
+		//Edit Collider
+		static const char* listbox_items[] =
 		{ "Sphere"
 			, "AABB"
 			, "OBB" };

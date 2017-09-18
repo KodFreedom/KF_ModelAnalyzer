@@ -87,6 +87,7 @@ struct Mesh
 		vecPoint.clear();
 		vecNormalIdx.clear();
 		vecMtx.clear();
+
 #ifdef USING_DIRECTX
 		m_vecVtx.clear();
 #endif
@@ -97,7 +98,7 @@ struct Mesh
 	vector<UVSET>			vecUVSet;
 	vector<unsigned short>	vecPointIdx;
 	vector<unsigned short>	vecNormalIdx;
-	int						nMaterialIndex;
+	int						nMaterialIndex;	//Texture
 	vector<CKFMtx44>		vecMtx;
 
 #ifdef USING_DIRECTX
@@ -183,7 +184,8 @@ class CKFUtilityFBX
 {
 public:
 	static CMyNode*	Load(const string& strFilePath);
-	
+	static void		Save(CMyNode* pRootNode, const string& strFileName);
+
 #ifdef USING_DIRECTX
 	static int		FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx);
 #endif
@@ -192,5 +194,8 @@ private:
 	~CKFUtilityFBX() {}
 
 	static CMyNode*	recursiveNode(FbxManager* pManager, FbxNode* pNode);
+	static void		recursiveSaveNode(FILE* pFile, CMyNode* pNode);
+	static void		saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
+	static void		saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static string	getAttributeTypeName(FbxNodeAttribute::EType type);
 };

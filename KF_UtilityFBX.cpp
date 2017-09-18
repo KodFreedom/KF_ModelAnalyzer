@@ -519,6 +519,7 @@ void CMyNode::RecalculateVtxByMatrix(const CKFMtx44& mtx)
 
 	for (auto pChild : listChild)
 	{
+		pChild->vTrans = CKFMath::Vec3TransformCoord(pChild->vTrans, mtx);
 		pChild->RecalculateVtxByMatrix(mtx);
 	}
 }
@@ -991,6 +992,19 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 	return pRootNode;
 }
 
+//--------------------------------------------------------------------------------
+//  Save
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
+{
+	//Modelファイルの保存
+	string strName = "data/MODEL/" + strFileName + ".model";
+	FILE *pFile;
+	fopen_s(&pFile, strName.c_str(), "wb");
+	recursiveSaveNode(pFile, pRootNode);
+	fclose(pFile);
+}
+
 #ifdef USING_DIRECTX
 //--------------------------------------------------------------------------------
 //  FindRepetition
@@ -1009,7 +1023,7 @@ int CKFUtilityFBX::FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx)
 #endif
 
 //--------------------------------------------------------------------------------
-//  RecursiveNode
+//  recursiveNode
 //--------------------------------------------------------------------------------
 CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 {
@@ -1075,6 +1089,189 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	}
 
 	return pMyNode;
+}
+
+//--------------------------------------------------------------------------------
+//  recursiveSaveNode
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
+{
+	//Node名
+	int nSize = (int)pNode->strName.size();
+	fwrite(&nSize, sizeof(int), 1, pFile);
+	fwrite(&pNode->strName[0], sizeof(char), nSize, pFile);
+
+	//Offset
+	fwrite(&pNode->vTrans, sizeof(CKFVec3), 1, pFile);
+	fwrite(&pNode->vRot, sizeof(CKFVec3), 1, pFile);
+	fwrite(&pNode->vScale, sizeof(CKFVec3), 1, pFile);
+	
+	//Collider
+	int nNumCollider = (int)pNode->listCollider.size();
+	fwrite(&nNumCollider, sizeof(int), 1, pFile);
+	for (auto& colInfo : pNode->listCollider)
+	{
+		fwrite(&colInfo.colType, sizeof(int), 1, pFile);
+		fwrite(&colInfo.vOffsetPos, sizeof(CKFVec3), 1, pFile);
+		fwrite(&colInfo.vOffsetRot, sizeof(CKFVec3), 1, pFile);
+		fwrite(&colInfo.vOffsetScale, sizeof(CKFVec3), 1, pFile);
+	}
+
+	//Texture
+	int nNumTexture = (int)pNode->vecTex.size();
+	fwrite(&nNumTexture, sizeof(int), 1, pFile);
+	for (auto& texture : pNode->vecTex)
+	{
+		nSize = (int)texture.strName.size();
+		fwrite(&nSize, sizeof(int), 1, pFile);
+		fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+	}
+
+	//Mesh
+	int nNumMesh = (int)pNode->vecMesh.size();
+	fwrite(&nNumMesh, sizeof(int), 1, pFile);
+	for (int nCnt = 0; nCnt < nNumMesh; ++nCnt)
+	{
+		auto& mesh = pNode->vecMesh[nCnt];
+		if (mesh.vecMtx.empty())
+		{//骨なし
+			//Name
+			string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".mesh";
+			nSize = (int)strMeshName.size();
+			fwrite(&nSize, sizeof(int), 1, pFile);
+			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
+
+			//Mesh
+			saveMesh(pNode, mesh, strMeshName);
+		}
+		else
+		{//ワンスキーンメッシュ
+			//Name
+			string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".oneSkinMesh";
+			nSize = (int)strMeshName.size();
+			fwrite(&nSize, sizeof(int), 1, pFile);
+			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
+
+			//Mesh
+			saveOneSkinMesh(pNode, mesh, strMeshName);
+		}
+	}
+	
+	//Child
+	int nNumChild = (int)pNode->listChild.size();
+	fwrite(&nNumChild, sizeof(int), 1, pFile);
+	for (auto& pChild : pNode->listChild)
+	{
+		recursiveSaveNode(pFile, pChild);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  saveMesh
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName)
+{
+	string strName = "data/MESH/" + strMeshName;
+	FILE *pFile;
+	
+	//file open
+	fopen_s(&pFile, strName.c_str(), "wb");
+	
+	//DrawType
+	int nDrawType = (int)D3DPT_TRIANGLELIST;
+	fwrite(&nDrawType, sizeof(int), 1, pFile);
+	
+	//NumVtx
+	fwrite(&mesh.m_nNumVtx, sizeof(int), 1, pFile);
+	
+	//NumIdx
+	fwrite(&mesh.m_nNumIdx, sizeof(int), 1, pFile);
+	
+	//NumPolygon
+	fwrite(&mesh.m_nNumPolygon, sizeof(int), 1, pFile);
+	
+	//Vtx
+	vector<VERTEX_3D> vecVtx;
+	vecVtx.resize(mesh.m_nNumVtx);
+	for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+	{
+		vecVtx[nCnt] = mesh.m_vecVtx[nCnt].vtx;
+	}
+	fwrite(&vecVtx[0], sizeof(VERTEX_3D), mesh.m_nNumVtx, pFile);
+	vecVtx.clear();
+
+	//Idx
+	WORD *pIdx;
+	mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	fwrite(pIdx, sizeof(WORD), mesh.m_nNumIdx, pFile);
+	mesh.m_pIdxBuffer->Unlock();
+
+	//Texture
+	auto& texture = pNode->vecTex[mesh.nMaterialIndex];
+	int nSize = (int)texture.strName.size();
+	fwrite(&nSize, sizeof(int), 1, pFile);
+	fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+	
+	fclose(pFile);
+}
+
+//--------------------------------------------------------------------------------
+//  saveMesh
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName)
+{
+	MessageBox(NULL, "未対応", "saveOneSkinMesh", MB_OK | MB_ICONWARNING);
+
+	//string strName = "data/MESH/" + strMeshName;
+	//FILE *pFile;
+
+	////file open
+	//fopen_s(&pFile, strName.c_str(), "wb");
+
+	////DrawType
+	//int nDrawType = (int)D3DPT_TRIANGLELIST;
+	//fwrite(&nDrawType, sizeof(int), 1, pFile);
+
+	////NumVtx
+	//fwrite(&mesh.m_nNumVtx, sizeof(int), 1, pFile);
+
+	////NumIdx
+	//fwrite(&mesh.m_nNumIdx, sizeof(int), 1, pFile);
+
+	////NumPolygon
+	//fwrite(&mesh.m_nNumPolygon, sizeof(int), 1, pFile);
+
+	////Vtx
+	//for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+	//{
+	//	auto& vtxDX = mesh.m_vecVtx[nCnt];
+
+	//	//Vtx
+	//	fwrite(&vtxDX.vtx, sizeof(VERTEX_3D), 1, pFile);
+
+	//	//MtxIdx
+	//	int nSize = (int)vtxDX.vecBornRefarence.size();
+	//	fwrite(&nSize, sizeof(int), 1, pFile);
+	//	fwrite(&vtxDX.vecBornRefarence[0], sizeof(BornRefarence), nSize, pFile);
+	//	
+	//}
+
+	////Idx
+	//WORD *pIdx;
+	//mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	//fwrite(pIdx, sizeof(WORD), mesh.m_nNumIdx, pFile);
+	//mesh.m_pIdxBuffer->Unlock();
+
+	////Texture
+	//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
+	//int nSize = (int)texture.strName.size();
+	//fwrite(&nSize, sizeof(int), 1, pFile);
+	//fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+
+	////Mtx
+	//
+
+	//fclose(pFile);
 }
 
 //--------------------------------------------------------------------------------
