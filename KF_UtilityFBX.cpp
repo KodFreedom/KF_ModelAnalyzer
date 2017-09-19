@@ -76,7 +76,7 @@ void CMyNode::Release(void)
 	//Mesh
 	for (auto& mesh : vecMesh)
 	{
-		mesh.vecMtx.clear();
+		//mesh.vecMtx.clear();
 		mesh.vecNormal.clear();
 		mesh.vecNormalIdx.clear();
 		for (auto& point : mesh.vecPoint)
@@ -102,6 +102,9 @@ void CMyNode::Release(void)
 	}
 	vecMesh.clear();
 
+	//Collider
+	listCollider.clear();
+
 	//Child
 	for (auto pChild : listChild)
 	{
@@ -119,27 +122,26 @@ void CMyNode::Release(void)
 //--------------------------------------------------------------------------------
 //  RecursiveUpdate
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveUpdate(void)
+void CMyNode::RecursiveUpdate(const Avatar& avatar)
 {
 	for (auto& mesh : vecMesh)
 	{
-		if (mesh.vecMtx.empty()) { continue; }
-
 #ifdef USING_DIRECTX
 		// 骨あり（つまりワンスキンなど）
 		// 頂点の座標変換 
-		CKFMtx44 mtx;
 		VERTEX_3D* pVtx;
 		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
 		
-//#pragma omp parallel for 
+#pragma omp parallel for 
 		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
 		{
-			auto& vtxDX = mesh.m_vecVtx[nCnt];
+			CKFMtx44 mtx;
 			ZeroMemory(&mtx, sizeof(CKFMtx44));
+			auto& vtxDX = mesh.m_vecVtx[nCnt];
 			for (auto& bornRefarence : vtxDX.vecBornRefarence)
 			{
-				mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;
+				/*mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;*/
+				mtx += avatar.vecCluster[bornRefarence.ucIndex].mtx * bornRefarence.fWeight;
 			}
 			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
 		}
@@ -151,7 +153,7 @@ void CMyNode::RecursiveUpdate(void)
 	//Child
 	for (auto pNode : listChild)
 	{
-		pNode->RecursiveUpdate();
+		pNode->RecursiveUpdate(avatar);
 	}
 }
 
@@ -849,7 +851,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 void CMyNode::analyzeCluster(FbxMesh* pMesh)
 {
 	auto& meshNow = vecMesh.back();
-	CKFMtx44 mtxIdentity;
+	//CKFMtx44 mtxIdentity;
 
 	// スキンの数を取得 
 	int nNumSkin = pMesh->GetDeformerCount(FbxDeformer::eSkin);
@@ -861,68 +863,82 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 
 		// クラスターの数を取得 
 		int nNumCluster = pSkin->GetClusterCount();
+		//if (animator.vecBone.empty()) { animator.vecBone.resize(nNumCluster); }
 
 		for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
 		{
 			// クラスタを取得
 			auto pCluster = pSkin->GetCluster(nCntCluster);
+			string strClusterName = pCluster->GetLink()->GetName();
 
 			// このクラスタが影響を及ぼす頂点インデックスの個数を取得 
 			int nNumPointIdx = pCluster->GetControlPointIndicesCount();
+			/*
+			////if (!nNumPointIdx)
+			////{// このメッシュにおいて、このクラスタは無視していいと思う...                 
+			////	meshNow.vecMtx.push_back(mtxIdentity);
+			////	continue;
+			////}
+			//if (animator.vecBone[nCntCluster].strName.empty())
+			//{
+			//	auto& bone = animator.vecBone[nCntCluster];
 
-			if (!nNumPointIdx)
-			{// このメッシュにおいて、このクラスタは無視していいと思う...                 
-				meshNow.vecMtx.push_back(mtxIdentity);
-				continue;
-			}
+			//	// Bone's Name
+			//	bone.strName = pCluster->GetLink()->GetName();
 
-			// 初期姿勢行列の取得 
-			FbxAMatrix lReferenceGlobalInitPosition;
-			FbxAMatrix lReferenceGlobalCurrentPosition;
-			FbxAMatrix lClusterGlobalInitPosition;
+			//	// 初期姿勢行列の取得 
+			//	FbxAMatrix lReferenceGlobalInitPosition;
+			//	FbxAMatrix lReferenceGlobalCurrentPosition;
+			//	FbxAMatrix lClusterGlobalInitPosition;
 
-			pCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
-			// lReferenceGlobalCurrentPosition = pGlobalPosition; // <- たぶんワールド座標変換行列ではないかと  
+			//	pCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
+			//	// lReferenceGlobalCurrentPosition = pGlobalPosition; // <- たぶんワールド座標変換行列ではないかと  
 
-			// Multiply lReferenceGlobalInitPosition by Geometric Transformation
-			auto lReferenceGeometry = getGeometry(pMesh->GetNode());
-			lReferenceGlobalInitPosition *= lReferenceGeometry;
+			//	// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+			//	auto lReferenceGeometry = getGeometry(pMesh->GetNode());
+			//	lReferenceGlobalInitPosition *= lReferenceGeometry;
 
-			// Get the link initial global position and the link current global position.
-			pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
-			auto lClusterGlobalCurrentPosition = pCluster->GetLink()->EvaluateGlobalTransform(1);
+			//	// Get the link initial global position and the link current global position.
+			//	pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
+			//	auto lClusterGlobalCurrentPosition = pCluster->GetLink()->EvaluateGlobalTransform(1);
 
-			// Compute the initial position of the link relative to the reference. 
-			auto lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
+			//	// Compute the initial position of the link relative to the reference. 
+			//	auto lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
 
-			// Compute the current position of the link relative to the reference. 
-			auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
+			//	// Compute the current position of the link relative to the reference. 
+			//	auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
 
-			// Compute the shift of the link relative to the reference. 
-			auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
+			//	// Compute the shift of the link relative to the reference. 
+			//	auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
 
-			// ↑ 初期姿勢行列も考慮されたモーションボーン行列なので、これで頂点座標を変換するだけで良い 
-			CKFMtx44 mtx;
-			for (int nY = 0; nY < 4; ++nY)
-			{
-				for (int nX = 0; nX < 4; ++nX)
-				{
-					mtx.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
-				}
-			}
+			//	// ↑ 初期姿勢行列も考慮されたモーションボーン行列なので、これで頂点座標を変換するだけで良い 
+			//	for (int nY = 0; nY < 4; ++nY)
+			//	{
+			//		for (int nX = 0; nX < 4; ++nX)
+			//		{
+			//			bone.mtx.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
+			//		}
+			//	}
 
-			meshNow.vecMtx.push_back(mtx);
-
+			//	meshNow.vecMtx.push_back(mtx);*/
 			auto pPointIndexArray = pCluster->GetControlPointIndices();
 			auto pWeightArray = pCluster->GetControlPointWeights();
 			for (int nCnt = 0; nCnt < nNumPointIdx; ++nCnt)
 			{
 				meshNow.vecPoint[pPointIndexArray[nCnt]].vecBornRefarence.push_back(
-					BornRefarence(nCntCluster, static_cast<float>(pWeightArray[nCnt])));
+					BornRefarence(nCntCluster, static_cast<float>(pWeightArray[nCnt]), strClusterName));
 			}
 		}
 	}
 }
+
+//--------------------------------------------------------------------------------
+//  analyzeSkeleton
+//--------------------------------------------------------------------------------
+//void CMyNode::analyzeSkeleton(FbxSkeleton* pSkeleton)
+//{
+//	
+//}
 
 //--------------------------------------------------------------------------------
 //  getGeometry
@@ -944,7 +960,7 @@ FbxAMatrix CMyNode::getGeometry(FbxNode* pNode)
 //--------------------------------------------------------------------------------
 //  Load
 //--------------------------------------------------------------------------------
-CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
+CMyNode* CKFUtilityFBX::Load(const string& strFilePath, CAnimator* pAnimator)
 {
 	//FBX読込実験コード
 	auto lSdkManager = FbxManager::Create();
@@ -959,7 +975,7 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 	// Use the first argument as the filename for the importer.
 	if (!lImporter->Initialize(strFilePath.c_str(), -1, lSdkManager->GetIOSettings()))
 	{
-		char buf[256];
+		char buf[MAX_PATH];
 		wsprintf(buf, "Call to FbxImporter::Initialize() failed.\nError returned: %s\n\n", lImporter->GetStatus().GetErrorString());
 		MessageBox(NULL, buf, "error", MB_OK);
 		lImporter->Destroy();
@@ -983,6 +999,10 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 	// マテリアルごとにメッシュ分離
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
+	//Animation
+	analyzeAnimation(lImporter, lScene, pAnimator);
+
+	//Node
 	auto pRootNode = recursiveNode(lSdkManager, lScene->GetRootNode());
 
 	lImporter->Destroy();
@@ -995,14 +1015,26 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath)
 //--------------------------------------------------------------------------------
 //  Save
 //--------------------------------------------------------------------------------
-void CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
+bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
 {
 	//Modelファイルの保存
 	string strName = "data/MODEL/" + strFileName + ".model";
+
+	//あるかどうかをチェック
 	FILE *pFile;
+	fopen_s(&pFile, strName.c_str(), "rb");
+	if (pFile)
+	{//上書き確認
+		fclose(pFile);
+		auto nID = MessageBox(NULL, "上書きしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+		if (nID == IDNO) { return false; }
+	}
+
+	//Save
 	fopen_s(&pFile, strName.c_str(), "wb");
 	recursiveSaveNode(pFile, pRootNode);
 	fclose(pFile);
+	return true;
 }
 
 #ifdef USING_DIRECTX
@@ -1068,13 +1100,13 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 			// マテリアル解析（参照情報の取得）                 
 			pMyNode->analyzeMaterial(pMesh);
 
-			// ボーン解析 
+			// ボーンにの重さ解析 
 			pMyNode->analyzeCluster(pMesh);
 		}
 		else if (type == FbxNodeAttribute::eSkeleton)
 		{//Bone
-		 // メッシュではないアトリビュート   
-		 //MessageBox(NULL, getAttributeTypeName(type).c_str(), "アトリビュート", MB_OK); 
+			//auto pSkeleton = FbxCast<FbxSkeleton>(pNode->GetNodeAttributeByIndex(nCnt));
+			//pMyNode->analyzeSkeleton(pSkeleton);
 		}
 		else
 		{
@@ -1089,6 +1121,25 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	}
 
 	return pMyNode;
+}
+
+//--------------------------------------------------------------------------------
+//  analyzeAnimation
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* pAnimator)
+{
+	auto pFbxMesh = findMeshNode(lScene->GetRootNode());
+
+	auto nNumAnim = lImporter->GetAnimStackCount();
+	FbxArray<FbxString*> animationNames;
+	lScene->FillAnimStackNameArray(animationNames);
+
+	//Anime情報
+	auto pTakeInfo = lScene->GetTakeInfo(animationNames[0]->Buffer());
+
+	//アニメーション開始終了時間
+	auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
+	auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
 }
 
 //--------------------------------------------------------------------------------
@@ -1133,7 +1184,7 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
 	for (int nCnt = 0; nCnt < nNumMesh; ++nCnt)
 	{
 		auto& mesh = pNode->vecMesh[nCnt];
-		if (mesh.vecMtx.empty())
+		//if (mesh.vecMtx.empty())
 		{//骨なし
 			//Name
 			string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".mesh";
@@ -1144,17 +1195,17 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
 			//Mesh
 			saveMesh(pNode, mesh, strMeshName);
 		}
-		else
-		{//ワンスキーンメッシュ
-			//Name
-			string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".oneSkinMesh";
-			nSize = (int)strMeshName.size();
-			fwrite(&nSize, sizeof(int), 1, pFile);
-			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
+		//else
+		//{//ワンスキーンメッシュ
+		//	//Name
+		//	string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".oneSkinMesh";
+		//	nSize = (int)strMeshName.size();
+		//	fwrite(&nSize, sizeof(int), 1, pFile);
+		//	fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
 
-			//Mesh
-			saveOneSkinMesh(pNode, mesh, strMeshName);
-		}
+		//	//Mesh
+		//	saveOneSkinMesh(pNode, mesh, strMeshName);
+		//}
 	}
 	
 	//Child

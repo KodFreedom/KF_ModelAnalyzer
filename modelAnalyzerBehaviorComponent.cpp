@@ -38,6 +38,7 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	, m_bReverseV(false)
 	, m_bSaved(false)
 	, m_pRootNode(nullptr)
+	, m_pAnimator(nullptr)
 	, m_bModelInfoWindow(false)
 	, m_pNodeNow(nullptr)
 	, m_vNodeNowCorrectTrans(CKFMath::sc_vZero)
@@ -81,12 +82,9 @@ void CModelAnalyzerBehaviorComponent::Uninit(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::Update(void)
 {
-	static bool bFirst = false; // Motionがないのため一回更新で十分
-
-	if (m_pRootNode && !bFirst)
+	if (m_pRootNode && m_pAnimator)
 	{
-		bFirst = true;
-		m_pRootNode->RecursiveUpdate();
+		m_pRootNode->RecursiveUpdate(m_animator);
 	}
 }
 
@@ -121,18 +119,18 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		|| strType._Equal("obj")
 		|| strType._Equal("OBJ"))
 	{
-		//フルスクリーンモード確認
-		auto nID = MessageBox(NULL, "モデルを切り替えますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+		if (m_pRootNode)
+		{
+			auto nID = MessageBox(NULL, "モデルを切り替えますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+			if (nID == IDNO) { return; }
 
-		//押し判定
-		if (nID == IDNO) { return; }
-
-		//前のモデルの削除
-		releaseModel();
+			//前のモデルの削除
+			releaseModel();
+		}
 
 		//LoadModel
 		m_strFileName = strName;
-		m_pRootNode = CKFUtilityFBX::Load(strFilePath);
+		m_pRootNode = CKFUtilityFBX::Load(strFilePath, m_animator);
 		m_pRootNode->RecursiveRecalculateVtx();
 	}
 	else
@@ -146,8 +144,11 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::SaveModel(void)
 {
-	CKFUtilityFBX::Save(m_pRootNode, m_strFileName);
-	MessageBox(NULL, "セーブしました。", "SaveModel", MB_OK);
+	if (CKFUtilityFBX::Save(m_pRootNode, m_strFileName))
+	{
+		m_bSaved = true;
+		MessageBox(NULL, "セーブしました。", "SaveModel", MB_OK);
+	}
 }
 
 //--------------------------------------------------------------------------------
@@ -160,14 +161,9 @@ void CModelAnalyzerBehaviorComponent::SaveModel(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::releaseModel(void)
 {
-	if (!m_pRootNode) { return; }
-
 	if (!m_bSaved)
-	{
-		//フルスクリーンモード確認
-		auto nID = MessageBox(NULL, "セーブしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
-
-		//押し判定
+	{//Save確認
+		auto nID = MessageBox(NULL, "今のモデルセーブしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
 		if (nID == IDYES) { SaveModel(); }
 	}
 
@@ -235,11 +231,14 @@ void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 {
 	if (ImGui::MenuItem("Open Model File")) 
 	{
-
+		string strFileName;
+		if (CMain::OpenModelFile(strFileName))
+		{
+			ChangeModel(strFileName);
+		}
 	}
 	if (ImGui::MenuItem("Save Model")) 
 	{
-		m_bSaved = true;
 		SaveModel();
 	}
 }

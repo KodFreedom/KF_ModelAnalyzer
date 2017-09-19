@@ -15,6 +15,7 @@
 //  ‘O•ûéŒ¾
 //--------------------------------------------------------------------------------
 class CMyNode;
+class CAnimator;
 
 //--------------------------------------------------------------------------------
 //  ƒNƒ‰ƒXéŒ¾
@@ -64,6 +65,7 @@ private:
 	bool		m_bSaved;
 	string		m_strFileName;
 	CMyNode*	m_pRootNode;
+	CAnimator*	m_pAnimator;
 
 	//ImGui
 	bool		m_bModelInfoWindow;

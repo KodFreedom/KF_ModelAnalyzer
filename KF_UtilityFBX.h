@@ -13,12 +13,19 @@
 #include "KF_CollisionSystem.h"
 
 //--------------------------------------------------------------------------------
+//  前方宣言
+//--------------------------------------------------------------------------------
+class CMyNode;
+
+//--------------------------------------------------------------------------------
 //  構造体定義
 //--------------------------------------------------------------------------------
 struct BornRefarence
 {
-	BornRefarence(unsigned char ucIndex, float fWeight) : ucIndex(ucIndex), fWeight(fWeight) {}
+	BornRefarence(unsigned char ucIndex, float fWeight, const string& strName)
+		: ucIndex(ucIndex), fWeight(fWeight), strBoneName(strName) {}
 	unsigned char	ucIndex;
+	string			strBoneName;	//保存用
 	float			fWeight;
 };
 
@@ -86,7 +93,6 @@ struct Mesh
 		vecUVSet.clear();
 		vecPoint.clear();
 		vecNormalIdx.clear();
-		vecMtx.clear();
 
 #ifdef USING_DIRECTX
 		m_vecVtx.clear();
@@ -99,7 +105,7 @@ struct Mesh
 	vector<unsigned short>	vecPointIdx;
 	vector<unsigned short>	vecNormalIdx;
 	int						nMaterialIndex;	//Texture
-	vector<CKFMtx44>		vecMtx;
+	//vector<CKFMtx44>		vecMtx;
 
 #ifdef USING_DIRECTX
 	int						m_nNumVtx;
@@ -119,9 +125,46 @@ struct COL_INFO
 	CKFVec3			vOffsetScale;
 };
 
+struct Cluster
+{
+	string		strName;
+	CKFMtx44	mtx;
+};
+
+struct Avatar
+{
+	vector<Cluster> vecCluster;
+};
+
+struct Motion
+{
+	vector<Avatar> vecAvator;
+};
+
 //--------------------------------------------------------------------------------
 //  クラス定義
 //--------------------------------------------------------------------------------
+class CAnimator
+{
+public:
+	CAnimator() {}
+	~CAnimator()
+	{
+		for (auto& motion : m_vecMotion)
+		{
+			for (auto& avatar : motion.vecAvator)
+			{
+				for (auto& cluster : avatar.vecCluster) { cluster.strName.clear(); }
+				avatar.vecCluster.clear();
+			}
+			motion.vecAvator.clear();
+		}
+		m_vecMotion.clear();
+	}
+
+	vector<Motion> m_vecMotion;
+};
+
 class CMyNode
 {
 	friend class CKFUtilityFBX;
@@ -159,7 +202,7 @@ public:
 	unsigned short	materialID;		//Collider Mat
 
 	void Release(void);
-	void RecursiveUpdate(void);
+	void RecursiveUpdate(const Avatar& avatar);
 	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
 	void RecursiveRecalculateVtx(void);
 	void RecursiveReverseTexV(void);
@@ -172,6 +215,7 @@ private:
 	void		analyzeTexture(FbxNode* pNode);
 	void		analyzeMaterial(FbxMesh* pMesh);
 	void		analyzeCluster(FbxMesh* pMesh);
+	//void		analyzeSkeleton(FbxSkeleton* pSkeleton);
 	FbxAMatrix	getGeometry(FbxNode* pNode);
 
 #ifdef USING_DIRECTX
@@ -183,8 +227,8 @@ private:
 class CKFUtilityFBX
 {
 public:
-	static CMyNode*	Load(const string& strFilePath);
-	static void		Save(CMyNode* pRootNode, const string& strFileName);
+	static CMyNode*	Load(const string& strFilePath, CAnimator* pAnimator);
+	static bool		Save(CMyNode* pRootNode, const string& strFileName);
 
 #ifdef USING_DIRECTX
 	static int		FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx);
@@ -194,6 +238,8 @@ private:
 	~CKFUtilityFBX() {}
 
 	static CMyNode*	recursiveNode(FbxManager* pManager, FbxNode* pNode);
+	static void		analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* pAnimator);
+	static FbxMesh* findMeshNode(FbxNode* pNode);
 	static void		recursiveSaveNode(FILE* pFile, CMyNode* pNode);
 	static void		saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static void		saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);

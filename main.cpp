@@ -15,6 +15,7 @@
 //  静的メンバ変数宣言
 //--------------------------------------------------------------------------------
 CManager*	CMain::m_pManager = nullptr;
+HWND		CMain::m_hWnd = nullptr;
 
 //--------------------------------------------------------------------------------
 //	extern関数
@@ -31,6 +32,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLi
 
 //--------------------------------------------------------------------------------
 //	クラス
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//
+//	Public
+//
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 //	関数名：WinMain
@@ -62,7 +68,6 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 	wcex.hIconSm = NULL;								//拡張された部分（ミニicon）、小さいアイコンが設定された場合の情報を記述
 	RegisterClassEx(&wcex);								//ウインドウクラスの登録
 
-	HWND hWnd;
 	MSG msg;
 	DWORD style = WS_OVERLAPPEDWINDOW ^ (WS_MAXIMIZEBOX | WS_THICKFRAME);
 	RECT cr = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
@@ -83,7 +88,7 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 	int wy = wh > dh ? 0 : (dh - wh) / 2;
 
 	//ウインドウを作成
-	hWnd = CreateWindowEx(
+	m_hWnd = CreateWindowEx(
 		0,				//拡張ウインドウスタイル
 		CLASS_NAME,		//クラスの名前
 		WINDOW_NAME,	//ウインドウの名前
@@ -100,14 +105,14 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 	//Manager生成
 	m_pManager = new CManager;
 
-	if (!m_pManager->Init(hInstance, hWnd, true))
+	if (!m_pManager->Init(hInstance, m_hWnd, true))
 	{
 		return -1;
 	};
 
 	//ウインドウの表示
-	ShowWindow(hWnd, nCmdShow);
-	UpdateWindow(hWnd);
+	ShowWindow(m_hWnd, nCmdShow);
+	UpdateWindow(m_hWnd);
 	
 	//時間カウンタ
 	LARGE_INTEGER nFrequency;
@@ -174,6 +179,36 @@ int CMain::Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, i
 }
 
 //--------------------------------------------------------------------------------
+//	関数名：OpenModelFile
+//  関数説明：FileOpen関数
+//	引数：	strFileName
+//	戻り値：bool
+//--------------------------------------------------------------------------------
+bool CMain::OpenModelFile(string& strFileName)
+{
+	OPENFILENAME of = { 0 };
+	char aFileName[MAX_PATH] = { 0 };
+	of.lStructSize = sizeof(OPENFILENAME);
+	of.hwndOwner = m_hWnd;
+	of.lpstrFilter = "モデルのファイル(*.fbx)\0*.fbx\0";
+	of.lpstrFile = aFileName;
+	of.nMaxFile = MAX_PATH;
+	of.Flags = OFN_FILEMUSTEXIST /*| OFN_ALLOWMULTISELECT*/ | OFN_NOCHANGEDIR;
+	//of.lpstrDefExt = "txt";
+	if (GetOpenFileName(&of))
+	{
+		strFileName = aFileName;
+		return true;
+	}
+	return false;
+}
+
+//--------------------------------------------------------------------------------
+//
+//	Private
+//
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 //	関数名：wndProc
 //  関数説明：ウインドウプロシージャ関数
 //	引数：	hWnd：ウインドウのハンドル
@@ -232,7 +267,7 @@ void CMain::closeApp(HWND hWnd)
 {
 	UINT nID = 0;//メッセージbox戻り値
 
-				 //終了確認
+	//終了確認
 	nID = MessageBox(hWnd, "終了しますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
 
 	//押し判定

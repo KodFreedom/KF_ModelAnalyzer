@@ -104,6 +104,7 @@ public:
 	//  ŠÖ”’è‹`
 	//--------------------------------------------------------------------------------
 	static int				Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, int nCmdShow);
+	static bool				OpenModelFile(string& strFileName);
 
 	//GetŠÖ”
 	static CManager*		GetManager(void) { return m_pManager; }
@@ -121,4 +122,5 @@ private:
 	//  •Ï”’è‹`
 	//--------------------------------------------------------------------------------
 	static CManager*		m_pManager;
+	static HWND				m_hWnd;
 };
