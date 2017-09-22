@@ -4,8 +4,7 @@
 //	Author : Xu Wenjie
 //	Date   : 2017-05-22
 //--------------------------------------------------------------------------------
-#ifndef _RENDERSTATE_H_
-#define _RENDERSTATE_H_
+#pragma once
 
 //--------------------------------------------------------------------------------
 //  インクルードファイル
@@ -41,6 +40,58 @@ public:
 };
 
 //--------------------------------------------------------------------------------
+//  LightOffCullOffクラス
+//--------------------------------------------------------------------------------
+class CLightOffCullOffRenderState : public CRenderState
+{
+public:
+	CLightOffCullOffRenderState() : CRenderState() {}
+	~CLightOffCullOffRenderState() {}
+
+	void	SetRenderState(void) override;
+	void	ResetRenderState(void) override;
+};
+
+//--------------------------------------------------------------------------------
+//  LightOffCullOnクラス
+//--------------------------------------------------------------------------------
+class CLightOffCullOnRenderState : public CRenderState
+{
+public:
+	CLightOffCullOnRenderState() : CRenderState() {}
+	~CLightOffCullOnRenderState() {}
+
+	void	SetRenderState(void) override;
+	void	ResetRenderState(void) override;
+};
+
+//--------------------------------------------------------------------------------
+//  LightOnCullOffクラス
+//--------------------------------------------------------------------------------
+class CLightOnCullOffRenderState : public CRenderState
+{
+public:
+	CLightOnCullOffRenderState() : CRenderState() {}
+	~CLightOnCullOffRenderState() {}
+
+	void	SetRenderState(void) override;
+	void	ResetRenderState(void) override;
+};
+
+//--------------------------------------------------------------------------------
+//  LightOnCullOnクラス
+//--------------------------------------------------------------------------------
+class CLightOnCullOnRenderState : public CRenderState
+{
+public:
+	CLightOnCullOnRenderState() : CRenderState() {}
+	~CLightOnCullOnRenderState() {}
+
+	void	SetRenderState(void) override;
+	void	ResetRenderState(void) override;
+};
+
+//--------------------------------------------------------------------------------
 //  ヌルクラス
 //--------------------------------------------------------------------------------
 class CNullRenderState : public CRenderState
@@ -52,4 +103,3 @@ public:
 	void	SetRenderState(void) override {}
 	void	ResetRenderState(void) override {}
 };
-#endif

@@ -29,7 +29,9 @@ public:
 	//  関数定義
 	//--------------------------------------------------------------------------------
 	CDrawComponent(CGameObject* const pGameObj) : CComponent(pGameObj)
-		,m_pRenderState(&s_nullRenderState), m_usMatID(0)
+		,m_pRenderState(&s_nullRenderState)
+		, m_usMatID(0)
+		, m_bZTest(false)
 	{
 		m_strTexName.clear();
 	}
@@ -53,11 +55,15 @@ public:
 	}
 	void			SetTexName(const string& strTexName);
 	void			SetMatID(const unsigned short& usID) { m_usMatID = usID; }
-
+	void			SetZTest(const bool bFlag) { m_bZTest = bFlag; }
 	//--------------------------------------------------------------------------------
 	//  変数定義
 	//--------------------------------------------------------------------------------
 	static CLightOffRenderState	s_lightOffRenderState;
+	static CLightOffCullOffRenderState s_lightOffCullOff;
+	static CLightOffCullOnRenderState s_lightOffCullOn;
+	static CLightOnCullOffRenderState s_lightOnCullOff;
+	static CLightOnCullOnRenderState s_lightOnCullOn;
 	static CNullRenderState		s_nullRenderState;
 
 protected:
@@ -71,7 +77,8 @@ protected:
 	//--------------------------------------------------------------------------------
 	string			m_strTexName;	//テクスチャ
 	unsigned short	m_usMatID;		//マテリアル
-	CRenderState*	m_pRenderState;	//レンダーステート
+	CRenderState*	m_pRenderState;	//レンダーステー
+	bool			m_bZTest;
 };
 
 //--------------------------------------------------------------------------------

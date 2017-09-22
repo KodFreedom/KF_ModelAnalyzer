@@ -11,11 +11,13 @@
 //--------------------------------------------------------------------------------
 #include "main.h"
 #include "KF_CollisionSystem.h"
+#include "drawComponent.h"
 
 //--------------------------------------------------------------------------------
 //  ëOï˚êÈåæ
 //--------------------------------------------------------------------------------
 class CMyNode;
+class CAnimator;
 
 //--------------------------------------------------------------------------------
 //  ç\ë¢ëÃíËã`
@@ -79,7 +81,10 @@ struct VtxDX
 struct Mesh
 {
 	Mesh()
-		: nMaterialIndex(-1) 
+		: nMaterialIndex(-1)
+		, m_bEnableCullFace(false)
+		, m_bEnableLight(false)
+		, m_renderPriority(RP_3D)
 #ifdef USING_DIRECTX
 		, m_nNumVtx(0)
 		, m_nNumIdx(0)
@@ -105,7 +110,9 @@ struct Mesh
 	vector<unsigned short>	vecPointIdx;
 	vector<unsigned short>	vecNormalIdx;
 	int						nMaterialIndex;	//Texture
-	//vector<CKFMtx44>		vecMtx;
+	bool					m_bEnableCullFace;
+	bool					m_bEnableLight;
+	RENDER_PRIORITY			m_renderPriority; 
 
 #ifdef USING_DIRECTX
 	int						m_nNumVtx;
@@ -138,7 +145,15 @@ struct Avatar
 
 struct Motion
 {
-	vector<Avatar> vecAvator;
+	string			strName;
+	vector<Avatar>	vecAvator;
+};
+
+struct MyModel
+{
+	MyModel() : pNode(nullptr), pAnimator(nullptr){}
+	CMyNode*	pNode;
+	CAnimator*	pAnimator;
 };
 
 //--------------------------------------------------------------------------------
@@ -216,8 +231,7 @@ private:
 	void		analyzeMaterial(FbxMesh* pMesh);
 	void		analyzeCluster(FbxMesh* pMesh);
 	//void		analyzeSkeleton(FbxSkeleton* pSkeleton);
-	FbxAMatrix	getGeometry(FbxNode* pNode);
-
+	
 #ifdef USING_DIRECTX
 	static LPD3DXMESH s_pMeshSphere;
 	static LPD3DXMESH s_pMeshCube;
@@ -227,7 +241,7 @@ private:
 class CKFUtilityFBX
 {
 public:
-	static CMyNode*	Load(const string& strFilePath, CAnimator* pAnimator);
+	static MyModel	Load(const string& strFilePath);
 	static bool		Save(CMyNode* pRootNode, const string& strFileName);
 
 #ifdef USING_DIRECTX
@@ -237,11 +251,13 @@ private:
 	CKFUtilityFBX() {}
 	~CKFUtilityFBX() {}
 
-	static CMyNode*	recursiveNode(FbxManager* pManager, FbxNode* pNode);
-	static void		analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* pAnimator);
-	static FbxMesh* findMeshNode(FbxNode* pNode);
-	static void		recursiveSaveNode(FILE* pFile, CMyNode* pNode);
-	static void		saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
-	static void		saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
-	static string	getAttributeTypeName(FbxNodeAttribute::EType type);
+	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
+	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
+	static FbxMesh*		findMeshNode(FbxNode* pNode);
+	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode);
+	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
+	static void			saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
+	static FbxAMatrix	getGeometry(FbxNode* pNode);
+	static string		getAttributeTypeName(FbxNodeAttribute::EType type);
+
 };

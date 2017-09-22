@@ -18,6 +18,8 @@
 #include "main.h"
 #include "manager.h"
 #include "rendererDX.h"
+#include "mode.h"
+#include "camera.h"
 
 //--------------------------------------------------------------------------------
 //  ƒNƒ‰ƒX
@@ -33,13 +35,12 @@
 CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* const pGameObj)
 	: CBehaviorComponent(pGameObj)
 	, m_bDrawNormal(false)
-	, m_bEnableCullFace(false)
-	, m_bEnableLight(true)
 	, m_bReverseV(false)
 	, m_bSaved(false)
 	, m_pRootNode(nullptr)
 	, m_pAnimator(nullptr)
 	, m_bModelInfoWindow(false)
+	, m_bCameraWindow(false)
 	, m_pNodeNow(nullptr)
 	, m_vNodeNowCorrectTrans(CKFMath::sc_vZero)
 	, m_vNodeNowCorrectRot(CKFMath::sc_vZero)
@@ -84,7 +85,11 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (m_pRootNode && m_pAnimator)
 	{
-		m_pRootNode->RecursiveUpdate(m_animator);
+		static int nCntFrame = 0;
+		static const int nFrame = (int)m_pAnimator->m_vecMotion.back().vecAvator.size();
+		auto& avatar = m_pAnimator->m_vecMotion.back().vecAvator[nCntFrame];
+		m_pRootNode->RecursiveUpdate(avatar);
+		nCntFrame = (nCntFrame + 1) % nFrame;
 	}
 }
 
@@ -104,6 +109,9 @@ void CModelAnalyzerBehaviorComponent::LateUpdate(void)
 
 	// Edit Node Now
 	showNodeNowWindow();
+
+	// Camera
+	showCameraWindow();
 }
 
 //--------------------------------------------------------------------------------
@@ -130,7 +138,9 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 
 		//LoadModel
 		m_strFileName = strName;
-		m_pRootNode = CKFUtilityFBX::Load(strFilePath, m_animator);
+		auto& myModel = CKFUtilityFBX::Load(strFilePath);
+		m_pRootNode = myModel.pNode;
+		m_pAnimator = myModel.pAnimator;
 		m_pRootNode->RecursiveRecalculateVtx();
 	}
 	else
@@ -193,17 +203,12 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	ImGui::ColorEdit3("BG Color", (float*)&cBGColor);
 	pRenderer->SetBGColor(cBGColor);
 
-	// Light
-	if (ImGui::Checkbox("Enable Light", &m_bEnableLight))
-	{
-		auto pDraw = m_pGameObj->GetDrawComponent();
-		if (m_bEnableLight) { pDraw->SetRenderState(&CDrawComponent::s_nullRenderState); }
-		else { pDraw->SetRenderState(&CDrawComponent::s_lightOffRenderState); }
-	}
-
-	// Model
-	if (ImGui::Button("Model Info Window")) m_bModelInfoWindow ^= 1;
+	// Model Window
+	if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
 	
+	// Camera Window
+	if (ImGui::Button("Camera")) m_bCameraWindow ^= 1;
+
 	// End
 	ImGui::End();
 }
@@ -288,6 +293,12 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 	{
 		if (ImGui::CollapsingHeader("Info"))
 		{
+			//Type
+			for (int nCnt = 0; nCnt < (int)pNode->vecAttributeName.size(); ++nCnt)
+			{
+				ImGui::Text("Type%d : %s", nCnt, pNode->vecAttributeName[nCnt].c_str());
+			}
+
 			//Offset
 			ImGui::InputFloat3("Trans", &pNode->vTrans.m_fX);
 			ImGui::SliderFloat3("Rot", &pNode->vRot.m_fX, 0.0f, KF_PI * 2.0f);
@@ -299,8 +310,27 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 				for (int nCnt = 0; nCnt < (int)pNode->vecMesh.size(); ++nCnt)
 				{
 					auto& mesh = pNode->vecMesh[nCnt];
-					ImGui::Text("Mesh%d : NumPolygon : %d", nCnt, mesh.m_nNumPolygon);
-					ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.m_nNumVtx, mesh.m_nNumIdx);
+					auto strMeshName = to_string(nCnt);
+					if (ImGui::TreeNode(strMeshName.c_str()))
+					{
+						//Info
+						ImGui::Text("NumPolygon : %d", mesh.m_nNumPolygon);
+						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.m_nNumVtx, mesh.m_nNumIdx);
+
+						// Light
+						ImGui::Checkbox("Enable Light", &mesh.m_bEnableLight);
+
+						// CullFace
+						ImGui::Checkbox("Enable CullFace", &mesh.m_bEnableCullFace);
+
+						// Render Priority
+						static const char* listbox_rp[] =
+						{ "3D"
+							, "3D_ALPHATEST"
+							, "3D_ZSORT" };
+						ImGui::ListBox("Render Priority\n(single select)", (int*)&mesh.m_renderPriority, listbox_rp, 3, 3);
+						ImGui::TreePop();
+					}
 				}
 				ImGui::TreePop();
 			}
@@ -455,4 +485,38 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 		m_vNodeNowCorrectRot = CKFMath::sc_vZero;
 		m_vNodeNowCorrectScale = CKFMath::sc_vOne;
 	}
+}
+
+//--------------------------------------------------------------------------------
+// showCameraWindow
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
+{
+	if (!m_bCameraWindow) { return; }
+
+	// Begin
+	if (!ImGui::Begin("Camera Window", &m_bCameraWindow))
+	{
+		ImGui::End();
+		return;
+	}
+
+	auto pCamera = CMain::GetManager()->GetMode()->GetCamera();
+	auto vPosAt = pCamera->GetPosAt();
+	auto vPosEye = pCamera->GetPosEye();
+
+	// PosAt
+	if (ImGui::InputFloat3("PosAt", &vPosAt.m_fX))
+	{
+		pCamera->SetPosAt(vPosAt);
+	}
+	
+	// PosEye
+	if (ImGui::InputFloat3("PosEye", &vPosEye.m_fX))
+	{
+		pCamera->SetPosEye(vPosEye);
+	}
+
+	// End
+	ImGui::End();
 }

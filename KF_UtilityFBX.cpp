@@ -67,9 +67,9 @@ void CMyNode::Release(void)
 	//Texture
 	for (auto& tex : vecTex)
 	{
+		CMain::GetManager()->GetTextureManager()->DisuseTexture(tex.strName);
 		tex.strName.clear();
 		tex.strUVSetName.clear();
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(tex.strName);
 	}
 	vecTex.clear();
 
@@ -188,6 +188,27 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 	//Mesh
 	for (auto& mesh : vecMesh)
 	{
+		if (mesh.m_renderPriority == RP_3D_ALPHATEST)
+		{
+			pDevice->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x00000001);
+			pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+			pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		}
+
+		CRenderState* renderState = nullptr;
+		if (mesh.m_bEnableLight)
+		{
+			if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOnCullOn; }
+			else { renderState = &CDrawComponent::s_lightOnCullOff; }
+		}
+		else
+		{
+			if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOffCullOn; }
+			else { renderState = &CDrawComponent::s_lightOffCullOff; }
+		}
+		
+		renderState->SetRenderState();
+
 		//Texture
 		if (!vecTex.empty())
 		{
@@ -223,6 +244,13 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 			mesh.m_nNumVtx,
 			0,
 			mesh.m_nNumPolygon);
+
+		renderState->ResetRenderState();
+
+		if (mesh.m_renderPriority == RP_3D_ALPHATEST)
+		{
+			pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		}
 	}
 
 	//Draw Collider
@@ -726,7 +754,7 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 {
 	//マテリアル数の取得
 	int nMaterialCnt = pNode->GetMaterialCount();
-	vecTex.resize(nMaterialCnt);
+	vecTex.reserve(nMaterialCnt);
 
 	for (int nCnt = 0; nCnt < nMaterialCnt; ++nCnt)
 	{
@@ -740,7 +768,7 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 		if (nLayeredTextureCnt == 0)
 		{
 			int nTextureCount = diffuseProperty.GetSrcObjectCount<FbxFileTexture>();
-
+			
 			//各テクスチャについてテクスチャ情報取得
 			for (int nCntTex = 0; nCntTex < nTextureCount; ++nCntTex)
 			{//nCnt番目のテクスチャオブジェクトの取得
@@ -748,25 +776,26 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 				if (!pTexture) { continue; }
 
 				//テクスチャファイル名
+				Texture texture;
 				string strPath = pTexture->GetFileName();
 				string strType;
 				
-				CKFUtility::AnalyzeFilePath(strPath, vecTex[nCnt].strName, strType);
+				CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
 				CKFUtility::CorrectTexType(strType);
-				vecTex[nCnt].strName += '.' + strType;
-				CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
+				texture.strName += '.' + strType;
+				CMain::GetManager()->GetTextureManager()->UseTexture(texture.strName);
 
 				//UVSet名
-				vecTex[nCnt].strUVSetName = pTexture->UVSet.Get().Buffer();
+				texture.strUVSetName = pTexture->UVSet.Get().Buffer();
 
 				//とりあえず0番だけとる
+				vecTex.push_back(texture);
 				break;
 			}
 		}
 		else
 		{
 			//各テクスチャについてテクスチャ情報取得
-			int nCntTex = 0;
 			for (int nCntLayer = 0; nCntLayer < nLayeredTextureCnt; ++nCntLayer)
 			{//nCnt番目のテクスチャオブジェクトの取得
 				auto pLayeredTexture = diffuseProperty.GetSrcObject<FbxLayeredTexture>(nCntLayer);
@@ -779,17 +808,21 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 					if (!pTexture) { continue; }
 
 					//テクスチャファイル名
+					Texture texture;
 					string strPath = pTexture->GetFileName();
 					string strType;
-					CKFUtility::AnalyzeFilePath(strPath, vecTex[nCnt].strName, strType);
+
+					CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
 					CKFUtility::CorrectTexType(strType);
-					vecTex[nCnt].strName += '.' + strType;
-					CMain::GetManager()->GetTextureManager()->UseTexture(vecTex[nCnt].strName);
+					texture.strName += '.' + strType;
+					CMain::GetManager()->GetTextureManager()->UseTexture(texture.strName);
 
 					//UVSet名
-					vecTex[nCnt].strUVSetName = pTexture->UVSet.Get().Buffer();
+					texture.strUVSetName = pTexture->UVSet.Get().Buffer();
 
-					++nCntTex;
+					//とりあえず0番だけとる
+					vecTex.push_back(texture);
+					break;
 				}
 			}
 		}
@@ -940,17 +973,7 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 //	
 //}
 
-//--------------------------------------------------------------------------------
-//  getGeometry
-//	Get the geometry offset to a node. It is never inherited by the children
-//--------------------------------------------------------------------------------
-FbxAMatrix CMyNode::getGeometry(FbxNode* pNode)
-{
-	const FbxVector4 lT = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
-	const FbxVector4 lR = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
-	const FbxVector4 lS = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
-	return FbxAMatrix(lT, lR, lS);
-}
+
 
 //--------------------------------------------------------------------------------
 //
@@ -960,8 +983,10 @@ FbxAMatrix CMyNode::getGeometry(FbxNode* pNode)
 //--------------------------------------------------------------------------------
 //  Load
 //--------------------------------------------------------------------------------
-CMyNode* CKFUtilityFBX::Load(const string& strFilePath, CAnimator* pAnimator)
+MyModel CKFUtilityFBX::Load(const string& strFilePath)
 {
+	MyModel myModel;
+
 	//FBX読込実験コード
 	auto lSdkManager = FbxManager::Create();
 
@@ -980,7 +1005,7 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath, CAnimator* pAnimator)
 		MessageBox(NULL, buf, "error", MB_OK);
 		lImporter->Destroy();
 		lSdkManager->Destroy();
-		return nullptr;
+		return myModel;
 	}
 
 	// Create a new scene so that it can be populated by the imported file.
@@ -1000,16 +1025,16 @@ CMyNode* CKFUtilityFBX::Load(const string& strFilePath, CAnimator* pAnimator)
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
 	//Animation
-	analyzeAnimation(lImporter, lScene, pAnimator);
+	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
 
 	//Node
-	auto pRootNode = recursiveNode(lSdkManager, lScene->GetRootNode());
+	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode());
 
 	lImporter->Destroy();
 	lScene->Destroy();
 	lSdkManager->Destroy();
 
-	return pRootNode;
+	return myModel;
 }
 
 //--------------------------------------------------------------------------------
@@ -1126,20 +1151,141 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 //--------------------------------------------------------------------------------
 //  analyzeAnimation
 //--------------------------------------------------------------------------------
-void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* pAnimator)
+CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene)
 {
 	auto pFbxMesh = findMeshNode(lScene->GetRootNode());
+	if (!pFbxMesh) 
+	{
+		MessageBox(NULL, "meshが見つからない！！", "analyzeAnimation", MB_OK | MB_ICONWARNING);
+		return nullptr; 
+	}
 
+	// スキンの数を取得 
+	int nNumSkin = pFbxMesh->GetDeformerCount(FbxDeformer::eSkin);
+	if (!nNumSkin) { return nullptr; }
+
+	// Anim数
 	auto nNumAnim = lImporter->GetAnimStackCount();
+	if (!nNumAnim) { return nullptr; }
+
+	auto pAnimator = new CAnimator;
+	pAnimator->m_vecMotion.reserve(nNumAnim);
+
 	FbxArray<FbxString*> animationNames;
 	lScene->FillAnimStackNameArray(animationNames);
 
-	//Anime情報
-	auto pTakeInfo = lScene->GetTakeInfo(animationNames[0]->Buffer());
+	//one frame time
+	FbxTime oneFrameTime;
+	oneFrameTime.SetTime(0, 0, 0, 1, 0, 0, FbxTime::eFrames60);
 
-	//アニメーション開始終了時間
-	auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
-	auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
+	for (int nCnt = 0; nCnt < nNumAnim; ++nCnt)
+	{
+		Motion motion;
+		motion.strName = animationNames[nCnt]->Buffer();
+
+		//Anime情報
+		auto pTakeInfo = lScene->GetTakeInfo(animationNames[nCnt]->Buffer());
+	
+		//アニメーション開始終了時間
+		auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
+		auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
+		//auto oneFrameTime = (endTime - startTime) / 61;
+
+		//for (int nCntSkin = 0; nCntSkin < nNumSkin; ++nCntSkin)
+		{
+			// スキンを取得 
+			auto pSkin = (FbxSkin*)pFbxMesh->GetDeformer(0, FbxDeformer::eSkin);
+
+			// クラスターの数を取得 
+			int nNumCluster = pSkin->GetClusterCount();
+			motion.vecAvator.reserve(60);
+
+			for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
+			{
+				Avatar avatar;
+				avatar.vecCluster.reserve(nNumCluster);
+
+				for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
+				{
+					Cluster cluster;
+
+					// クラスタを取得
+					auto pCluster = pSkin->GetCluster(nCntCluster);
+					string strClusterName = pCluster->GetLink()->GetName();
+
+					// Cluster's Name
+					cluster.strName = pCluster->GetLink()->GetName();
+
+					// 初期姿勢行列の取得
+					FbxAMatrix lReferenceGlobalInitPosition;
+					FbxAMatrix lReferenceGlobalCurrentPosition;
+					FbxAMatrix lClusterGlobalInitPosition;
+
+					pCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
+					// lReferenceGlobalCurrentPosition = pGlobalPosition; // <- たぶんワールド座標変換行列ではないかと
+
+					// Multiply lReferenceGlobalInitPosition by Geometric Transformation
+					auto lReferenceGeometry = getGeometry(pFbxMesh->GetNode());
+					lReferenceGlobalInitPosition *= lReferenceGeometry;
+
+					// Get the link initial global position and the link current global position.
+					pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
+
+					// Compute the initial position of the link relative to the reference.
+					auto lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
+
+					auto lClusterGlobalCurrentPosition = pCluster->GetLink()->EvaluateGlobalTransform(currentTime);
+
+					// Compute the current position of the link relative to the reference.
+					auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
+
+					// Compute the shift of the link relative to the reference.
+					auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
+
+					// ↑ 初期姿勢行列も考慮されたモーションボーン行列なので、これで頂点座標を変換するだけで良い
+					for (int nY = 0; nY < 4; ++nY)
+					{
+						for (int nX = 0; nX < 4; ++nX)
+						{
+							cluster.mtx.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
+						}
+					}
+
+					avatar.vecCluster.push_back(cluster);
+				}
+				motion.vecAvator.push_back(avatar);
+			}
+			pAnimator->m_vecMotion.push_back(motion);
+		}
+	}
+
+	return pAnimator;
+}
+
+//--------------------------------------------------------------------------------
+//  findMeshNode
+//--------------------------------------------------------------------------------
+FbxMesh* CKFUtilityFBX::findMeshNode(FbxNode* pNode)
+{
+	if (!pNode) { return nullptr; }
+	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
+	{
+		auto type = pNode->GetNodeAttributeByIndex(nCnt)->GetAttributeType();
+
+		if (type == FbxNodeAttribute::eMesh)
+		{//Mesh情報         
+			auto pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));
+			return pMesh;
+		}
+	}
+
+	for (int nCnt = 0; nCnt < pNode->GetChildCount(); ++nCnt)
+	{
+		auto pMesh = findMeshNode(pNode->GetChild(nCnt));
+		if (pMesh) { return pMesh; }
+	}
+
+	return nullptr;
 }
 
 //--------------------------------------------------------------------------------
@@ -1262,6 +1408,23 @@ void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const strin
 	int nSize = (int)texture.strName.size();
 	fwrite(&nSize, sizeof(int), 1, pFile);
 	fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+
+	//Render Priority
+	fwrite(&mesh.m_renderPriority, sizeof(RENDER_PRIORITY), 1, pFile);
+	
+	//Render State
+	RENDER_STATE rs;
+	if (mesh.m_bEnableLight)
+	{
+		if (mesh.m_bEnableCullFace) { rs = RS_LIGHTON_CULLFACEON_MUL; }
+		else { rs = RS_LIGHTON_CULLFACEOFF_MUL; }
+	}
+	else
+	{
+		if (mesh.m_bEnableCullFace) { rs = RS_LIGHTOFF_CULLFACEON_MUL; }
+		else { rs = RS_LIGHTOFF_CULLFACEOFF_MUL; }
+	}
+	fwrite(&rs, sizeof(RENDER_STATE), 1, pFile);
 	
 	fclose(pFile);
 }
@@ -1323,6 +1486,18 @@ void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, cons
 	//
 
 	//fclose(pFile);
+}
+
+//--------------------------------------------------------------------------------
+//  getGeometry
+//	Get the geometry offset to a node. It is never inherited by the children
+//--------------------------------------------------------------------------------
+FbxAMatrix CKFUtilityFBX::getGeometry(FbxNode* pNode)
+{
+	const FbxVector4 lT = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
+	const FbxVector4 lR = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
+	const FbxVector4 lS = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
+	return FbxAMatrix(lT, lR, lS);
 }
 
 //--------------------------------------------------------------------------------

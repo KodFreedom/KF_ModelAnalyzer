@@ -16,6 +16,10 @@
 //  ê√ìIÉÅÉìÉoïœêî
 //--------------------------------------------------------------------------------
 CLightOffRenderState	CDrawComponent::s_lightOffRenderState;
+CLightOffCullOffRenderState	CDrawComponent::s_lightOffCullOff;
+CLightOffCullOnRenderState	CDrawComponent::s_lightOffCullOn;
+CLightOnCullOffRenderState	CDrawComponent::s_lightOnCullOff;
+CLightOnCullOnRenderState	CDrawComponent::s_lightOnCullOn;
 CNullRenderState		CDrawComponent::s_nullRenderState;
 
 //--------------------------------------------------------------------------------

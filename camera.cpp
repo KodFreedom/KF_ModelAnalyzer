@@ -155,7 +155,7 @@ void CCamera::LateUpdate(void)
 void CCamera::Set(void)
 {
 #ifdef USING_DIRECTX
-	LPDIRECT3DDEVICE9 pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
+	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
 
 	//View行列
 	D3DXMATRIX mtxView;
@@ -167,7 +167,7 @@ void CCamera::Set(void)
 	D3DXMatrixPerspectiveFovLH(&mtxProjection,
 		m_fFovY * KF_PI / 180.0f,//視野角度(半分)
 		(float)SCREEN_WIDTH / SCREEN_HEIGHT,//アスペクト比
-		0.01f,//near 0.0fより大きい値
+		0.1f,//near 0.0fより大きい値
 		m_fFar);//far nearより大きい値
 	pDevice->SetTransform(D3DTS_PROJECTION,& mtxProjection);
 
@@ -212,6 +212,28 @@ void CCamera::MoveCamera(const CKFVec3& vMovement)
 void CCamera::LookAtHere(const CKFVec3& vPos)
 {
 	m_vMovement = vPos - m_vPosAt;
+}
+
+//--------------------------------------------------------------------------------
+//  移動処理
+//--------------------------------------------------------------------------------
+void CCamera::SetPosEye(const CKFVec3& vPos)
+{
+	m_vPosEye = vPos;
+	m_vVecLook = m_vPosAt - m_vPosEye;
+	m_fDistance = CKFMath::VecMagnitude((m_vPosEye - m_vPosAt));
+	NormalizeCamera();
+}
+
+//--------------------------------------------------------------------------------
+//  移動処理
+//--------------------------------------------------------------------------------
+void CCamera::SetPosAt(const CKFVec3& vPos)
+{
+	m_vPosAt = vPos;
+	m_vVecLook = m_vPosAt - m_vPosEye;
+	m_fDistance = CKFMath::VecMagnitude((m_vPosEye - m_vPosAt));
+	NormalizeCamera();
 }
 
 //--------------------------------------------------------------------------------

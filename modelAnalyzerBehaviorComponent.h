@@ -54,13 +54,12 @@ private:
 	void		showModelInfoWindow(void);
 	void		showNodeInfo(CMyNode* pNode);
 	void		showNodeNowWindow(void);
+	void		showCameraWindow(void);
 
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
 	//--------------------------------------------------------------------------------
 	bool		m_bDrawNormal;
-	bool		m_bEnableCullFace;
-	bool		m_bEnableLight;
 	bool		m_bReverseV;
 	bool		m_bSaved;
 	string		m_strFileName;
@@ -69,6 +68,7 @@ private:
 
 	//ImGui
 	bool		m_bModelInfoWindow;
+	bool		m_bCameraWindow;
 	CMyNode*	m_pNodeNow;
 	CKFVec3		m_vNodeNowCorrectTrans;
 	CKFVec3		m_vNodeNowCorrectRot;

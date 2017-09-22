@@ -171,7 +171,9 @@ void CKFUtility::AnalyzeFilePath(const string& strTexPath, string& strName, stri
 void CKFUtility::CorrectTexType(string& strTexType)
 {
 	if (strTexType._Equal("psd")
-		|| strTexType._Equal("PSD"))
+		|| strTexType._Equal("PSD")
+		|| strTexType._Equal("jpg")
+		|| strTexType._Equal("JPG"))
 	{
 		strTexType = "png";
 	}

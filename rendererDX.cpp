@@ -27,7 +27,7 @@
 CRendererDX::CRendererDX()
 	: m_pD3D(nullptr)
 	, m_pD3DDevice(nullptr)
-	, m_cBGColor(CKFMath::sc_cBlue)
+	, m_cBGColor(CKFMath::sc_cBlack)
 {
 }
 

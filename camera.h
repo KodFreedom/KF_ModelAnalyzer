@@ -58,8 +58,11 @@ public:
 
 	//Setä÷êî
 	void MoveCamera(const CKFVec3& vMovement);
+	void SetPosEye(const CKFVec3& vPos);
+	void SetPosAt(const CKFVec3& vPos);
 	void LookAtHere(const CKFVec3& vPos);
 	void SetCamera(const CKFVec3& vPosAt, const CKFVec3& vPosEye, const CKFVec3& vUp, const CKFVec3& vRight);
+	
 	virtual void SetTarget(CGameObject* pTarget) {}
 
 protected:
