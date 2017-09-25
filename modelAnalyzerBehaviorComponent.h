@@ -54,6 +54,7 @@ private:
 	void		showModelInfoWindow(void);
 	void		showNodeInfo(CMyNode* pNode);
 	void		showNodeNowWindow(void);
+	void		showAnimatorWindow(void);
 	void		showCameraWindow(void);
 
 	//--------------------------------------------------------------------------------
@@ -68,9 +69,15 @@ private:
 
 	//ImGui
 	bool		m_bModelInfoWindow;
+	bool		m_bAnimatorWindow;
 	bool		m_bCameraWindow;
 	CMyNode*	m_pNodeNow;
 	CKFVec3		m_vNodeNowCorrectTrans;
 	CKFVec3		m_vNodeNowCorrectRot;
 	CKFVec3		m_vNodeNowCorrectScale;
+
+	//Animator
+	bool		m_bPlayMotion;
+	int			m_nCntFrame;
+	int			m_nNoMotion;
 };

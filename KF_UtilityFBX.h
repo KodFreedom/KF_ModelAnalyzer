@@ -163,7 +163,9 @@ class CAnimator
 {
 public:
 	CAnimator() {}
-	~CAnimator()
+	~CAnimator() {}
+
+	void Release(void)
 	{
 		for (auto& motion : m_vecMotion)
 		{
@@ -253,6 +255,7 @@ private:
 
 	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
 	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
+	static void			analyzePose(FbxScene* lScene);
 	static FbxMesh*		findMeshNode(FbxNode* pNode);
 	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode);
 	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);

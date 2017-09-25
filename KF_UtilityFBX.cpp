@@ -509,9 +509,8 @@ void CMyNode::RecursiveReverseTexV(void)
 		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
 		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
 		{
-			auto& fTexV = mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
-			fTexV = 1.0f - fTexV;
-			pVtx[nCnt].vUV.m_fY = fTexV;
+			mesh.m_vecVtx[nCnt].vtx.vUV.m_fY = 1.0f - mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
+			pVtx[nCnt].vUV.m_fY = mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
 		}
 		mesh.m_pVtxBuffer->Unlock();
 	}
@@ -1027,6 +1026,9 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 	//Animation
 	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
 
+	//Pose
+	analyzePose(lScene);
+	
 	//Node
 	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode());
 
@@ -1263,6 +1265,30 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 }
 
 //--------------------------------------------------------------------------------
+//  analyzePose
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::analyzePose(FbxScene* lScene)
+{
+	//int nNumPose = lScene->GetPoseCount();
+	//for (int nCnt = 0; nCnt < nNumPose; ++nCnt)
+	//{
+	//	auto pPose = lScene->GetPose(nCnt);
+	//	int nNumCnt = pPose->GetCount();
+	//	list<string> listName;
+	//	list<FbxMatrix> listMtx;
+	//	for (int nCntNode = 0; nCntNode < nNumCnt; ++nCntNode)
+	//	{
+	//		string strName = pPose->GetNode(nCntNode)->GetName();
+	//		auto mtx = pPose->GetMatrix(nCntNode);
+	//		listName.push_back(strName);
+	//		listMtx.push_back(mtx);
+	//	}
+
+	//	int n = 0;
+	//}
+}
+
+//--------------------------------------------------------------------------------
 //  findMeshNode
 //--------------------------------------------------------------------------------
 FbxMesh* CKFUtilityFBX::findMeshNode(FbxNode* pNode)
@@ -1404,10 +1430,18 @@ void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const strin
 	mesh.m_pIdxBuffer->Unlock();
 
 	//Texture
-	auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-	int nSize = (int)texture.strName.size();
-	fwrite(&nSize, sizeof(int), 1, pFile);
-	fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+	if (!pNode->vecTex.empty())
+	{
+		auto& texture = pNode->vecTex[mesh.nMaterialIndex];
+		int nSize = (int)texture.strName.size();
+		fwrite(&nSize, sizeof(int), 1, pFile);
+		fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+	}
+	else
+	{
+		int nSize = 0;
+		fwrite(&nSize, sizeof(int), 1, pFile);
+	}
 
 	//Render Priority
 	fwrite(&mesh.m_renderPriority, sizeof(RENDER_PRIORITY), 1, pFile);

@@ -63,7 +63,7 @@ using namespace std;
 #define TIMER_INTERVAL		(1000.0 / FRAME_PER_SECOND)		//更新間隔
 #define DELTA_TIME			((float)TIMER_INTERVAL * 0.001f)			//更新間隔(秒単位)
 #define CLASS_NAME			"KF_Framework"						//クラスの名前
-#define WINDOW_NAME			"フレームワーク"					//ウインドウの名前
+#define WINDOW_NAME			"KF_ModelAnalyzer"					//ウインドウの名前
 
 #ifdef USING_DIRECTX
 #define	FVF_VERTEX_2D	(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1)					//頂点フォーマット

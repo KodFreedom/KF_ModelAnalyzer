@@ -40,11 +40,15 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	, m_pRootNode(nullptr)
 	, m_pAnimator(nullptr)
 	, m_bModelInfoWindow(false)
+	, m_bAnimatorWindow(false)
 	, m_bCameraWindow(false)
 	, m_pNodeNow(nullptr)
 	, m_vNodeNowCorrectTrans(CKFMath::sc_vZero)
 	, m_vNodeNowCorrectRot(CKFMath::sc_vZero)
 	, m_vNodeNowCorrectScale(CKFMath::sc_vOne)
+	, m_bPlayMotion(false)
+	, m_nCntFrame(0)
+	, m_nNoMotion(0)
 {
 	m_strFileName.clear();
 }
@@ -83,13 +87,11 @@ void CModelAnalyzerBehaviorComponent::Uninit(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::Update(void)
 {
-	if (m_pRootNode && m_pAnimator)
+	if (m_pRootNode && m_pAnimator && m_bPlayMotion)
 	{
-		static int nCntFrame = 0;
-		static const int nFrame = (int)m_pAnimator->m_vecMotion.back().vecAvator.size();
-		auto& avatar = m_pAnimator->m_vecMotion.back().vecAvator[nCntFrame];
+		auto& avatar = m_pAnimator->m_vecMotion[m_nNoMotion].vecAvator[m_nCntFrame];
 		m_pRootNode->RecursiveUpdate(avatar);
-		nCntFrame = (nCntFrame + 1) % nFrame;
+		m_nCntFrame = (m_nCntFrame + 1) % (int)m_pAnimator->m_vecMotion[m_nNoMotion].vecAvator.size();
 	}
 }
 
@@ -109,6 +111,9 @@ void CModelAnalyzerBehaviorComponent::LateUpdate(void)
 
 	// Edit Node Now
 	showNodeNowWindow();
+
+	// Animator
+	showAnimatorWindow();
 
 	// Camera
 	showCameraWindow();
@@ -135,6 +140,13 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 			//‘O‚Ìƒ‚ƒfƒ‹‚Ìíœ
 			releaseModel();
 		}
+
+		//ImGui Flag
+		m_bModelInfoWindow = false;
+		m_bAnimatorWindow = false;
+		m_bCameraWindow = false;
+		m_nCntFrame = 0;
+		m_nNoMotion = 0;
 
 		//LoadModel
 		m_strFileName = strName;
@@ -178,6 +190,7 @@ void CModelAnalyzerBehaviorComponent::releaseModel(void)
 	}
 
 	SAFE_RELEASE(m_pRootNode);
+	SAFE_RELEASE(m_pAnimator);
 	Init();
 }
 
@@ -206,6 +219,12 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	// Model Window
 	if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
 	
+	// Animator Window
+	if (m_pAnimator)
+	{
+		if (ImGui::Button("Animator")) m_bAnimatorWindow ^= 1;
+	}
+
 	// Camera Window
 	if (ImGui::Button("Camera")) m_bCameraWindow ^= 1;
 
@@ -485,6 +504,46 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 		m_vNodeNowCorrectRot = CKFMath::sc_vZero;
 		m_vNodeNowCorrectScale = CKFMath::sc_vOne;
 	}
+}
+
+//--------------------------------------------------------------------------------
+// showAnimatorWindow
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
+{
+	if (!m_bAnimatorWindow) { return; }
+
+	// Play
+	if (ImGui::Button("Play")) m_bPlayMotion ^= 1;
+	
+	//new
+	int nNumMotion = (int)m_pAnimator->m_vecMotion.size();
+	char **arr = new char*[nNumMotion];
+	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
+	{
+		auto& strName = m_pAnimator->m_vecMotion[nCnt].strName;
+		int nNumChar = (int)strName.size();
+		arr[nCnt] = new char[nNumChar];
+		for (int nCntChar = 0; nCntChar < nNumChar; ++nCntChar)
+		{
+			arr[nCnt][nCntChar] = strName[nCntChar];
+		}
+	}
+
+	//Type
+	if (ImGui::ListBox("Select Motion\n(single select)", (int*)&m_nNoMotion, arr, nNumMotion, nNumMotion))
+	{
+		m_nCntFrame = 0;
+	}
+
+	//delete
+	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
+	{
+		delete[] arr[nCnt];
+		arr[nCnt] = nullptr;
+	}
+	delete[] arr;
+	arr = nullptr;
 }
 
 //--------------------------------------------------------------------------------
