@@ -523,11 +523,12 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	{
 		auto& strName = m_pAnimator->m_vecMotion[nCnt].strName;
 		int nNumChar = (int)strName.size();
-		arr[nCnt] = new char[nNumChar];
+		arr[nCnt] = new char[nNumChar + 1];
 		for (int nCntChar = 0; nCntChar < nNumChar; ++nCntChar)
 		{
 			arr[nCnt][nCntChar] = strName[nCntChar];
 		}
+		arr[nCnt][nNumChar] = '\0';
 	}
 
 	//Type
