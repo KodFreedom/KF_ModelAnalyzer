@@ -39,6 +39,7 @@ public:
 	static string	GetFileName(const string& strFilePath);
 	static void		AnalyzeFilePath(const string& strTexPath, string& strName, string& strType);
 	static void		CorrectTexType(string& strTexType);
+	static bool		CheckIsTexture(const string& strTexType);
 
 private:
 	CKFUtility() {}

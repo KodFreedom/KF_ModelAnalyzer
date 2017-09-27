@@ -162,6 +162,31 @@ void CKFUtility::AnalyzeFilePath(const string& strTexPath, string& strName, stri
 }
 
 //--------------------------------------------------------------------------------
+//	関数名：CheckIsTexture
+//  関数説明：アクション（移動、跳ぶ、攻撃）
+//	引数：	vDirection：移動方向
+//			bJump：跳ぶフラグ
+//	戻り値：なし
+//--------------------------------------------------------------------------------
+bool CKFUtility::CheckIsTexture(const string& strTexType)
+{
+	if (strTexType._Equal("png")
+		|| strTexType._Equal("PNG")
+		|| strTexType._Equal("jpg")
+		|| strTexType._Equal("JPG")
+		|| strTexType._Equal("tga")
+		|| strTexType._Equal("TGA")
+		|| strTexType._Equal("tif")
+		|| strTexType._Equal("TIF"))
+
+	{
+		return true;
+	}
+
+	return false;
+}
+
+//--------------------------------------------------------------------------------
 //	関数名：CorrectTexType
 //  関数説明：アクション（移動、跳ぶ、攻撃）
 //	引数：	vDirection：移動方向
@@ -171,9 +196,7 @@ void CKFUtility::AnalyzeFilePath(const string& strTexPath, string& strName, stri
 void CKFUtility::CorrectTexType(string& strTexType)
 {
 	if (strTexType._Equal("psd")
-		|| strTexType._Equal("PSD")
-		|| strTexType._Equal("jpg")
-		|| strTexType._Equal("JPG"))
+		|| strTexType._Equal("PSD"))
 	{
 		strTexType = "png";
 	}

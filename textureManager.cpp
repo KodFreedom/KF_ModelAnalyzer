@@ -76,6 +76,7 @@ void CTextureManager::DisuseTexture(const string& strName)
 {
 	if (strName.empty()) { return; }
 	auto itr = m_umTexture.find(strName);
+	if (itr == m_umTexture.end()) { return; }
 	--itr->second.usNumUsers;
 	if (itr->second.usNumUsers == 0)
 	{//’N‚àg‚Á‚Ä‚È‚¢‚Ì‚Å”jŠü‚·‚é

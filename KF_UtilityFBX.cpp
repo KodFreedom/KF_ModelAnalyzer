@@ -67,7 +67,6 @@ void CMyNode::Release(void)
 	//Texture
 	for (auto& tex : vecTex)
 	{
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(tex.strName);
 		tex.strName.clear();
 		tex.strUVSetName.clear();
 	}
@@ -92,6 +91,8 @@ void CMyNode::Release(void)
 			UVSet.vecUVIdx.clear();
 		}
 		mesh.vecUVSet.clear();
+		CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.strTexName);
+		mesh.strTexName.clear();
 
 #ifdef USING_DIRECTX
 		SAFE_RELEASE(mesh.m_pVtxBuffer);
@@ -210,9 +211,9 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 		renderState->SetRenderState();
 
 		//Texture
-		if (!vecTex.empty())
+		if (!mesh.strTexName.empty())
 		{
-			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(vecTex[mesh.nMaterialIndex].strName);
+			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].strName*/);
 			pDevice->SetTexture(0, pTexture);
 		}
 
@@ -782,7 +783,6 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 				CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
 				CKFUtility::CorrectTexType(strType);
 				texture.strName += '.' + strType;
-				CMain::GetManager()->GetTextureManager()->UseTexture(texture.strName);
 
 				//UVSet名
 				texture.strUVSetName = pTexture->UVSet.Get().Buffer();
@@ -814,7 +814,6 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 					CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
 					CKFUtility::CorrectTexType(strType);
 					texture.strName += '.' + strType;
-					CMain::GetManager()->GetTextureManager()->UseTexture(texture.strName);
 
 					//UVSet名
 					texture.strUVSetName = pTexture->UVSet.Get().Buffer();
@@ -852,6 +851,11 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 			if (referenceMode == FbxLayerElement::eIndexToDirect)
 			{// メッシュ全部がこのマテリアルインデックス 
 				meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
+				if (meshNow.nMaterialIndex < vecTex.size())
+				{
+					meshNow.strTexName = vecTex[meshNow.nMaterialIndex].strName;
+					CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
+				}
 			}
 			else
 			{
@@ -865,6 +869,11 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 		else if (mappingMode == FbxLayerElement::eByPolygon)
 		{// マテリアル分割されているはずだから、一番はじめのだけでいい         
 			meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
+			if (meshNow.nMaterialIndex < vecTex.size())
+			{
+				meshNow.strTexName = vecTex[meshNow.nMaterialIndex].strName;
+				CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
+			}
 		}
 		else if (mappingMode == FbxLayerElement::eByEdge)
 		{
@@ -1059,7 +1068,7 @@ bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
 
 	//Save
 	fopen_s(&pFile, strName.c_str(), "wb");
-	recursiveSaveNode(pFile, pRootNode);
+	recursiveSaveNode(pFile, pRootNode, strFileName);
 	fclose(pFile);
 	return true;
 }
@@ -1317,7 +1326,7 @@ FbxMesh* CKFUtilityFBX::findMeshNode(FbxNode* pNode)
 //--------------------------------------------------------------------------------
 //  recursiveSaveNode
 //--------------------------------------------------------------------------------
-void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
+void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName)
 {
 	//Node名
 	int nSize = (int)pNode->strName.size();
@@ -1359,7 +1368,7 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
 		//if (mesh.vecMtx.empty())
 		{//骨なし
 			//Name
-			string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".mesh";
+			string strMeshName = strFileName + '_' + pNode->strName + '_' + to_string(nCnt) + ".mesh";
 			nSize = (int)strMeshName.size();
 			fwrite(&nSize, sizeof(int), 1, pFile);
 			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
@@ -1385,7 +1394,7 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode)
 	fwrite(&nNumChild, sizeof(int), 1, pFile);
 	for (auto& pChild : pNode->listChild)
 	{
-		recursiveSaveNode(pFile, pChild);
+		recursiveSaveNode(pFile, pChild, strFileName);
 	}
 }
 
@@ -1430,12 +1439,12 @@ void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const strin
 	mesh.m_pIdxBuffer->Unlock();
 
 	//Texture
-	if (!pNode->vecTex.empty())
+	if (!mesh.strTexName.empty())
 	{
-		auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-		int nSize = (int)texture.strName.size();
+		//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
+		int nSize = (int)mesh.strTexName.size();
 		fwrite(&nSize, sizeof(int), 1, pFile);
-		fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+		fwrite(&mesh.strTexName[0], sizeof(char), nSize, pFile);
 	}
 	else
 	{

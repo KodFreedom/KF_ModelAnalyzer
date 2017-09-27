@@ -98,6 +98,7 @@ struct Mesh
 		vecUVSet.clear();
 		vecPoint.clear();
 		vecNormalIdx.clear();
+		strTexName.clear();
 
 #ifdef USING_DIRECTX
 		m_vecVtx.clear();
@@ -110,6 +111,7 @@ struct Mesh
 	vector<unsigned short>	vecPointIdx;
 	vector<unsigned short>	vecNormalIdx;
 	int						nMaterialIndex;	//Texture
+	string					strTexName;
 	bool					m_bEnableCullFace;
 	bool					m_bEnableLight;
 	RENDER_PRIORITY			m_renderPriority; 
@@ -257,7 +259,7 @@ private:
 	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
 	static void			analyzePose(FbxScene* lScene);
 	static FbxMesh*		findMeshNode(FbxNode* pNode);
-	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode);
+	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName);
 	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static void			saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static FbxAMatrix	getGeometry(FbxNode* pNode);

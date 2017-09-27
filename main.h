@@ -105,6 +105,7 @@ public:
 	//--------------------------------------------------------------------------------
 	static int				Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR IpCmdLine, int nCmdShow);
 	static bool				OpenModelFile(string& strFileName);
+	static bool				OpenTextureFile(string& strTexName);
 
 	//Getä÷êî
 	static CManager*		GetManager(void) { return m_pManager; }

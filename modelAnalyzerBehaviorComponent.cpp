@@ -11,9 +11,9 @@
 #include "gameObject.h"
 #include "transformComponent.h"
 #include "KF_Math.h"
-#include "KF_UtilityFBX.h"
 #include "drawComponent.h"
 #include "materialManager.h"
+#include "textureManager.h"
 #include "ImGui\imgui.h"
 #include "main.h"
 #include "manager.h"
@@ -342,6 +342,13 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 						// CullFace
 						ImGui::Checkbox("Enable CullFace", &mesh.m_bEnableCullFace);
 
+						// Texture
+						ImGui::Text("Texture : %s", mesh.strTexName.c_str());
+						if (ImGui::Button("Change Texture"))
+						{
+							changeTexture(mesh);
+						}
+
 						// Render Priority
 						static const char* listbox_rp[] =
 						{ "3D"
@@ -516,7 +523,7 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	// Play
 	if (ImGui::Button("Play")) m_bPlayMotion ^= 1;
 	
-	//new
+	// new
 	int nNumMotion = (int)m_pAnimator->m_vecMotion.size();
 	char **arr = new char*[nNumMotion];
 	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
@@ -579,4 +586,26 @@ void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
 
 	// End
 	ImGui::End();
+}
+
+//--------------------------------------------------------------------------------
+// changeTexture
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::changeTexture(Mesh& mesh)
+{
+	string strTex;
+	if (CMain::OpenTextureFile(strTex))
+	{
+		string strName, strType;
+		CKFUtility::AnalyzeFilePath(strTex, strName, strType);
+		if (CKFUtility::CheckIsTexture(strType))
+		{
+			if (!mesh.strTexName.empty())
+			{
+				CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.strTexName);
+			}
+			mesh.strTexName = strName + '.' + strType;
+			CMain::GetManager()->GetTextureManager()->UseTexture(mesh.strTexName);
+		}
+	}
 }

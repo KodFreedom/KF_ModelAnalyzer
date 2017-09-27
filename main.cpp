@@ -204,6 +204,31 @@ bool CMain::OpenModelFile(string& strFileName)
 }
 
 //--------------------------------------------------------------------------------
+//	関数名：OpenModelFile
+//  関数説明：FileOpen関数
+//	引数：	strFileName
+//	戻り値：bool
+//--------------------------------------------------------------------------------
+bool CMain::OpenTextureFile(string& strFileName)
+{
+	OPENFILENAME of = { 0 };
+	char aFileName[MAX_PATH] = { 0 };
+	of.lStructSize = sizeof(OPENFILENAME);
+	of.hwndOwner = m_hWnd;
+	of.lpstrFilter = "テクスチャのファイル(*.*)\0*.*\0";
+	of.lpstrFile = aFileName;
+	of.nMaxFile = MAX_PATH;
+	of.Flags = OFN_FILEMUSTEXIST /*| OFN_ALLOWMULTISELECT*/ | OFN_NOCHANGEDIR;
+	//of.lpstrDefExt = "txt";
+	if (GetOpenFileName(&of))
+	{
+		strFileName = aFileName;
+		return true;
+	}
+	return false;
+}
+
+//--------------------------------------------------------------------------------
 //
 //	Private
 //
