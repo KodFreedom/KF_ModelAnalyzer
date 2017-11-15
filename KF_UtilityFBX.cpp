@@ -13,6 +13,8 @@
 #include "textureManager.h"
 #include "materialManager.h"
 #include "rendererDX.h"
+#include "meshManager.h"
+#include <map>
 
 //--------------------------------------------------------------------------------
 //  静的メンバ変数
@@ -40,7 +42,7 @@ bool VtxDX::operator==(const VtxDX& vValue) const
 		for (int nCnt = 0; nCnt < (int)vecBornRefarence.size(); ++nCnt)
 		{
 			if (vecBornRefarence[nCnt].fWeight != vValue.vecBornRefarence[nCnt].fWeight
-				|| vecBornRefarence[nCnt].ucIndex != vValue.vecBornRefarence[nCnt].ucIndex)
+				|| vecBornRefarence[nCnt].sIndex != vValue.vecBornRefarence[nCnt].sIndex)
 			{
 				return false;
 			}
@@ -67,7 +69,7 @@ void CMyNode::Release(void)
 	//Texture
 	for (auto& tex : vecTex)
 	{
-		tex.strName.clear();
+		tex.Name.clear();
 		tex.strUVSetName.clear();
 	}
 	vecTex.clear();
@@ -114,7 +116,7 @@ void CMyNode::Release(void)
 	listChild.clear();
 
 	//Other
-	strName.clear();
+	Name.clear();
 	vecAttributeName.clear();
 
 	delete this;
@@ -123,7 +125,7 @@ void CMyNode::Release(void)
 //--------------------------------------------------------------------------------
 //  RecursiveUpdate
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveUpdate(const Avatar& avatar)
+void CMyNode::RecursiveUpdate(const Frame& currentFrame)
 {
 	for (auto& mesh : vecMesh)
 	{
@@ -137,12 +139,14 @@ void CMyNode::RecursiveUpdate(const Avatar& avatar)
 		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
 		{
 			CKFMtx44 mtx;
-			ZeroMemory(&mtx, sizeof(CKFMtx44));
 			auto& vtxDX = mesh.m_vecVtx[nCnt];
-			for (auto& bornRefarence : vtxDX.vecBornRefarence)
+			if (!vtxDX.vecBornRefarence.empty())
 			{
-				/*mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;*/
-				mtx += avatar.vecCluster[bornRefarence.ucIndex].mtx * bornRefarence.fWeight;
+				ZeroMemory(&mtx, sizeof(CKFMtx44));
+				for (auto& bornRefarence : vtxDX.vecBornRefarence)
+				{
+					mtx += currentFrame.BoneFrames[bornRefarence.sIndex].Matrix * bornRefarence.fWeight;
+				}
 			}
 			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
 		}
@@ -154,7 +158,39 @@ void CMyNode::RecursiveUpdate(const Avatar& avatar)
 	//Child
 	for (auto pNode : listChild)
 	{
-		pNode->RecursiveUpdate(avatar);
+		pNode->RecursiveUpdate(currentFrame);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveRecalculateClusterID
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveRecalculateClusterID(const Frame& initFrame)
+{
+	for (auto& mesh : vecMesh)
+	{
+#pragma omp parallel for 
+		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
+		{
+			auto& vtxDX = mesh.m_vecVtx[nCnt];
+			for (auto& bornRefarence : vtxDX.vecBornRefarence)
+			{
+				for (int countBoneFrame = 0; countBoneFrame < initFrame.BoneFrames.size();++countBoneFrame)
+				{
+					if (bornRefarence.strBoneName == initFrame.BoneFrames[countBoneFrame].Name)
+					{
+						bornRefarence.sIndex = countBoneFrame;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveRecalculateClusterID(initFrame);
 	}
 }
 
@@ -213,7 +249,7 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 		//Texture
 		if (!mesh.strTexName.empty())
 		{
-			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].strName*/);
+			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].Name*/);
 			pDevice->SetTexture(0, pTexture);
 		}
 
@@ -364,7 +400,7 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 				ZeroMemory(&mtx, sizeof(CKFMtx44));
 				for (auto& bornRefarence : point.vecBornRefarence)
 				{
-					mtx += mesh.vecMtx[bornRefarence.ucIndex] * bornRefarence.fWeight;
+					mtx += mesh.vecMtx[bornRefarence.sIndex] * bornRefarence.fWeight;
 				}
 				CKFVec3 vPos = point.vPos;
 				CKFMath::Vec3TransformCoord(&vPos, mtx);
@@ -780,9 +816,9 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 				string strPath = pTexture->GetFileName();
 				string strType;
 				
-				CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
+				CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
 				CKFUtility::CorrectTexType(strType);
-				texture.strName += '.' + strType;
+				texture.Name += '.' + strType;
 
 				//UVSet名
 				texture.strUVSetName = pTexture->UVSet.Get().Buffer();
@@ -811,9 +847,9 @@ void CMyNode::analyzeTexture(FbxNode* pNode)
 					string strPath = pTexture->GetFileName();
 					string strType;
 
-					CKFUtility::AnalyzeFilePath(strPath, texture.strName, strType);
+					CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
 					CKFUtility::CorrectTexType(strType);
-					texture.strName += '.' + strType;
+					texture.Name += '.' + strType;
 
 					//UVSet名
 					texture.strUVSetName = pTexture->UVSet.Get().Buffer();
@@ -853,7 +889,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 				meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
 				if (meshNow.nMaterialIndex < vecTex.size())
 				{
-					meshNow.strTexName = vecTex[meshNow.nMaterialIndex].strName;
+					meshNow.strTexName = vecTex[meshNow.nMaterialIndex].Name;
 					CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
 				}
 			}
@@ -871,7 +907,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 			meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
 			if (meshNow.nMaterialIndex < vecTex.size())
 			{
-				meshNow.strTexName = vecTex[meshNow.nMaterialIndex].strName;
+				meshNow.strTexName = vecTex[meshNow.nMaterialIndex].Name;
 				CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
 			}
 		}
@@ -920,12 +956,12 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 			////	meshNow.vecMtx.push_back(mtxIdentity);
 			////	continue;
 			////}
-			//if (animator.vecBone[nCntCluster].strName.empty())
+			//if (animator.vecBone[nCntCluster].Name.empty())
 			//{
 			//	auto& bone = animator.vecBone[nCntCluster];
 
 			//	// Bone's Name
-			//	bone.strName = pCluster->GetLink()->GetName();
+			//	bone.Name = pCluster->GetLink()->GetName();
 
 			//	// 初期姿勢行列の取得 
 			//	FbxAMatrix lReferenceGlobalInitPosition;
@@ -972,16 +1008,6 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 		}
 	}
 }
-
-//--------------------------------------------------------------------------------
-//  analyzeSkeleton
-//--------------------------------------------------------------------------------
-//void CMyNode::analyzeSkeleton(FbxSkeleton* pSkeleton)
-//{
-//	
-//}
-
-
 
 //--------------------------------------------------------------------------------
 //
@@ -1032,14 +1058,11 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 	// マテリアルごとにメッシュ分離
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
-	//Animation
-	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
-
-	//Pose
-	analyzePose(lScene);
-	
 	//Node
 	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode());
+
+	// Animation
+	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
 
 	lImporter->Destroy();
 	lScene->Destroy();
@@ -1049,16 +1072,309 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 }
 
 //--------------------------------------------------------------------------------
+//  Load
+//--------------------------------------------------------------------------------
+MyModel CKFUtilityFBX::LoadFromTxt(const string& strFilePath)
+{
+	MyModel myModel;
+	FILE* filePointer = nullptr;
+	fopen_s(&filePointer, strFilePath.c_str(), "r");
+	if (!filePointer) return myModel;
+	return myModel;
+	////パーツ数の読み込み
+	//string buffer;
+	//string compare = "NUM_MODEL = ";
+	//int partsNumber = 0;
+	//if (CKFUtility::GetStringUntilString(filePointer, compare, buffer) > 0)
+	//{
+	//	char numberBuffer[16];
+	//	for (int count = compare.length(), countNum = 0; buffer[count] != '\n'; ++count, ++countNum)
+	//	{
+	//		numberBuffer[countNum] = buffer[count];
+	//	}
+	//	partsNumber = atoi(numberBuffer);
+	//}
+
+	////Meshの読み込み
+	//vector<string> modelPathes;
+	//modelPathes.resize(partsNumber);
+	//for (int countPart = 0; countPart < partsNumber; countPart++)
+	//{
+	//	compare = "MODEL_FILENAME = ";
+	//	if (CKFUtility::GetStringUntilString(filePointer, compare, buffer) > 0)
+	//	{
+	//		for (int count = compare.length(), countPath = 0; buffer[count] != '\t'; ++count, countPath++)
+	//		{
+	//			modelPathes[countPart].push_back(buffer[count]);
+	//		}
+	//	}
+	//}
+
+	////parts infoの読み込み
+	//vector<CMyNode*> nodes;
+	//nodes.resize(partsNumber);
+	//for (int countPart = 0; countPart < partsNumber; ++countPart)
+	//{
+	//	if (CKFUtility::GetStringUntilString(filePointer, "\tPARTSSET", buffer) > 0)
+	//	{
+	//		//Index
+	//		fgets(&buffer[0], buffer.length(), filePointer);
+
+	//		//Parent
+	//		fgets(&buffer[0], buffer.length(), filePointer);
+	//		char parentIDBuffer[4] = {};
+	//		for (unsigned int count = strlen("\t\tPARENT = "), countParent = 0; buffer[count] != '\t'; ++count, ++countParent)
+	//		{
+	//			parentIDBuffer[countParent] = buffer[count];
+	//		}
+	//		int parentID = atoi(parentIDBuffer);
+
+	//		//Pos
+	//		fgets(&buffer[0], buffer.length(), filePointer);
+	//		char positionBuffer[3][16] = {};
+	//		int countAxis = 0;
+	//		int countPos = 0;
+	//		for (int count = strlen("\t\tPOS = "); buffer[count] != '\n'; ++count)
+	//		{
+	//			if (buffer[count] == ' ')
+	//			{
+	//				countAxis++;
+	//				countPos = 0;
+	//				continue;
+	//			}
+	//			positionBuffer[countAxis][countPos] = buffer[count];
+	//			countPos++;
+	//		}
+
+	//		auto offsetPosition = CKFVec3((float)atof(positionBuffer[0]), (float)atof(positionBuffer[1]), (float)atof(positionBuffer[2]));
+
+	//		//Rot
+	//		fgets(&buffer[0], buffer.length(), filePointer);
+	//		char rotationBuffer[3][16] = {};
+	//		countAxis = 0;
+	//		int countRot = 0;
+	//		for (unsigned int count = strlen("\t\tROT = "); buffer[count] != '\n'; ++count)
+	//		{
+	//			if (buffer[count] == ' ')
+	//			{
+	//				countAxis++;
+	//				countRot = 0;
+	//				continue;
+	//			}
+
+	//			rotationBuffer[countAxis][countRot] = buffer[count];
+	//			countRot++;
+	//		}
+
+	//		auto offsetRotation = CKFVec3((float)atof(rotationBuffer[0]), (float)atof(rotationBuffer[1]), (float)atof(rotationBuffer[2]));
+	//		nodes[countPart] = new CMyNode;
+	//		nodes[countPart]->vTrans = offsetPosition;
+	//		nodes[countPart]->vRot = offsetRotation;
+	//		nodes[countPart]->vScale = CKFVec3(1.0f);
+	//		if (parentID >= 0)
+	//		{
+	//			nodes[parentID]->listChild.push_back(nodes[countPart]);
+	//		}
+
+	//		// mesh
+	//		string Name, strType;
+	//		CKFUtility::AnalyzeFilePath(modelPathes[countPart], Name, strType);
+	//		if (strType._Equal("x"))
+	//		{
+
+	//		}
+	//	}
+	//}
+	//myModel.pNode = nodes[0];
+
+	////motionの読み込み
+	//int countMotion = 0;
+	//while (CKFUtility::GetStringUntilString(filePointer, "MOTIONSET", buffer) > 0)
+	//{
+	//	MotionInfo motionInfo;
+
+	//	//LOOP
+	//	if (CKFUtility::GetStringUntilString(filePointer, "LOOP = ", buffer) > 0)
+	//	{
+	//		char loopBuffer[2] = {};
+	//		for (int count = strlen("\tLOOP = "), countLoop = 0; buffer[count] != '\t'; ++count, ++countLoop)
+	//		{
+	//			loopBuffer[countLoop] = buffer[count];
+	//		}
+	//		motionInfo.IsLoop = atoi(loopBuffer) != 0 ? true : false;
+	//	}
+
+	//	//キーフレーム数取得
+	//	int keyNumber = 0;
+	//	if (CKFUtility::GetStringUntilString(filePointer, "NUM_KEY = ", buffer) > 0)
+	//	{
+	//		char keyBuffer[2] = {};
+	//		for (int count = strlen("\tNUM_KEY = "), countKey = 0; buffer[count] != '\t'; ++count, countKey++)
+	//		{
+	//			keyBuffer[countKey] = buffer[count];
+	//		}
+	//		keyNumber = atoi(keyBuffer);
+	//	}
+
+	//	vector<MotionFrame> keyFrames;
+	//	vector<int> keyFrameNumbers;
+	//	keyFrames.resize(keyNumber);
+	//	keyFrameNumbers.resize(keyNumber);
+
+	//	//キーフレームの読み込み
+	//	for (int countKey = 0; countKey < keyNumber; ++countKey)
+	//	{
+	//		if (CKFUtility::GetStringUntilString(filePointer, "KEYSET", buffer) > 0)
+	//		{
+	//			//Frame
+	//			if (CKFUtility::GetStringUntilString(filePointer, "FRAME = ", buffer) > 0)
+	//			{
+	//				char frameBuffer[4] = {};
+	//				for (unsigned int count = strlen("\t\tFRAME = "), countFrame = 0; buffer[count] != '\n'; ++count, ++countFrame)
+	//				{
+	//					frameBuffer[countFrame] = buffer[count];
+	//				}
+	//				keyFrameNumbers[countKey] = atoi(frameBuffer);
+	//			}
+
+	//			//Set Key per Parts
+	//			for (int countPart = 0; countPart < partsNumber; ++countPart)
+	//			{
+	//				CKFVec3 position;
+	//				CKFQuaternion rotation;
+
+	//				//Pos
+	//				if (CKFUtility::GetStringUntilString(filePointer, "POS = ", buffer) > 0)
+	//				{
+	//					char positionBuffer[3][16] = {};
+	//					int countAxis = 0;
+	//					int countPos = 0;
+	//					for (unsigned int count = strlen("\t\t\tPOS = "); buffer[count] != '\n'; ++count)
+	//					{
+	//						if (buffer[count] == ' ')
+	//						{
+	//							countAxis++;
+	//							countPos = 0;
+	//							continue;
+	//						}
+
+	//						positionBuffer[countAxis][countPos] = buffer[count];
+	//						countPos++;
+	//					}
+	//					position = CKFVec3((float)atof(positionBuffer[0]), (float)atof(positionBuffer[1]), (float)atof(positionBuffer[2]));
+	//				}
+
+	//				//Rot
+	//				if (CKFUtility::GetStringUntilString(filePointer, "ROT = ", buffer) > 0)
+	//				{
+	//					char rotationBuffer[3][16] = {};
+	//					int countAxis = 0;
+	//					int countRot = 0;
+	//					for (unsigned int count = strlen("\t\t\tROT = "); buffer[count] != '\n'; ++count)
+	//					{
+	//						if (buffer[count] == ' ')
+	//						{
+	//							countAxis++;
+	//							countRot = 0;
+	//							continue;
+	//						}
+	//						rotationBuffer[countAxis][countRot] = buffer[count];
+	//						countRot++;
+	//					}
+	//					rotation = CKFVec3((float)atof(rotationBuffer[0]), (float)atof(rotationBuffer[1]), (float)atof(rotationBuffer[2])).ToCKFQuaternion();
+	//				}
+
+	//				keyFrames[countKey].BoneFrames.push_back(BoneFrame(position, rotation));
+	//			}
+	//		}
+	//	}
+
+	//	//フレームに転換
+	//	int countFrame = 0;
+	//	for (int countKey = 0; countKey < keyNumber; ++countKey)
+	//	{
+	//		motionInfo.MotionFrames.resize(motionInfo.MotionFrames.size() + keyFrameNumbers[countKey]);
+	//		for (int countKeyFrame = 0; countKeyFrame < keyFrameNumbers[countKey]; ++countKeyFrame)
+	//		{
+	//			float rate = (float)countKeyFrame / keyFrameNumbers[countKey];
+	//			auto currentIterator = keyFrames[countKey].BoneFrames.begin();
+
+	//			if (!motionInfo.IsLoop && countKey == keyNumber - 1)
+	//			{// 最後のキーは補間なし
+	//				for (int countBone = 0; countBone < partsNumber; ++countBone)
+	//				{
+	//					motionInfo.MotionFrames[countFrame].BoneFrames.push_back(BoneFrame(currentIterator->Position, currentIterator->Rotation));
+	//					++currentIterator;
+	//				}
+	//			}
+	//			else
+	//			{// 補間
+	//				auto nextIterator = keyFrames[(countKey + 1) % keyNumber].BoneFrames.begin();
+	//				for (int countBone = 0; countBone < partsNumber; ++countBone)
+	//				{
+	//					auto& position = Math::Lerp(currentIterator->Position, nextIterator->Position, rate);
+	//					auto& rotation = Math::Slerp(currentIterator->Rotation, nextIterator->Rotation, rate);
+	//					motionInfo.MotionFrames[countFrame].BoneFrames.push_back(BoneFrame(position, rotation));
+	//					++currentIterator;
+	//					++nextIterator;
+	//				}
+	//			}
+	//			++countFrame;
+	//		}
+	//	}
+	//}
+}
+
+//--------------------------------------------------------------------------------
+//  Load
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::LoadAnimation(const string& strFilePath, CAnimator* animator)
+{
+	//FBX読込実験コード
+	auto lSdkManager = FbxManager::Create();
+
+	// Create the IO settings object.
+	auto ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
+	lSdkManager->SetIOSettings(ios);
+
+	// Create an importer using the SDK manager.
+	auto lImporter = FbxImporter::Create(lSdkManager, "");
+
+	// Use the first argument as the filename for the importer.
+	if (!lImporter->Initialize(strFilePath.c_str(), -1, lSdkManager->GetIOSettings()))
+	{
+		char buf[MAX_PATH];
+		wsprintf(buf, "Call to FbxImporter::Initialize() failed.\nError returned: %s\n\n", lImporter->GetStatus().GetErrorString());
+		MessageBox(NULL, buf, "error", MB_OK);
+		lImporter->Destroy();
+		lSdkManager->Destroy();
+		return;
+	}
+
+	// Create a new scene so that it can be populated by the imported file.
+	auto lScene = FbxScene::Create(lSdkManager, "myScene");
+
+	// Import the contents of the file into the scene.
+	lImporter->Import(lScene);
+
+	analyzeAnimation(lImporter, lScene, animator);
+
+	lImporter->Destroy();
+	lScene->Destroy();
+	lSdkManager->Destroy();
+}
+
+//--------------------------------------------------------------------------------
 //  Save
 //--------------------------------------------------------------------------------
 bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
 {
 	//Modelファイルの保存
-	string strName = "data/MODEL/" + strFileName + ".model";
+	string Name = "data/MODEL/" + strFileName + ".model";
 
 	//あるかどうかをチェック
 	FILE *pFile;
-	fopen_s(&pFile, strName.c_str(), "rb");
+	fopen_s(&pFile, Name.c_str(), "rb");
 	if (pFile)
 	{//上書き確認
 		fclose(pFile);
@@ -1067,7 +1383,7 @@ bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
 	}
 
 	//Save
-	fopen_s(&pFile, strName.c_str(), "wb");
+	fopen_s(&pFile, Name.c_str(), "wb");
 	recursiveSaveNode(pFile, pRootNode, strFileName);
 	fclose(pFile);
 	return true;
@@ -1097,7 +1413,7 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 {
 	if (!pNode) { return NULL; }
 	auto pMyNode = new CMyNode;
-	pMyNode->strName = pNode->GetName();
+	pMyNode->Name = pNode->GetName();
 	pMyNode->vTrans.m_fX = static_cast<float>(pNode->LclTranslation.Get()[0]);
 	pMyNode->vTrans.m_fY = static_cast<float>(pNode->LclTranslation.Get()[1]);
 	pMyNode->vTrans.m_fZ = static_cast<float>(pNode->LclTranslation.Get()[2]);
@@ -1164,35 +1480,58 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 //--------------------------------------------------------------------------------
 CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene)
 {
-	auto pFbxMesh = findMeshNode(lScene->GetRootNode());
-	if (!pFbxMesh) 
+	// Anim数
+	auto animationNumber = lImporter->GetAnimStackCount();
+	if (!animationNumber) { return nullptr; }
+
+	// Cluster
+	int clusterNumber = lScene->GetMemberCount<FbxCluster>();
+	map<string, FbxCluster*> clusters;
+	for (int countBoneFrame = 0; countBoneFrame < clusterNumber; ++countBoneFrame)
 	{
-		MessageBox(NULL, "meshが見つからない！！", "analyzeAnimation", MB_OK | MB_ICONWARNING);
+		auto pCluster = lScene->GetSrcObject<FbxCluster>(countBoneFrame);
+		string name = pCluster->GetLink()->GetName();
+		if (clusters.find(name) == clusters.end())
+		{
+			clusters.emplace(name, pCluster);
+		}
+	}
+
+	if (clusters.empty())
+	{
+		MessageBox(NULL, "clusterが見つからない！！", "analyzeAnimation", MB_OK | MB_ICONWARNING);
 		return nullptr; 
 	}
 
-	// スキンの数を取得 
-	int nNumSkin = pFbxMesh->GetDeformerCount(FbxDeformer::eSkin);
-	if (!nNumSkin) { return nullptr; }
-
-	// Anim数
-	auto nNumAnim = lImporter->GetAnimStackCount();
-	if (!nNumAnim) { return nullptr; }
-
 	auto pAnimator = new CAnimator;
-	pAnimator->m_vecMotion.reserve(nNumAnim);
+	pAnimator->Motions.reserve(animationNumber);
 
+	// Animation Name
 	FbxArray<FbxString*> animationNames;
 	lScene->FillAnimStackNameArray(animationNames);
+
+	// Cluster Matrix
+	pAnimator->Clusters.resize(clusters.size());
+	int countCluster = 0;
+	for (auto pair : clusters)
+	{
+		pAnimator->Clusters[countCluster].Name = pair.first;
+		FbxAMatrix lReferenceGlobalInitPosition;
+		pair.second->GetTransformMatrix(lReferenceGlobalInitPosition);
+		FbxAMatrix boneGlobalInitPosition;
+		pair.second->GetTransformLinkMatrix(boneGlobalInitPosition);
+		pAnimator->Clusters[countCluster].RelativeInitPosition = boneGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
+		++countCluster;
+	}
 
 	//one frame time
 	FbxTime oneFrameTime;
 	oneFrameTime.SetTime(0, 0, 0, 1, 0, 0, FbxTime::eFrames60);
 
-	for (int nCnt = 0; nCnt < nNumAnim; ++nCnt)
+	for (int nCnt = 0; nCnt < animationNumber; ++nCnt)
 	{
 		Motion motion;
-		motion.strName = animationNames[nCnt]->Buffer();
+		motion.Name = animationNames[nCnt]->Buffer();
 
 		//Anime情報
 		auto pTakeInfo = lScene->GetTakeInfo(animationNames[nCnt]->Buffer());
@@ -1200,77 +1539,123 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 		//アニメーション開始終了時間
 		auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
 		auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
-		//auto oneFrameTime = (endTime - startTime) / 61;
-
-		//for (int nCntSkin = 0; nCntSkin < nNumSkin; ++nCntSkin)
+		int frameNumber = (int)((endTime - startTime) / (oneFrameTime)).Get();
+		motion.Frames.reserve(frameNumber + 1);
+		for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
 		{
-			// スキンを取得 
-			auto pSkin = (FbxSkin*)pFbxMesh->GetDeformer(0, FbxDeformer::eSkin);
-
-			// クラスターの数を取得 
-			int nNumCluster = pSkin->GetClusterCount();
-			motion.vecAvator.reserve(60);
-
-			for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
+			Frame frame;
+			frame.BoneFrames.reserve(clusters.size());
+			countCluster = 0;
+			for (auto pair : clusters)
 			{
-				Avatar avatar;
-				avatar.vecCluster.reserve(nNumCluster);
+				BoneFrame boneFrame;
+				boneFrame.Name = pair.first;
 
-				for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
+				// アニメーション行列の算出
+				auto skeletonGlobalCurrentTransform = pair.second->GetLink()->EvaluateGlobalTransform(currentTime);
+				FbxAMatrix lReferenceGlobalCurrentPosition;
+				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
+				auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].RelativeInitPosition;
+				
+				// clusterにコピーする
+				for (int nY = 0; nY < 4; ++nY)
 				{
-					Cluster cluster;
-
-					// クラスタを取得
-					auto pCluster = pSkin->GetCluster(nCntCluster);
-					string strClusterName = pCluster->GetLink()->GetName();
-
-					// Cluster's Name
-					cluster.strName = pCluster->GetLink()->GetName();
-
-					// 初期姿勢行列の取得
-					FbxAMatrix lReferenceGlobalInitPosition;
-					FbxAMatrix lReferenceGlobalCurrentPosition;
-					FbxAMatrix lClusterGlobalInitPosition;
-
-					pCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
-					// lReferenceGlobalCurrentPosition = pGlobalPosition; // <- たぶんワールド座標変換行列ではないかと
-
-					// Multiply lReferenceGlobalInitPosition by Geometric Transformation
-					auto lReferenceGeometry = getGeometry(pFbxMesh->GetNode());
-					lReferenceGlobalInitPosition *= lReferenceGeometry;
-
-					// Get the link initial global position and the link current global position.
-					pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
-
-					// Compute the initial position of the link relative to the reference.
-					auto lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
-
-					auto lClusterGlobalCurrentPosition = pCluster->GetLink()->EvaluateGlobalTransform(currentTime);
-
-					// Compute the current position of the link relative to the reference.
-					auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
-
-					// Compute the shift of the link relative to the reference.
-					auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
-
-					// ↑ 初期姿勢行列も考慮されたモーションボーン行列なので、これで頂点座標を変換するだけで良い
-					for (int nY = 0; nY < 4; ++nY)
+					for (int nX = 0; nX < 4; ++nX)
 					{
-						for (int nX = 0; nX < 4; ++nX)
-						{
-							cluster.mtx.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
-						}
+						boneFrame.Matrix.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
 					}
-
-					avatar.vecCluster.push_back(cluster);
 				}
-				motion.vecAvator.push_back(avatar);
+				frame.BoneFrames.push_back(boneFrame);
+				++countCluster;
 			}
-			pAnimator->m_vecMotion.push_back(motion);
+			motion.Frames.push_back(frame);
 		}
+		motion.Frames.shrink_to_fit();
+		pAnimator->Motions.push_back(motion);
+	}
+	pAnimator->Motions.shrink_to_fit();
+	return pAnimator;
+}
+
+//--------------------------------------------------------------------------------
+//  analyzeAnimation
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator)
+{
+	// Anim数
+	auto animationNumber = lImporter->GetAnimStackCount();
+	if (!animationNumber) return;
+
+	// Skeleton
+	list<FbxNode*> skeletons;
+	findSkeletons(lScene->GetRootNode(), skeletons);
+	if (skeletons.size() != animator->Clusters.size())
+	{
+		MessageBox(NULL, "skeletonの数が合わない！！", "analyzeAnimation", MB_OK | MB_ICONWARNING);
+		return;
 	}
 
-	return pAnimator;
+	animator->Motions.reserve(animator->Motions.size() + animationNumber);
+	FbxArray<FbxString*> animationNames;
+	lScene->FillAnimStackNameArray(animationNames);
+
+	//one frame time
+	FbxTime oneFrameTime;
+	oneFrameTime.SetTime(0, 0, 0, 1, 0, 0, FbxTime::eFrames60);
+
+	for (int nCnt = 0; nCnt < animationNumber; ++nCnt)
+	{
+		Motion motion;
+		motion.Name = animationNames[nCnt]->Buffer();
+
+		//Anime情報
+		auto pTakeInfo = lScene->GetTakeInfo(animationNames[nCnt]->Buffer());
+
+		//アニメーション開始終了時間
+		auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
+		auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
+		int frameNumber = (int)((endTime - startTime) / (oneFrameTime)).Get();
+		motion.Frames.reserve(frameNumber + 1);
+		for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
+		{
+			Frame frame;
+			frame.BoneFrames.resize(skeletons.size());
+
+			for (auto skeleton : skeletons)
+			{
+				string name = skeleton->GetName();
+				int clusterNo = 0;
+				for (int countCluster = 0; countCluster < animator->Clusters.size(); ++countCluster)
+				{
+					if (name == animator->Clusters[countCluster].Name)
+					{
+						clusterNo = countCluster;
+						break;
+					}
+				}
+				frame.BoneFrames[clusterNo].Name = name;
+
+				// アニメーション行列の算出
+				auto skeletonGlobalCurrentTransform = skeleton->EvaluateGlobalTransform(currentTime);
+				FbxAMatrix lReferenceGlobalCurrentPosition;
+				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
+				auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].RelativeInitPosition;
+
+				// clusterにコピーする
+				for (int nY = 0; nY < 4; ++nY)
+				{
+					for (int nX = 0; nX < 4; ++nX)
+					{
+						frame.BoneFrames[clusterNo].Matrix.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
+					}
+				}
+			}
+			motion.Frames.push_back(frame);
+		}
+		motion.Frames.shrink_to_fit();
+		animator->Motions.push_back(motion);
+	}
+	animator->Motions.shrink_to_fit();
 }
 
 //--------------------------------------------------------------------------------
@@ -1278,49 +1663,44 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 //--------------------------------------------------------------------------------
 void CKFUtilityFBX::analyzePose(FbxScene* lScene)
 {
-	//int nNumPose = lScene->GetPoseCount();
-	//for (int nCnt = 0; nCnt < nNumPose; ++nCnt)
-	//{
-	//	auto pPose = lScene->GetPose(nCnt);
-	//	int nNumCnt = pPose->GetCount();
-	//	list<string> listName;
-	//	list<FbxMatrix> listMtx;
-	//	for (int nCntNode = 0; nCntNode < nNumCnt; ++nCntNode)
-	//	{
-	//		string strName = pPose->GetNode(nCntNode)->GetName();
-	//		auto mtx = pPose->GetMatrix(nCntNode);
-	//		listName.push_back(strName);
-	//		listMtx.push_back(mtx);
-	//	}
+	int nNumPose = lScene->GetPoseCount();
+	for (int nCnt = 0; nCnt < nNumPose; ++nCnt)
+	{
+		auto pPose = lScene->GetPose(nCnt);
+		int nNumCnt = pPose->GetCount();
+		list<string> listName;
+		list<FbxMatrix> listMtx;
+		for (int nCntNode = 0; nCntNode < nNumCnt; ++nCntNode)
+		{
+			string Name = pPose->GetNode(nCntNode)->GetName();
+			auto mtx = pPose->GetMatrix(nCntNode);
+			listName.push_back(Name);
+			listMtx.push_back(mtx);
+		}
 
-	//	int n = 0;
-	//}
+		int n = 0;
+	}
 }
 
 //--------------------------------------------------------------------------------
-//  findMeshNode
+//  findSkeletons
 //--------------------------------------------------------------------------------
-FbxMesh* CKFUtilityFBX::findMeshNode(FbxNode* pNode)
+void CKFUtilityFBX::findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton)
 {
-	if (!pNode) { return nullptr; }
+	if (!pNode) return;
 	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
 	{
 		auto type = pNode->GetNodeAttributeByIndex(nCnt)->GetAttributeType();
-
-		if (type == FbxNodeAttribute::eMesh)
-		{//Mesh情報         
-			auto pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));
-			return pMesh;
+		if (type == FbxNodeAttribute::eSkeleton)
+		{
+			listSkeleton.push_back(pNode);
 		}
 	}
 
 	for (int nCnt = 0; nCnt < pNode->GetChildCount(); ++nCnt)
 	{
-		auto pMesh = findMeshNode(pNode->GetChild(nCnt));
-		if (pMesh) { return pMesh; }
+		findSkeletons(pNode->GetChild(nCnt), listSkeleton);
 	}
-
-	return nullptr;
 }
 
 //--------------------------------------------------------------------------------
@@ -1329,9 +1709,9 @@ FbxMesh* CKFUtilityFBX::findMeshNode(FbxNode* pNode)
 void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName)
 {
 	//Node名
-	int nSize = (int)pNode->strName.size();
+	int nSize = (int)pNode->Name.size();
 	fwrite(&nSize, sizeof(int), 1, pFile);
-	fwrite(&pNode->strName[0], sizeof(char), nSize, pFile);
+	fwrite(&pNode->Name[0], sizeof(char), nSize, pFile);
 
 	//Offset
 	fwrite(&pNode->vTrans, sizeof(CKFVec3), 1, pFile);
@@ -1354,9 +1734,9 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 	fwrite(&nNumTexture, sizeof(int), 1, pFile);
 	for (auto& texture : pNode->vecTex)
 	{
-		nSize = (int)texture.strName.size();
+		nSize = (int)texture.Name.size();
 		fwrite(&nSize, sizeof(int), 1, pFile);
-		fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+		fwrite(&texture.Name[0], sizeof(char), nSize, pFile);
 	}
 
 	//Mesh
@@ -1368,7 +1748,7 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 		//if (mesh.vecMtx.empty())
 		{//骨なし
 			//Name
-			string strMeshName = strFileName + '_' + pNode->strName + '_' + to_string(nCnt) + ".mesh";
+			string strMeshName = strFileName + '_' + pNode->Name + '_' + to_string(nCnt) + ".mesh";
 			nSize = (int)strMeshName.size();
 			fwrite(&nSize, sizeof(int), 1, pFile);
 			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
@@ -1379,7 +1759,7 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 		//else
 		//{//ワンスキーンメッシュ
 		//	//Name
-		//	string strMeshName = pNode->strName + '_' + to_string(nCnt) + ".oneSkinMesh";
+		//	string strMeshName = pNode->Name + '_' + to_string(nCnt) + ".oneSkinMesh";
 		//	nSize = (int)strMeshName.size();
 		//	fwrite(&nSize, sizeof(int), 1, pFile);
 		//	fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
@@ -1403,11 +1783,11 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 //--------------------------------------------------------------------------------
 void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName)
 {
-	string strName = "data/MESH/" + strMeshName;
+	string Name = "data/MESH/" + strMeshName;
 	FILE *pFile;
 	
 	//file open
-	fopen_s(&pFile, strName.c_str(), "wb");
+	fopen_s(&pFile, Name.c_str(), "wb");
 	
 	//DrawType
 	int nDrawType = (int)D3DPT_TRIANGLELIST;
@@ -1479,11 +1859,11 @@ void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, cons
 {
 	MessageBox(NULL, "未対応", "saveOneSkinMesh", MB_OK | MB_ICONWARNING);
 
-	//string strName = "data/MESH/" + strMeshName;
+	//string Name = "data/MESH/" + strMeshName;
 	//FILE *pFile;
 
 	////file open
-	//fopen_s(&pFile, strName.c_str(), "wb");
+	//fopen_s(&pFile, Name.c_str(), "wb");
 
 	////DrawType
 	//int nDrawType = (int)D3DPT_TRIANGLELIST;
@@ -1521,9 +1901,9 @@ void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, cons
 
 	////Texture
 	//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-	//int nSize = (int)texture.strName.size();
+	//int nSize = (int)texture.Name.size();
 	//fwrite(&nSize, sizeof(int), 1, pFile);
-	//fwrite(&texture.strName[0], sizeof(char), nSize, pFile);
+	//fwrite(&texture.Name[0], sizeof(char), nSize, pFile);
 
 	////Mtx
 	//

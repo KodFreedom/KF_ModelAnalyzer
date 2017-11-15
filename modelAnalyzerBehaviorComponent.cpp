@@ -89,9 +89,9 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (m_pRootNode && m_pAnimator && m_bPlayMotion)
 	{
-		auto& avatar = m_pAnimator->m_vecMotion[m_nNoMotion].vecAvator[m_nCntFrame];
+		auto& avatar = m_pAnimator->Motions[m_nNoMotion].Frames[m_nCntFrame];
 		m_pRootNode->RecursiveUpdate(avatar);
-		m_nCntFrame = (m_nCntFrame + 1) % (int)m_pAnimator->m_vecMotion[m_nNoMotion].vecAvator.size();
+		m_nCntFrame = (m_nCntFrame + 1) % (int)m_pAnimator->Motions[m_nNoMotion].Frames.size();
 	}
 }
 
@@ -130,7 +130,8 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 	if (strType._Equal("FBX")
 		|| strType._Equal("fbx")
 		|| strType._Equal("obj")
-		|| strType._Equal("OBJ"))
+		|| strType._Equal("OBJ")
+		|| strType._Equal("txt"))
 	{
 		if (m_pRootNode)
 		{
@@ -150,10 +151,22 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 
 		//LoadModel
 		m_strFileName = strName;
-		auto& myModel = CKFUtilityFBX::Load(strFilePath);
+		MyModel myModel;
+		if (strType._Equal("txt"))
+		{
+			myModel = CKFUtilityFBX::LoadFromTxt(strFilePath);
+		}
+		else
+		{
+			myModel = CKFUtilityFBX::Load(strFilePath);
+		}
 		m_pRootNode = myModel.pNode;
 		m_pAnimator = myModel.pAnimator;
 		m_pRootNode->RecursiveRecalculateVtx();
+		if (m_pAnimator)
+		{
+			m_pRootNode->RecursiveRecalculateClusterID(myModel.pAnimator->Motions[0].Frames[0]);
+		}
 	}
 	else
 	{//‘Î‰ž‚µ‚Ä‚È‚¢
@@ -308,7 +321,7 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 {
 	if (!pNode) { return; }
 
-	if (ImGui::TreeNode(pNode->strName.c_str()))
+	if (ImGui::TreeNode(pNode->Name.c_str()))
 	{
 		if (ImGui::CollapsingHeader("Info"))
 		{
@@ -401,7 +414,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 	}
 
 	// Model Name
-	string strBuf = "Node Name : " + m_pNodeNow->strName;
+	string strBuf = "Node Name : " + m_pNodeNow->Name;
 	ImGui::Text(strBuf.c_str());
 
 	// Collider
@@ -524,11 +537,11 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	if (ImGui::Button("Play")) m_bPlayMotion ^= 1;
 	
 	// new
-	int nNumMotion = (int)m_pAnimator->m_vecMotion.size();
+	int nNumMotion = (int)m_pAnimator->Motions.size();
 	char **arr = new char*[nNumMotion];
 	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
 	{
-		auto& strName = m_pAnimator->m_vecMotion[nCnt].strName;
+		auto& strName = m_pAnimator->Motions[nCnt].Name;
 		int nNumChar = (int)strName.size();
 		arr[nCnt] = new char[nNumChar + 1];
 		for (int nCntChar = 0; nCntChar < nNumChar; ++nCntChar)
@@ -552,6 +565,12 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	}
 	delete[] arr;
 	arr = nullptr;
+
+	// AddAnimation
+	if (ImGui::Button("Add Animation"))
+	{
+		addAnimation();
+	}
 }
 
 //--------------------------------------------------------------------------------
@@ -606,6 +625,23 @@ void CModelAnalyzerBehaviorComponent::changeTexture(Mesh& mesh)
 			}
 			mesh.strTexName = strName + '.' + strType;
 			CMain::GetManager()->GetTextureManager()->UseTexture(mesh.strTexName);
+		}
+	}
+}
+
+//--------------------------------------------------------------------------------
+// addAnimation
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::addAnimation(void)
+{
+	string strFileName;
+	if (CMain::OpenTextureFile(strFileName))
+	{
+		string strName, strType;
+		CKFUtility::AnalyzeFilePath(strFileName, strName, strType);
+		if (strType._Equal("fbx") || strType._Equal("FBX"))
+		{
+			CKFUtilityFBX::LoadAnimation(strFileName, m_pAnimator);
 		}
 	}
 }

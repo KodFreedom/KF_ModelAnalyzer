@@ -40,6 +40,7 @@ public:
 	static void		AnalyzeFilePath(const string& strTexPath, string& strName, string& strType);
 	static void		CorrectTexType(string& strTexType);
 	static bool		CheckIsTexture(const string& strTexType);
+	static int		GetStringUntilString(FILE* filePointer, const string& compare, string& buffer);
 
 private:
 	CKFUtility() {}

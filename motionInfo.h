@@ -15,50 +15,45 @@
 //  クラス宣言
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
-//  KeyInfoクラス
+//  BoneFrameクラス
 //--------------------------------------------------------------------------------
-class CNodeKey
+class BoneFrame
 {
 public:
-	CNodeKey(const CKFVec3& vPos, const CKFQuaternion& qRot)
-		: c_vPos(vPos), c_qRot(qRot) {}
-	~CNodeKey() {}
+	BoneFrame() {}
+	BoneFrame(const CKFMtx44& matrix)
+		: Matrix(matrix) {}
+	~BoneFrame() {}
 
-	const CKFVec3		c_vPos;
-	const CKFQuaternion c_qRot;
+	CKFMtx44 Matrix;
 };
 
 //--------------------------------------------------------------------------------
-//  CMotionKeyクラス
-//	モーションの一キーフレーム（全てのノードを含める）
+//  MotionFrameクラス
+//	モーションの一フレーム（全てのBoneを含める）
 //--------------------------------------------------------------------------------
-class CMotionKey
+class MotionFrame
 {
 public:
-	CMotionKey(void)
-		: m_nFrame(0)
-	{
-		m_listNodesKey.clear();
-	}
-	~CMotionKey() {}
+	MotionFrame(void) { BoneFrames.clear(); }
+	~MotionFrame() { BoneFrames.clear(); }
 
-	int				m_nFrame;
-	list<CNodeKey>	m_listNodesKey;
+	list<BoneFrame>	BoneFrames;
 };
 
 //--------------------------------------------------------------------------------
 //  MotionInfoクラス
 //--------------------------------------------------------------------------------
-class CMotionInfo
+class MotionInfo
 {
 public:
-	CMotionInfo(void)
-		: m_bLoop(false)
+	MotionInfo(void)
+		: IsLoop(false)
 	{
-		m_vecMotionKey.clear();
+		MotionFrames.clear();
 	}
-	~CMotionInfo() {}
+	~MotionInfo() { MotionFrames.clear(); }
 
-	bool				m_bLoop;
-	vector<CMotionKey>	m_vecMotionKey;
+	bool				IsLoop;
+	vector<MotionFrame>	MotionFrames;
 };
