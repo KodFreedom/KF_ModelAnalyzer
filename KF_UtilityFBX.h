@@ -24,9 +24,9 @@ class CAnimator;
 //--------------------------------------------------------------------------------
 struct BornRefarence
 {
-	BornRefarence(unsigned char ucIndex, float fWeight, const string& strName)
-		: ucIndex(ucIndex), fWeight(fWeight), strBoneName(strName) {}
-	unsigned char	ucIndex;
+	BornRefarence(short sIndex, float fWeight, const string& Name)
+		: sIndex(sIndex), fWeight(fWeight), strBoneName(Name) {}
+	short			sIndex;
 	string			strBoneName;	//保存用
 	float			fWeight;
 };
@@ -58,7 +58,7 @@ struct Phong
 struct Texture
 {
 	string					strUVSetName;
-	string					strName;
+	string					Name;
 };
 
 struct UVSET
@@ -84,6 +84,12 @@ struct Mesh
 		: nMaterialIndex(-1)
 		, m_bEnableCullFace(false)
 		, m_bEnableLight(false)
+		, m_bEnableFog(false)
+		, Diffuse(CKFColor(1.0f))
+		, Ambient(CKFColor(1.0f))
+		, Specular(CKFColor(1.0f))
+		, Emissive(CKFColor(1.0f))
+		, Power(1.0f)
 		, m_renderPriority(RP_3D)
 #ifdef USING_DIRECTX
 		, m_nNumVtx(0)
@@ -112,8 +118,14 @@ struct Mesh
 	vector<unsigned short>	vecNormalIdx;
 	int						nMaterialIndex;	//Texture
 	string					strTexName;
+	CKFColor				Ambient;	// 環境光の反射率
+	CKFColor				Diffuse;	// 漫射光の反射率
+	CKFColor				Specular;	// 鏡面光の反射率
+	CKFColor				Emissive;	// 自発光
+	float					Power;		// ハイライトのシャープネス
 	bool					m_bEnableCullFace;
 	bool					m_bEnableLight;
+	bool					m_bEnableFog;
 	RENDER_PRIORITY			m_renderPriority; 
 
 #ifdef USING_DIRECTX
@@ -134,21 +146,21 @@ struct COL_INFO
 	CKFVec3			vOffsetScale;
 };
 
-struct Cluster
+struct BoneFrame
 {
-	string		strName;
-	CKFMtx44	mtx;
+	string		Name;
+	CKFMtx44	Matrix;
 };
 
-struct Avatar
+struct Frame
 {
-	vector<Cluster> vecCluster;
+	vector<BoneFrame> BoneFrames;
 };
 
 struct Motion
 {
-	string			strName;
-	vector<Avatar>	vecAvator;
+	string			Name;
+	vector<Frame>	Frames;
 };
 
 struct MyModel
@@ -156,6 +168,12 @@ struct MyModel
 	MyModel() : pNode(nullptr), pAnimator(nullptr){}
 	CMyNode*	pNode;
 	CAnimator*	pAnimator;
+};
+
+struct Cluster
+{
+	string		Name;
+	FbxAMatrix	RelativeInitPosition;
 };
 
 //--------------------------------------------------------------------------------
@@ -169,19 +187,20 @@ public:
 
 	void Release(void)
 	{
-		for (auto& motion : m_vecMotion)
+		for (auto& motion : Motions)
 		{
-			for (auto& avatar : motion.vecAvator)
+			for (auto& frame : motion.Frames)
 			{
-				for (auto& cluster : avatar.vecCluster) { cluster.strName.clear(); }
-				avatar.vecCluster.clear();
+				for (auto& boneFrame : frame.BoneFrames) { boneFrame.Name.clear(); }
+				frame.BoneFrames.clear();
 			}
-			motion.vecAvator.clear();
+			motion.Frames.clear();
 		}
-		m_vecMotion.clear();
+		Motions.clear();
 	}
 
-	vector<Motion> m_vecMotion;
+	vector<Motion> Motions;
+	vector<Cluster> Clusters;
 };
 
 class CMyNode
@@ -196,7 +215,7 @@ public:
 		, materialID(1)
 	{
 		listChild.clear();
-		strName.clear();
+		Name.clear();
 		vecAttributeName.clear();
 		vecTex.clear();
 		vecMesh.clear();
@@ -205,7 +224,7 @@ public:
 	~CMyNode() {}
 
 	list<CMyNode*>	listChild;
-	string			strName;
+	string			Name;
 	vector<string>	vecAttributeName;
 
 	//Offset
@@ -221,11 +240,12 @@ public:
 	unsigned short	materialID;		//Collider Mat
 
 	void Release(void);
-	void RecursiveUpdate(const Avatar& avatar);
+	void RecursiveUpdate(const Frame& currentFrame);
 	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
 	void RecursiveRecalculateVtx(void);
 	void RecursiveReverseTexV(void);
 	void RecalculateVtxByMatrix(const CKFMtx44& mtx);
+	void RecursiveRecalculateClusterID(const Frame& initFrame);
 
 private:
 	void		analyzePos(FbxMesh* pMesh);
@@ -246,7 +266,9 @@ class CKFUtilityFBX
 {
 public:
 	static MyModel	Load(const string& strFilePath);
+	static MyModel	LoadFromTxt(const string& strFilePath);
 	static bool		Save(CMyNode* pRootNode, const string& strFileName);
+	static void		LoadAnimation(const string& strFilePath, CAnimator* animator);
 
 #ifdef USING_DIRECTX
 	static int		FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx);
@@ -257,12 +279,12 @@ private:
 
 	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
 	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
+	static void			analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator);
 	static void			analyzePose(FbxScene* lScene);
-	static FbxMesh*		findMeshNode(FbxNode* pNode);
+	static void			findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton);
 	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName);
 	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static void			saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static FbxAMatrix	getGeometry(FbxNode* pNode);
 	static string		getAttributeTypeName(FbxNodeAttribute::EType type);
-
 };

@@ -34,18 +34,18 @@ public:
 	CAnimatorComponent(CGameObject* const pGameObj, const string& strPath);
 	~CAnimatorComponent() {}
 
-	bool	Init(void) override;
-	void	Uninit(void) override;
-	void	Update(void);
+	bool	Init(void) override {}
+	void	Uninit(void) override {}
+	void	Update(void) {}
 
 	//Setä÷êî
-	void	SetAttack(const bool& bAttack);
-	void	SetGrounded(const bool& bGrounded);
-	void	SetJump(const bool& bJump);
-	void	SetMove(const float& fMovement);
+	void	SetAttack(const bool& bAttack) {}
+	void	SetGrounded(const bool& bGrounded){}
+	void	SetJump(const bool& bJump) {}
+	void	SetMove(const float& fMovement){}
 
 	//Getä÷êî
-	bool	CanAct(void);
+	bool	CanAct(void) { return false; }
 
 private:
 	//--------------------------------------------------------------------------------

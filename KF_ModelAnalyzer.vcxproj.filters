@@ -120,9 +120,6 @@
     <ClCompile Include="boxColliderComponent.cpp">
       <Filter>ソース ファイル\Component</Filter>
     </ClCompile>
-    <ClCompile Include="animatorComponent.cpp">
-      <Filter>ソース ファイル\Component</Filter>
-    </ClCompile>
     <ClCompile Include="actorBehaviorComponent.cpp">
       <Filter>ソース ファイル\Component</Filter>
     </ClCompile>

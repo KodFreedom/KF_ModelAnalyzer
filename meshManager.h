@@ -41,6 +41,9 @@ public:
 	//GetŠÖ”
 	CMesh*	GetMesh(const string& strName) { return m_umMesh.at(strName).pMesh; }
 
+	CMesh*	loadFromMesh(const string& strFileName, string& strTexName);
+	CMesh*	loadFromXFile(const string& strPath, string& strTexName);
+
 private:
 	//--------------------------------------------------------------------------------
 	//  \‘¢‘Ì’è‹`
@@ -57,8 +60,6 @@ private:
 	//  ŠÖ”éŒ¾
 	//--------------------------------------------------------------------------------
 	CMesh*	createMesh(const string& strName);
-	CMesh*	loadFromMesh(const string& strFileName, string& strTexName);
-	CMesh*	loadFromXFile(const string& strPath, string& strTexName);
 	void	createCube(CMesh* pMesh);
 	void	createSphere(CMesh* pMesh);
 	void	createSkyBox(CMesh* pMesh);

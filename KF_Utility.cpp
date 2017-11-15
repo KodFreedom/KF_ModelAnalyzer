@@ -201,3 +201,27 @@ void CKFUtility::CorrectTexType(string& strTexType)
 		strTexType = "png";
 	}
 }
+
+//--------------------------------------------------------------------------------
+//	関数名：GetStringUntilString
+//  関数説明：文字列まで文字列を取る
+//	引数：	file：ファイルの文字列
+//			compare：比較する文字
+//			buffer：文字列保存用ところ
+//	戻り値：ファイルが終わったら-1を返す、そうじゃないなら文字数を返す
+//--------------------------------------------------------------------------------
+int CKFUtility::GetStringUntilString(FILE* filePointer, const string& compare, string& buffer)
+{
+	static string nullBuffer;
+	if (nullBuffer.empty()) nullBuffer.resize(256);
+	do
+	{
+		buffer = nullBuffer;
+		fgets(&buffer[0], (int)buffer.capacity(), filePointer);
+		if (buffer.find(compare) != string::npos)
+		{
+			return buffer.length();
+		}
+	} while (buffer.find("END_SCRIPT") == string::npos);
+	return -1;
+}

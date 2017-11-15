@@ -57,7 +57,7 @@ private:
 	void		showAnimatorWindow(void);
 	void		showCameraWindow(void);
 	void		changeTexture(Mesh& mesh);
-
+	void		addAnimation(void);
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
 	//--------------------------------------------------------------------------------
