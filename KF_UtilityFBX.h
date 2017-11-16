@@ -159,8 +159,15 @@ struct Frame
 
 struct Motion
 {
+	Motion() : StartFrame(0), EndFrame(0)
+	{
+		Name.clear();
+		Frames.clear();
+	}
 	string			Name;
 	vector<Frame>	Frames;
+	int				StartFrame;
+	int				EndFrame;
 };
 
 struct MyModel

@@ -197,7 +197,7 @@ void CManager::Update(void)
 	m_pCollisionSystem->Update();
 
 	//•¨—‰‰ŽZXV
-	m_pPhysicsSystem->Update();
+	//m_pPhysicsSystem->Update();
 }
 
 //--------------------------------------------------------------------------------
