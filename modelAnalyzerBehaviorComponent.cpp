@@ -319,7 +319,7 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 {
-	if (!pNode) { return; }
+	if (!pNode) return;
 
 	if (ImGui::TreeNode(pNode->Name.c_str()))
 	{
