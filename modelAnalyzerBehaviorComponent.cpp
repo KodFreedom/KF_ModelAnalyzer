@@ -89,9 +89,10 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (m_pRootNode && m_pAnimator && m_bPlayMotion)
 	{
-		auto& avatar = m_pAnimator->Motions[m_nNoMotion].Frames[m_nCntFrame];
+		auto& motion = m_pAnimator->Motions[m_nNoMotion];
+		auto& avatar = motion.Frames[m_nCntFrame];
 		m_pRootNode->RecursiveUpdate(avatar);
-		m_nCntFrame = (m_nCntFrame + 1) % (int)m_pAnimator->Motions[m_nNoMotion].Frames.size();
+		m_nCntFrame = (m_nCntFrame - motion.StartFrame + 1) % (motion.EndFrame - motion.StartFrame) + motion.StartFrame;
 	}
 }
 
@@ -319,7 +320,7 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 {
-	if (!pNode) { return; }
+	if (!pNode) return;
 
 	if (ImGui::TreeNode(pNode->Name.c_str()))
 	{
@@ -531,7 +532,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 {
-	if (!m_bAnimatorWindow) { return; }
+	if (!m_bAnimatorWindow) return;
 
 	// Play
 	if (ImGui::Button("Play")) m_bPlayMotion ^= 1;
@@ -565,6 +566,57 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	}
 	delete[] arr;
 	arr = nullptr;
+
+	// Animation Current
+	auto& current = m_pAnimator->Motions[m_nNoMotion];
+	ImGui::Text("CurrentAnimation : %s", current.Name.c_str());
+	char buffer[256] = {};
+	if (ImGui::InputText("EditName", buffer, 256))
+	{
+		current.Name = buffer;
+	}
+
+	// Start Frame
+	int startFrame = current.StartFrame;
+	if (ImGui::InputInt("StartFrame", &startFrame))
+	{
+		if (startFrame <= current.EndFrame)
+		{
+			current.StartFrame = startFrame;
+		}
+	}
+
+	// End Frame
+	int endFrame = current.EndFrame;
+	if (ImGui::InputInt("EndFrame", &endFrame))
+	{
+		if (endFrame >= current.StartFrame)
+		{
+			current.EndFrame = endFrame;
+		}
+	}
+
+	// Delete Frame that out of range
+	if (ImGui::Button("Delete frames that out of range"))
+	{
+		if (current.StartFrame > 0 || current.EndFrame < current.Frames.size() - 1)
+		{
+			vector<Frame> newFrames;
+			newFrames.reserve(current.EndFrame - current.StartFrame);
+			for (int count = current.StartFrame; count < current.EndFrame; ++count)
+			{
+				newFrames.push_back(current.Frames[count]);
+			}
+			current.Frames.clear();
+			for (auto& frame : newFrames)
+			{
+				current.Frames.push_back(frame);
+			}
+			current.Frames.shrink_to_fit();
+			current.StartFrame = 0;
+			current.EndFrame = current.Frames.size() - 1;
+		}
+	}
 
 	// AddAnimation
 	if (ImGui::Button("Add Animation"))
