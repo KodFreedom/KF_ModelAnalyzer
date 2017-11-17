@@ -154,6 +154,8 @@ struct BoneFrame
 
 struct Frame
 {
+	Frame() {}
+	~Frame() { BoneFrames.clear(); BoneFrames.shrink_to_fit(); }
 	vector<BoneFrame> BoneFrames;
 };
 

@@ -1571,6 +1571,7 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 			motion.Frames.push_back(frame);
 		}
 		motion.Frames.shrink_to_fit();
+		motion.EndFrame = motion.Frames.size() - 1;
 		pAnimator->Motions.push_back(motion);
 	}
 	pAnimator->Motions.shrink_to_fit();
@@ -1653,6 +1654,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 			motion.Frames.push_back(frame);
 		}
 		motion.Frames.shrink_to_fit();
+		motion.EndFrame = motion.Frames.size() - 1;
 		animator->Motions.push_back(motion);
 	}
 	animator->Motions.shrink_to_fit();
