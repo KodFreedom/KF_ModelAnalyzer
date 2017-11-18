@@ -68,7 +68,7 @@ void CAnimator::UpdateClusterWorld(void)
 {
 	for (auto& cluster : Clusters)
 	{
-		cluster.World = cluster.Node->world * cluster.RelativeInitPosition;
+		cluster.World = cluster.RelativeInitPosition * cluster.Node->world;
 	}
 }
 
@@ -164,7 +164,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 		VERTEX_3D* pVtx;
 		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
 
-#pragma omp parallel for 
+//#pragma omp parallel for 
 		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
 		{
 			CKFMtx44 mtx;
@@ -174,7 +174,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 				ZeroMemory(&mtx, sizeof(CKFMtx44));
 				for (auto& bornRefarence : vtxDX.vecBornRefarence)
 				{
-					mtx += clusters[bornRefarence.sIndex].Node->world * bornRefarence.fWeight;
+					mtx += clusters[bornRefarence.sIndex].World * bornRefarence.fWeight;
 				}
 			}
 			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
@@ -198,7 +198,7 @@ void CMyNode::RecursiveRecalculateClusterID(const Frame& initFrame)
 {
 	for (auto& mesh : vecMesh)
 	{
-#pragma omp parallel for 
+//#pragma omp parallel for 
 		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
 		{
 			auto& vtxDX = mesh.m_vecVtx[nCnt];
@@ -220,6 +220,34 @@ void CMyNode::RecursiveRecalculateClusterID(const Frame& initFrame)
 	for (auto pNode : listChild)
 	{
 		pNode->RecursiveRecalculateClusterID(initFrame);
+	}
+}
+
+void CMyNode::RecursiveTransformVtxToBoneSpace(const vector<Cluster>& clusters)
+{
+	for (auto& mesh : vecMesh)
+	{
+//#pragma omp parallel for 
+		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
+		{
+			CKFMtx44 mtx;
+			auto& vtxDX = mesh.m_vecVtx[nCnt];
+			if (!vtxDX.vecBornRefarence.empty())
+			{
+				ZeroMemory(&mtx, sizeof(CKFMtx44));
+				for (auto& bornRefarence : vtxDX.vecBornRefarence)
+				{
+					mtx += clusters[bornRefarence.sIndex].RelativeInitPosition * bornRefarence.fWeight;
+				}
+			}
+			//vtxDX.vtx.vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
+		}
+	}
+
+	//Child
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveTransformVtxToBoneSpace(clusters);
 	}
 }
 
@@ -468,7 +496,6 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 //--------------------------------------------------------------------------------
 void CMyNode::RecursiveRecalculateVtx(void)
 {
-
 #ifdef USING_DIRECTX
 	for (auto& mesh : vecMesh)
 	{
@@ -968,29 +995,29 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 
 		// ƒNƒ‰ƒXƒ^[‚Ì”‚ðŽæ“¾ 
 		int nNumCluster = pSkin->GetClusterCount();
-		vector<CKFMtx44> matrices;
-		matrices.resize(meshNow.vecPoint.size());
-		CKFMtx44 zero;
-		ZeroMemory(&zero, sizeof(CKFMtx44));
-		for (auto& mtx : matrices) { mtx = zero; }
+		//vector<CKFMtx44> matrices;
+		//matrices.resize(meshNow.vecPoint.size());
+		//CKFMtx44 zero;
+		//ZeroMemory(&zero, sizeof(CKFMtx44));
+		//for (auto& mtx : matrices) { mtx = zero; }
 
 		for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
 		{
 			// In FBX, to get the local coordinates in "LinkNode" space you need to do two steps:
 			// 1. Control points are stored as in the mesh's object space. First move them from object space to world space.
 			// Note: For all clusters related to one mesh, their Transform matrix is actually the same, because there is actually only one mesh.
-			FbxAMatrix meshGlobal;
-			auto lCluster = pSkin->GetCluster(nCntCluster);
-			lCluster->GetTransformMatrix(meshGlobal);
-			FbxAMatrix meshGeometry = pMesh->GetNode()->EvaluateLocalTransform();
-			meshGlobal *= meshGeometry;
-			auto& kfMeshClobal = CKFMtx44::FbxToMtx(meshGlobal);
-			
-			// 2. Transform control points from World Space to the Bonefs space at binding moment.
-			FbxAMatrix boneBindingMatrix;
-			lCluster->GetTransformLinkMatrix(boneBindingMatrix);
-			auto& boneBindingMatrixInverse = CKFMtx44::FbxToMtx(boneBindingMatrix.Inverse());
-			auto& result = boneBindingMatrixInverse * kfMeshClobal;
+			//FbxAMatrix meshGlobal;
+			//auto lCluster = pSkin->GetCluster(nCntCluster);
+			//lCluster->GetTransformMatrix(meshGlobal);
+			////FbxAMatrix meshGeometry = pMesh->GetNode()->EvaluateLocalTransform();
+			////meshGlobal *= meshGeometry;
+			//auto& kfMeshClobal = CKFMtx44::FbxToMtx(meshGlobal);
+			//
+			//// 2. Transform control points from World Space to the Bonefs space at binding moment.
+			//FbxAMatrix boneBindingMatrix;
+			//lCluster->GetTransformLinkMatrix(boneBindingMatrix);
+			//auto& boneBindingMatrixInverse = CKFMtx44::FbxToMtx(boneBindingMatrix.Inverse());
+			//auto& result = boneBindingMatrixInverse * kfMeshClobal;
 			//for (auto& point : meshNow.vecPoint)
 			//{
 			//	// lDstVertex = meshGlobal.MultT(lSrcVertex);
@@ -1014,14 +1041,14 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 					BornRefarence(nCntCluster, static_cast<float>(pWeightArray[nCnt]), strClusterName));
 				
 				// Test
-				matrices[pPointIndexArray[nCnt]] += result * static_cast<float>(pWeightArray[nCnt]);
+				//matrices[pPointIndexArray[nCnt]] += result * static_cast<float>(pWeightArray[nCnt]);
 			}
 		}
 
-		for (int count = 0; count < meshNow.vecPoint.size(); ++count)
-		{
-			meshNow.vecPoint[count].vPos = CKFMath::Vec3TransformCoord(meshNow.vecPoint[count].vPos, matrices[count]);
-		}
+		//for (int count = 0; count < meshNow.vecPoint.size(); ++count)
+		//{
+		//	meshNow.vecPoint[count].vPos = CKFMath::Vec3TransformCoord(meshNow.vecPoint[count].vPos, matrices[count]);
+		//}
 	}
 }
 

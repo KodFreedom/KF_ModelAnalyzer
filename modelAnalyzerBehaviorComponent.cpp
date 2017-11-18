@@ -103,7 +103,7 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 
 	if (m_pAnimator && m_bPlayMotion)
 	{
-		//m_pAnimator->UpdateClusterWorld();
+		m_pAnimator->UpdateClusterWorld();
 		m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
 	}
 }
@@ -179,6 +179,8 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		if (m_pAnimator)
 		{
 			m_pRootNode->RecursiveRecalculateClusterID(myModel.pAnimator->Motions[0].Frames[0]);
+			m_pRootNode->RecursiveTransformVtxToBoneSpace(m_pAnimator->Clusters);
+			m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
 		}
 	}
 	else

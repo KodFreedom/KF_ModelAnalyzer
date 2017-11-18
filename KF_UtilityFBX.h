@@ -263,6 +263,7 @@ public:
 	void RecursiveReverseTexV(void);
 	void RecalculateVtxByMatrix(const CKFMtx44& mtx);
 	void RecursiveRecalculateClusterID(const Frame& initFrame);
+	void RecursiveTransformVtxToBoneSpace(const vector<Cluster>& clusters);
 
 private:
 	void		analyzePos(FbxMesh* pMesh);
