@@ -54,6 +54,8 @@ void CModelAnalyzerCamera::Update(void)
 	auto pInput = CMain::GetManager()->GetInputManager();
 	auto pMouse = CMain::GetManager()->GetInputManager()->GetMouse();
 
+	if (!pMouse->GetMousePress(CMouseDX::MOUSE_RIGHT)) return;
+	
 	auto vRot = CKFMath::sc_vZero;
 	float fZoomSpeed = 0.0f;
 	float fAxisX = pInput->GetMoveHorizontal();
@@ -63,16 +65,13 @@ void CModelAnalyzerCamera::Update(void)
 	float fZoom = pInput->GetZoom();
 
 	//’–Ú“_‰ñ“]
-	if (pMouse->GetMousePress(CMouseDX::MOUSE_RIGHT))
-	{
-		if (fabsf(fRAxisX) > sc_fStartRotMin)
-		{//Y²‰ñ“]
-			vRot.m_fY = sc_fRotSpeed * fRAxisX;
-		}
-		if (fabsf(fRAxisY) > sc_fStartRotMin)
-		{//X²‰ñ“]
-			vRot.m_fX = sc_fRotSpeed * fRAxisY;
-		}
+	if (fabsf(fRAxisX) > sc_fStartRotMin)
+	{//Y²‰ñ“]
+		vRot.m_fY = sc_fRotSpeed * fRAxisX;
+	}
+	if (fabsf(fRAxisY) > sc_fStartRotMin)
+	{//X²‰ñ“]
+		vRot.m_fX = sc_fRotSpeed * fRAxisY;
 	}
 
 	//Šg‘åk¬

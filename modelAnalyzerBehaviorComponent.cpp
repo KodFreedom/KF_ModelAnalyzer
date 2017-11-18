@@ -34,7 +34,9 @@
 //--------------------------------------------------------------------------------
 CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* const pGameObj)
 	: CBehaviorComponent(pGameObj)
-	, m_bDrawNormal(false)
+	, m_bDrawSkeleton(true)
+	, m_bDrawMesh(true)
+	, m_bDrawCollider(true)
 	, m_bReverseV(false)
 	, m_bSaved(false)
 	, m_pRootNode(nullptr)
@@ -87,12 +89,22 @@ void CModelAnalyzerBehaviorComponent::Uninit(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::Update(void)
 {
-	if (m_pRootNode && m_pAnimator && m_bPlayMotion)
+	if (!m_pRootNode) return;
+
+	if (m_pAnimator && m_bPlayMotion)
 	{
 		auto& motion = m_pAnimator->Motions[m_nNoMotion];
 		auto& avatar = motion.Frames[m_nCntFrame];
-		m_pRootNode->RecursiveUpdate(avatar);
+		m_pAnimator->UpdateBones(avatar);
 		m_nCntFrame = (m_nCntFrame - motion.StartFrame + 1) % (motion.EndFrame - motion.StartFrame) + motion.StartFrame;
+	}
+
+	m_pRootNode->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
+
+	if (m_pAnimator && m_bPlayMotion)
+	{
+		//m_pAnimator->UpdateClusterWorld();
+		m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
 	}
 }
 
@@ -242,6 +254,11 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	// Camera Window
 	if (ImGui::Button("Camera")) m_bCameraWindow ^= 1;
 
+	// DrawFlag
+	if (ImGui::Button("Draw Skeleton")) m_bDrawSkeleton ^= 1;
+	if (ImGui::Button("Draw Mesh")) m_bDrawMesh ^= 1;
+	if (ImGui::Button("Draw Collider")) m_bDrawCollider ^= 1;
+
 	// End
 	ImGui::End();
 }
@@ -333,9 +350,48 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Offset
-			ImGui::InputFloat3("Trans", &pNode->vTrans.m_fX);
-			ImGui::SliderFloat3("Rot", &pNode->vRot.m_fX, 0.0f, KF_PI * 2.0f);
-			ImGui::InputFloat3("Scale", &pNode->vScale.m_fX);
+			pNode->vTrans.m_fX = pNode->local.m_af[3][0];
+			pNode->vTrans.m_fY = pNode->local.m_af[3][1];
+			pNode->vTrans.m_fZ = pNode->local.m_af[3][2];
+			if (ImGui::InputFloat3("Trans", &pNode->vTrans.m_fX))
+			{
+				CKFMath::MtxIdentity(pNode->local);
+				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
+				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
+				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMtx44 mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
+				pNode->local *= mtxRot;
+				CKFMtx44 mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
+				pNode->local *= mtxPos;
+			}
+			if (ImGui::SliderFloat3("Rot", &pNode->vRot.m_fX, 0.0f, KF_PI * 2.0f))
+			{
+				CKFMath::MtxIdentity(pNode->local);
+				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
+				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
+				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMtx44 mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
+				pNode->local *= mtxRot;
+				CKFMtx44 mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
+				pNode->local *= mtxPos;
+			}
+			if (ImGui::InputFloat3("Scale", &pNode->vScale.m_fX))
+			{
+				CKFMath::MtxIdentity(pNode->local);
+				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
+				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
+				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMtx44 mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
+				pNode->local *= mtxRot;
+				CKFMtx44 mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
+				pNode->local *= mtxPos;
+			}
 
 			//Mesh
 			if (ImGui::TreeNode("Mesh"))

@@ -82,6 +82,9 @@
     <Filter Include="ソース ファイル\ImGui">
       <UniqueIdentifier>{919fcbd3-274d-408d-bcf0-851eaa988f19}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\FBX">
+      <UniqueIdentifier>{031f33f2-2bbf-4df8-8359-153cf52077ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KF_UtilityDX.cpp">
@@ -397,6 +400,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imgui_impl_dx9.h">
       <Filter>ヘッダー ファイル\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="node.h">
+      <Filter>ヘッダー ファイル\FBX</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

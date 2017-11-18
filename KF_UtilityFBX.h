@@ -181,8 +181,11 @@ struct MyModel
 
 struct Cluster
 {
+	Cluster() : Node(nullptr) {}
 	string		Name;
-	FbxAMatrix	RelativeInitPosition;
+	CMyNode*	Node;
+	CKFMtx44	RelativeInitPosition;
+	CKFMtx44	World;
 };
 
 //--------------------------------------------------------------------------------
@@ -210,6 +213,8 @@ public:
 
 	vector<Motion> Motions;
 	vector<Cluster> Clusters;
+	void UpdateBones(const Frame& current);
+	void UpdateClusterWorld(void);
 };
 
 class CMyNode
@@ -240,6 +245,8 @@ public:
 	CKFVec3			vTrans;
 	CKFVec3			vRot;
 	CKFVec3			vScale;
+	CKFMtx44		local;
+	CKFMtx44		world;
 
 	vector<Texture>	vecTex;
 	vector<Mesh>	vecMesh;
@@ -249,8 +256,9 @@ public:
 	unsigned short	materialID;		//Collider Mat
 
 	void Release(void);
-	void RecursiveUpdate(const Frame& currentFrame);
-	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
+	void RecursiveUpdateMatrix(const CKFMtx44& parent);
+	void RecursiveUpdateSkin(const vector<Cluster>& clusters);
+	void RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider);
 	void RecursiveRecalculateVtx(void);
 	void RecursiveReverseTexV(void);
 	void RecalculateVtxByMatrix(const CKFMtx44& mtx);
@@ -291,6 +299,7 @@ private:
 	static void			analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator);
 	static void			analyzePose(FbxScene* lScene);
 	static void			findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton);
+	static void			matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node);
 	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName);
 	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static void			saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);

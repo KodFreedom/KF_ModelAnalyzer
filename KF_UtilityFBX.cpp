@@ -56,6 +56,22 @@ bool VtxDX::operator==(const VtxDX& vValue) const
 //--------------------------------------------------------------------------------
 //  クラス
 //--------------------------------------------------------------------------------
+void CAnimator::UpdateBones(const Frame& current)
+{
+	for (int count = 0; count < Clusters.size(); ++count)
+	{
+		Clusters[count].Node->local = current.BoneFrames[count].Matrix;
+	}
+}
+
+void CAnimator::UpdateClusterWorld(void)
+{
+	for (auto& cluster : Clusters)
+	{
+		cluster.World = cluster.Node->world * cluster.RelativeInitPosition;
+	}
+}
+
 //--------------------------------------------------------------------------------
 //
 //  MyNode
@@ -123,9 +139,22 @@ void CMyNode::Release(void)
 }
 
 //--------------------------------------------------------------------------------
-//  RecursiveUpdate
+//  RecursiveUpdateMatrix
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveUpdate(const Frame& currentFrame)
+void CMyNode::RecursiveUpdateMatrix(const CKFMtx44& parent)
+{
+	world = local;
+	world *= parent;
+	for (auto pNode : listChild)
+	{
+		pNode->RecursiveUpdateMatrix(world);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveUpdateSkin
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 {
 	for (auto& mesh : vecMesh)
 	{
@@ -134,7 +163,7 @@ void CMyNode::RecursiveUpdate(const Frame& currentFrame)
 		// 頂点の座標変換 
 		VERTEX_3D* pVtx;
 		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
-		
+
 #pragma omp parallel for 
 		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
 		{
@@ -145,7 +174,7 @@ void CMyNode::RecursiveUpdate(const Frame& currentFrame)
 				ZeroMemory(&mtx, sizeof(CKFMtx44));
 				for (auto& bornRefarence : vtxDX.vecBornRefarence)
 				{
-					mtx += currentFrame.BoneFrames[bornRefarence.sIndex].Matrix * bornRefarence.fWeight;
+					mtx += clusters[bornRefarence.sIndex].Node->world * bornRefarence.fWeight;
 				}
 			}
 			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
@@ -158,7 +187,7 @@ void CMyNode::RecursiveUpdate(const Frame& currentFrame)
 	//Child
 	for (auto pNode : listChild)
 	{
-		pNode->RecursiveUpdate(currentFrame);
+		pNode->RecursiveUpdateSkin(clusters);
 	}
 }
 
@@ -197,100 +226,82 @@ void CMyNode::RecursiveRecalculateClusterID(const Frame& initFrame)
 //--------------------------------------------------------------------------------
 //  RecursiveDraw
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
+void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider)
 {
 #ifdef USING_DIRECTX
 	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
 
-	CKFMtx44 mtxThis;
-
-	//拡縮
-	mtxThis.m_af[0][0] = vScale.m_fX;
-	mtxThis.m_af[1][1] = vScale.m_fY;
-	mtxThis.m_af[2][2] = vScale.m_fZ;
-
-	//回転
-	CKFMtx44 mtxRot;
-	CKFMath::MtxRotationYawPitchRoll(mtxRot, vRot);
-	mtxThis *= mtxRot;
-
-	//平行移動
-	CKFMtx44 mtxPos;
-	CKFMath::MtxTranslation(mtxPos, vTrans);
-	mtxThis *= mtxPos;
-
-	//親の行列とかける
-	mtxThis *= mtxParent;
-
 	//Mesh
-	for (auto& mesh : vecMesh)
+	if (drawMesh)
 	{
-		if (mesh.m_renderPriority == RP_3D_ALPHATEST)
+		for (auto& mesh : vecMesh)
 		{
-			pDevice->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x00000001);
-			pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-			pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-		}
+			if (mesh.m_renderPriority == RP_3D_ALPHATEST)
+			{
+				pDevice->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x00000001);
+				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+				pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			}
 
-		CRenderState* renderState = nullptr;
-		if (mesh.m_bEnableLight)
-		{
-			if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOnCullOn; }
-			else { renderState = &CDrawComponent::s_lightOnCullOff; }
-		}
-		else
-		{
-			if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOffCullOn; }
-			else { renderState = &CDrawComponent::s_lightOffCullOff; }
-		}
-		
-		renderState->SetRenderState();
+			CRenderState* renderState = nullptr;
+			if (mesh.m_bEnableLight)
+			{
+				if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOnCullOn; }
+				else { renderState = &CDrawComponent::s_lightOnCullOff; }
+			}
+			else
+			{
+				if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOffCullOn; }
+				else { renderState = &CDrawComponent::s_lightOffCullOff; }
+			}
 
-		//Texture
-		if (!mesh.strTexName.empty())
-		{
-			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].Name*/);
-			pDevice->SetTexture(0, pTexture);
-		}
+			renderState->SetRenderState();
 
-		D3DXMATRIX mtx = mtxThis;
-		pDevice->SetTransform(D3DTS_WORLD, &mtx);
+			//Texture
+			if (!mesh.strTexName.empty())
+			{
+				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].Name*/);
+				pDevice->SetTexture(0, pTexture);
+			}
 
-		// 頂点バッファをデータストリームに設定
-		pDevice->SetStreamSource(
-			0,						//ストリーム番号
-			mesh.m_pVtxBuffer,		//頂点バッファ
-			0,						//オフセット（開始位置）
-			sizeof(VERTEX_3D));		//ストライド量
+			D3DXMATRIX mtx = world;
+			pDevice->SetTransform(D3DTS_WORLD, &mtx);
 
-		// 頂点インデックスの設定
-		pDevice->SetIndices(mesh.m_pIdxBuffer);
+			// 頂点バッファをデータストリームに設定
+			pDevice->SetStreamSource(
+				0,						//ストリーム番号
+				mesh.m_pVtxBuffer,		//頂点バッファ
+				0,						//オフセット（開始位置）
+				sizeof(VERTEX_3D));		//ストライド量
 
-		// 頂点フォーマットの設定
-		pDevice->SetFVF(FVF_VERTEX_3D);
+										// 頂点インデックスの設定
+			pDevice->SetIndices(mesh.m_pIdxBuffer);
 
-		// マテリアルの設定
-		//D3DMATERIAL9 mat = CMain::GetManager()->GetMaterialManager()->GetMaterial(m_usMatID);
-		//pDevice->SetMaterial(&mat);
+			// 頂点フォーマットの設定
+			pDevice->SetFVF(FVF_VERTEX_3D);
 
-		//プリミティブ描画
-		pDevice->DrawIndexedPrimitive(
-			D3DPT_TRIANGLELIST,
-			0,
-			0,
-			mesh.m_nNumVtx,
-			0,
-			mesh.m_nNumPolygon);
+			// マテリアルの設定
+			//D3DMATERIAL9 mat = CMain::GetManager()->GetMaterialManager()->GetMaterial(m_usMatID);
+			//pDevice->SetMaterial(&mat);
 
-		renderState->ResetRenderState();
+			//プリミティブ描画
+			pDevice->DrawIndexedPrimitive(
+				D3DPT_TRIANGLELIST,
+				0,
+				0,
+				mesh.m_nNumVtx,
+				0,
+				mesh.m_nNumPolygon);
 
-		if (mesh.m_renderPriority == RP_3D_ALPHATEST)
-		{
-			pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			renderState->ResetRenderState();
+
+			if (mesh.m_renderPriority == RP_3D_ALPHATEST)
+			{
+				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			}
 		}
 	}
 
-	//Draw Collider
 	if(!s_pMeshSphere)
 	{
 		CMain::GetManager()->GetTextureManager()->UseTexture("polygon.png");
@@ -303,44 +314,60 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 	pDevice->GetMaterial(&matDef);
 	pDevice->SetTexture(0, pTexture);
 	pDevice->SetMaterial(&material);
-	for (auto& col : listCollider)
+
+	// Skeleton
+	if (drawSkeleton)
 	{
-		CKFMtx44 mtxCol;
-
-		//拡縮
-		mtxCol.m_af[0][0] = col.vOffsetScale.m_fX;
-		mtxCol.m_af[1][1] = col.vOffsetScale.m_fY;
-		mtxCol.m_af[2][2] = col.vOffsetScale.m_fZ;
-
-		//回転
-		CKFMath::MtxRotationYawPitchRoll(mtxRot, col.vOffsetRot);
-		mtxCol *= mtxRot;
-
-		//平行移動
-		CKFMath::MtxTranslation(mtxPos, col.vOffsetPos);
-		mtxCol *= mtxPos;
-		mtxCol *= mtxThis;
-
-		if (col.colType == CS::COL_SPHERE)
+		if (!vecAttributeName.empty() && vecAttributeName[0] == "skeleton")
 		{
-			D3DXMATRIX mtx = mtxCol;
+			D3DXMATRIX mtx = world;
 			pDevice->SetTransform(D3DTS_WORLD, &mtx);
 			s_pMeshSphere->DrawSubset(0);
 		}
-		else if (col.colType == CS::COL_AABB)
+	}
+	
+	//Draw Collider
+	if (drawCollider)
+	{
+		for (auto& col : listCollider)
 		{
-			mtxCol.m_af[0][1] = mtxCol.m_af[0][2]
-				= mtxCol.m_af[1][0] = mtxCol.m_af[1][2]
-				= mtxCol.m_af[2][0] = mtxCol.m_af[2][1] = 0.0f;
-			D3DXMATRIX mtx = mtxCol;
-			pDevice->SetTransform(D3DTS_WORLD, &mtx);
-			s_pMeshCube->DrawSubset(0);
-		}
-		else if (col.colType == CS::COL_OBB) 
-		{
-			D3DXMATRIX mtx = mtxCol;
-			pDevice->SetTransform(D3DTS_WORLD, &mtx);
-			s_pMeshCube->DrawSubset(0);
+			CKFMtx44 mtxCol, mtxRot, mtxPos;
+
+			//拡縮
+			mtxCol.m_af[0][0] = col.vOffsetScale.m_fX;
+			mtxCol.m_af[1][1] = col.vOffsetScale.m_fY;
+			mtxCol.m_af[2][2] = col.vOffsetScale.m_fZ;
+
+			//回転
+			CKFMath::MtxRotationYawPitchRoll(mtxRot, col.vOffsetRot);
+			mtxCol *= mtxRot;
+
+			//平行移動
+			CKFMath::MtxTranslation(mtxPos, col.vOffsetPos);
+			mtxCol *= mtxPos;
+			mtxCol *= world;
+
+			if (col.colType == CS::COL_SPHERE)
+			{
+				D3DXMATRIX mtx = mtxCol;
+				pDevice->SetTransform(D3DTS_WORLD, &mtx);
+				s_pMeshSphere->DrawSubset(0);
+			}
+			else if (col.colType == CS::COL_AABB)
+			{
+				mtxCol.m_af[0][1] = mtxCol.m_af[0][2]
+					= mtxCol.m_af[1][0] = mtxCol.m_af[1][2]
+					= mtxCol.m_af[2][0] = mtxCol.m_af[2][1] = 0.0f;
+				D3DXMATRIX mtx = mtxCol;
+				pDevice->SetTransform(D3DTS_WORLD, &mtx);
+				s_pMeshCube->DrawSubset(0);
+			}
+			else if (col.colType == CS::COL_OBB)
+			{
+				D3DXMATRIX mtx = mtxCol;
+				pDevice->SetTransform(D3DTS_WORLD, &mtx);
+				s_pMeshCube->DrawSubset(0);
+			}
 		}
 	}
 	pDevice->SetTexture(0, nullptr);
@@ -349,7 +376,7 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 	//Child
 	for (auto pNode : listChild)
 	{
-		pNode->RecursiveDraw(bDrawNormal, mtxThis);
+		pNode->RecursiveDraw(drawSkeleton, drawMesh, drawCollider);
 	}
 #else
 	glPushMatrix();
@@ -441,6 +468,7 @@ void CMyNode::RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent)
 //--------------------------------------------------------------------------------
 void CMyNode::RecursiveRecalculateVtx(void)
 {
+
 #ifdef USING_DIRECTX
 	for (auto& mesh : vecMesh)
 	{
@@ -940,71 +968,59 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 
 		// クラスターの数を取得 
 		int nNumCluster = pSkin->GetClusterCount();
-		//if (animator.vecBone.empty()) { animator.vecBone.resize(nNumCluster); }
+		vector<CKFMtx44> matrices;
+		matrices.resize(meshNow.vecPoint.size());
+		CKFMtx44 zero;
+		ZeroMemory(&zero, sizeof(CKFMtx44));
+		for (auto& mtx : matrices) { mtx = zero; }
 
 		for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
 		{
+			// In FBX, to get the local coordinates in "LinkNode" space you need to do two steps:
+			// 1. Control points are stored as in the mesh's object space. First move them from object space to world space.
+			// Note: For all clusters related to one mesh, their Transform matrix is actually the same, because there is actually only one mesh.
+			FbxAMatrix meshGlobal;
+			auto lCluster = pSkin->GetCluster(nCntCluster);
+			lCluster->GetTransformMatrix(meshGlobal);
+			FbxAMatrix meshGeometry = pMesh->GetNode()->EvaluateLocalTransform();
+			meshGlobal *= meshGeometry;
+			auto& kfMeshClobal = CKFMtx44::FbxToMtx(meshGlobal);
+			
+			// 2. Transform control points from World Space to the Bone’s space at binding moment.
+			FbxAMatrix boneBindingMatrix;
+			lCluster->GetTransformLinkMatrix(boneBindingMatrix);
+			auto& boneBindingMatrixInverse = CKFMtx44::FbxToMtx(boneBindingMatrix.Inverse());
+			auto& result = boneBindingMatrixInverse * kfMeshClobal;
+			//for (auto& point : meshNow.vecPoint)
+			//{
+			//	// lDstVertex = meshGlobal.MultT(lSrcVertex);
+			//	point.vPos = CKFMath::Vec3TransformCoord(point.vPos, kfMeshClobal);
+			//	
+			//	// lBoneBindingMatrix.Inverse() * lDstVertex;
+			//	point.vPos = CKFMath::Vec3TransformCoord(point.vPos, boneBindingMatrixInverse);
+			//}
+
 			// クラスタを取得
 			auto pCluster = pSkin->GetCluster(nCntCluster);
 			string strClusterName = pCluster->GetLink()->GetName();
 
 			// このクラスタが影響を及ぼす頂点インデックスの個数を取得 
 			int nNumPointIdx = pCluster->GetControlPointIndicesCount();
-			/*
-			////if (!nNumPointIdx)
-			////{// このメッシュにおいて、このクラスタは無視していいと思う...                 
-			////	meshNow.vecMtx.push_back(mtxIdentity);
-			////	continue;
-			////}
-			//if (animator.vecBone[nCntCluster].Name.empty())
-			//{
-			//	auto& bone = animator.vecBone[nCntCluster];
-
-			//	// Bone's Name
-			//	bone.Name = pCluster->GetLink()->GetName();
-
-			//	// 初期姿勢行列の取得 
-			//	FbxAMatrix lReferenceGlobalInitPosition;
-			//	FbxAMatrix lReferenceGlobalCurrentPosition;
-			//	FbxAMatrix lClusterGlobalInitPosition;
-
-			//	pCluster->GetTransformMatrix(lReferenceGlobalInitPosition);
-			//	// lReferenceGlobalCurrentPosition = pGlobalPosition; // <- たぶんワールド座標変換行列ではないかと  
-
-			//	// Multiply lReferenceGlobalInitPosition by Geometric Transformation
-			//	auto lReferenceGeometry = getGeometry(pMesh->GetNode());
-			//	lReferenceGlobalInitPosition *= lReferenceGeometry;
-
-			//	// Get the link initial global position and the link current global position.
-			//	pCluster->GetTransformLinkMatrix(lClusterGlobalInitPosition);
-			//	auto lClusterGlobalCurrentPosition = pCluster->GetLink()->EvaluateGlobalTransform(1);
-
-			//	// Compute the initial position of the link relative to the reference. 
-			//	auto lClusterRelativeInitPosition = lClusterGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
-
-			//	// Compute the current position of the link relative to the reference. 
-			//	auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * lClusterGlobalCurrentPosition;
-
-			//	// Compute the shift of the link relative to the reference. 
-			//	auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * lClusterRelativeInitPosition;
-
-			//	// ↑ 初期姿勢行列も考慮されたモーションボーン行列なので、これで頂点座標を変換するだけで良い 
-			//	for (int nY = 0; nY < 4; ++nY)
-			//	{
-			//		for (int nX = 0; nX < 4; ++nX)
-			//		{
-			//			bone.mtx.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
-			//		}
-			//	}
-
-			//	meshNow.vecMtx.push_back(mtx);*/
 			auto pPointIndexArray = pCluster->GetControlPointIndices();
 			auto pWeightArray = pCluster->GetControlPointWeights();
 			for (int nCnt = 0; nCnt < nNumPointIdx; ++nCnt)
 			{
 				meshNow.vecPoint[pPointIndexArray[nCnt]].vecBornRefarence.push_back(
 					BornRefarence(nCntCluster, static_cast<float>(pWeightArray[nCnt]), strClusterName));
+				
+				// Test
+				matrices[pPointIndexArray[nCnt]] += result * static_cast<float>(pWeightArray[nCnt]);
 			}
+		}
+
+		for (int count = 0; count < meshNow.vecPoint.size(); ++count)
+		{
+			meshNow.vecPoint[count].vPos = CKFMath::Vec3TransformCoord(meshNow.vecPoint[count].vPos, matrices[count]);
 		}
 	}
 }
@@ -1063,6 +1079,10 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 
 	// Animation
 	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
+	if (myModel.pAnimator)
+	{
+		matchClusterWithSkeleton(myModel.pAnimator->Clusters, myModel.pNode);
+	}
 
 	lImporter->Destroy();
 	lScene->Destroy();
@@ -1424,6 +1444,15 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	pMyNode->vScale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
 	pMyNode->vScale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
 	pMyNode->vScale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);
+	pMyNode->local.m_af[0][0] = pMyNode->vScale.m_fX;
+	pMyNode->local.m_af[1][1] = pMyNode->vScale.m_fY;
+	pMyNode->local.m_af[2][2] = pMyNode->vScale.m_fZ;
+	CKFMtx44 mtxRot;
+	CKFMath::MtxRotationYawPitchRoll(mtxRot, pMyNode->vRot);
+	pMyNode->local *= mtxRot;
+	CKFMtx44 mtxPos;
+	CKFMath::MtxTranslation(mtxPos, pMyNode->vTrans);
+	pMyNode->local *= mtxPos;
 
 	// マテリアル情報の解析（マテリアルリスト化）                
 	pMyNode->analyzeTexture(pNode);
@@ -1516,11 +1545,11 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 	for (auto pair : clusters)
 	{
 		pAnimator->Clusters[countCluster].Name = pair.first;
-		FbxAMatrix lReferenceGlobalInitPosition;
-		pair.second->GetTransformMatrix(lReferenceGlobalInitPosition);
+		FbxAMatrix meshGlobalInitPosition;
+		pair.second->GetTransformMatrix(meshGlobalInitPosition);
 		FbxAMatrix boneGlobalInitPosition;
 		pair.second->GetTransformLinkMatrix(boneGlobalInitPosition);
-		pAnimator->Clusters[countCluster].RelativeInitPosition = boneGlobalInitPosition.Inverse() * lReferenceGlobalInitPosition;
+		pAnimator->Clusters[countCluster].RelativeInitPosition = CKFMtx44::FbxToMtx(boneGlobalInitPosition.Inverse() * meshGlobalInitPosition);
 		++countCluster;
 	}
 
@@ -1555,16 +1584,8 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 				auto skeletonGlobalCurrentTransform = pair.second->GetLink()->EvaluateGlobalTransform(currentTime);
 				FbxAMatrix lReferenceGlobalCurrentPosition;
 				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].RelativeInitPosition;
-				
-				// clusterにコピーする
-				for (int nY = 0; nY < 4; ++nY)
-				{
-					for (int nX = 0; nX < 4; ++nX)
-					{
-						boneFrame.Matrix.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
-					}
-				}
+				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].RelativeInitPosition;
+				boneFrame.Matrix = CKFMtx44::FbxToMtx(pair.second->GetLink()->EvaluateLocalTransform(currentTime));
 				frame.BoneFrames.push_back(boneFrame);
 				++countCluster;
 			}
@@ -1637,19 +1658,11 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 				frame.BoneFrames[clusterNo].Name = name;
 
 				// アニメーション行列の算出
-				auto skeletonGlobalCurrentTransform = skeleton->EvaluateGlobalTransform(currentTime);
-				FbxAMatrix lReferenceGlobalCurrentPosition;
-				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].RelativeInitPosition;
-
-				// clusterにコピーする
-				for (int nY = 0; nY < 4; ++nY)
-				{
-					for (int nX = 0; nX < 4; ++nX)
-					{
-						frame.BoneFrames[clusterNo].Matrix.m_af[nY][nX] = static_cast<float>(VertexTransformMatrix.Get(nY, nX));
-					}
-				}
+				//auto skeletonGlobalCurrentTransform = skeleton->EvaluateGlobalTransform(currentTime);
+				//FbxAMatrix lReferenceGlobalCurrentPosition;
+				//auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
+				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].RelativeInitPosition;
+				frame.BoneFrames[clusterNo].Matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
 			}
 			motion.Frames.push_back(frame);
 		}
@@ -1702,6 +1715,26 @@ void CKFUtilityFBX::findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton)
 	for (int nCnt = 0; nCnt < pNode->GetChildCount(); ++nCnt)
 	{
 		findSkeletons(pNode->GetChild(nCnt), listSkeleton);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  findSkeletons
+//--------------------------------------------------------------------------------
+void CKFUtilityFBX::matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node)
+{
+	if (!node) return;
+	for (auto& cluster : clusters)
+	{
+		if (!cluster.Node && cluster.Name == node->Name)
+		{
+			cluster.Node = node;
+			break;
+		}
+	}
+	for (auto child : node->listChild)
+	{
+		matchClusterWithSkeleton(clusters, child);
 	}
 }
 
