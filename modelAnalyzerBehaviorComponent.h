@@ -40,6 +40,9 @@ public:
 	auto GetRootNode(void) { return m_pRootNode; }
 	void ChangeModel(const string& strFilePath);
 	void SaveModel(void);
+	const bool& IsDrawSkeleton(void) { return m_bDrawSkeleton; }
+	const bool& IsDrawMesh(void) { return m_bDrawMesh; }
+	const bool& IsDrawCollider(void) { return m_bDrawCollider; }
 
 private:
 	//--------------------------------------------------------------------------------
@@ -58,10 +61,13 @@ private:
 	void		showCameraWindow(void);
 	void		changeTexture(Mesh& mesh);
 	void		addAnimation(void);
+
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
 	//--------------------------------------------------------------------------------
-	bool		m_bDrawNormal;
+	bool		m_bDrawSkeleton;
+	bool		m_bDrawMesh;
+	bool		m_bDrawCollider;
 	bool		m_bReverseV;
 	bool		m_bSaved;
 	string		m_strFileName;

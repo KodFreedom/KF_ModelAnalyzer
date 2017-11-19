@@ -117,6 +117,7 @@
     <ClInclude Include="modelAnalyzerDrawComponent.h" />
     <ClInclude Include="modeModelAnalyzer.h" />
     <ClInclude Include="motionInfo.h" />
+    <ClInclude Include="node.h" />
     <ClInclude Include="OBBColliderComponent.h" />
     <ClInclude Include="rendererDX.h" />
     <ClInclude Include="renderState.h" />

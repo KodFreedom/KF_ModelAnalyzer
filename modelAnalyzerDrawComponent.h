@@ -27,14 +27,11 @@ class CModelAnalyzerDrawComponent : public CDrawComponent
 public:
 	CModelAnalyzerDrawComponent(CModelAnalyzerBehaviorComponent* const pMA, CGameObject* const pGameObj)
 		: CDrawComponent(pGameObj)
-		, c_pMA(pMA)
-		, m_bDrawNormal(false) {}
+		, c_pMA(pMA) {}
 	~CModelAnalyzerDrawComponent() {}
 
 	void	Draw(void) override;
-	void	SetDrawNormalFlag(const bool& bFlag) { m_bDrawNormal = bFlag; }
 
 private:
 	CModelAnalyzerBehaviorComponent* const c_pMA;
-	bool m_bDrawNormal;
 };
