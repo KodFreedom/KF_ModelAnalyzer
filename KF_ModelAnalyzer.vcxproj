@@ -60,6 +60,7 @@
     <ClCompile Include="modelAnalyzerCamera.cpp" />
     <ClCompile Include="modelAnalyzerDrawComponent.cpp" />
     <ClCompile Include="modeModelAnalyzer.cpp" />
+    <ClCompile Include="node.cpp" />
     <ClCompile Include="rendererDX.cpp" />
     <ClCompile Include="renderState.cpp" />
     <ClCompile Include="textureManager.cpp" />
@@ -74,6 +75,7 @@
     <ClInclude Include="AABBColliderComponent.h" />
     <ClInclude Include="actionGameCamera.h" />
     <ClInclude Include="actorBehaviorComponent.h" />
+    <ClInclude Include="animator.h" />
     <ClInclude Include="animatorComponent.h" />
     <ClInclude Include="behaviorComponent.h" />
     <ClInclude Include="boxColliderComponent.h" />

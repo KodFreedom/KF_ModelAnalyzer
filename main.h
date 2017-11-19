@@ -56,6 +56,8 @@ using namespace std;
 //--------------------------------------------------------------------------------
 //  定数定義
 //--------------------------------------------------------------------------------
+typedef unsigned short		us;
+typedef unsigned long		ul;
 #define SAFE_RELEASE(p)		if(p){ p->Release(); p=nullptr; }	//safe release mode
 #define SCREEN_WIDTH		(1280)								//ウインドウ幅
 #define SCREEN_HEIGHT		(720)								//ウインドウ高さ

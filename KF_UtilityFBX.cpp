@@ -16,42 +16,7 @@
 #include "meshManager.h"
 #include <map>
 
-//--------------------------------------------------------------------------------
-//  静的メンバ変数
-//--------------------------------------------------------------------------------
-#ifdef USING_DIRECTX
-LPD3DXMESH CMyNode::s_pMeshSphere = nullptr;
-LPD3DXMESH CMyNode::s_pMeshCube = nullptr;
-#endif
 
-//--------------------------------------------------------------------------------
-//  構造体
-//--------------------------------------------------------------------------------
-#ifdef USING_DIRECTX
-//--------------------------------------------------------------------------------
-//  VtxDX
-//--------------------------------------------------------------------------------
-bool VtxDX::operator==(const VtxDX& vValue) const
-{
-	if (vtx.vPos == vValue.vtx.vPos
-		&& vtx.vNormal == vValue.vtx.vNormal
-		&& vtx.vUV == vValue.vtx.vUV
-		&& vtx.ulColor == vValue.vtx.ulColor
-		&& vecBornRefarence.size() == vValue.vecBornRefarence.size())
-	{
-		for (int nCnt = 0; nCnt < (int)vecBornRefarence.size(); ++nCnt)
-		{
-			if (vecBornRefarence[nCnt].fWeight != vValue.vecBornRefarence[nCnt].fWeight
-				|| vecBornRefarence[nCnt].sIndex != vValue.vecBornRefarence[nCnt].sIndex)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-	return false;
-}
-#endif
 
 //--------------------------------------------------------------------------------
 //  クラス
@@ -60,995 +25,7 @@ void CAnimator::UpdateBones(const Frame& current)
 {
 	for (int count = 0; count < Clusters.size(); ++count)
 	{
-		Clusters[count].Node->local = current.BoneFrames[count].Matrix;
-	}
-}
-
-void CAnimator::UpdateClusterWorld(void)
-{
-	for (auto& cluster : Clusters)
-	{
-		cluster.World = cluster.RelativeInitPosition * cluster.Node->world;
-	}
-}
-
-//--------------------------------------------------------------------------------
-//
-//  MyNode
-//
-//--------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------
-//  RecursiveDraw
-//--------------------------------------------------------------------------------
-void CMyNode::Release(void)
-{
-	//Texture
-	for (auto& tex : vecTex)
-	{
-		tex.Name.clear();
-		tex.strUVSetName.clear();
-	}
-	vecTex.clear();
-
-	//Mesh
-	for (auto& mesh : vecMesh)
-	{
-		//mesh.vecMtx.clear();
-		mesh.vecNormal.clear();
-		mesh.vecNormalIdx.clear();
-		for (auto& point : mesh.vecPoint)
-		{
-			point.vecBornRefarence.clear();
-		}
-		mesh.vecPoint.clear();
-		mesh.vecPointIdx.clear();
-		for (auto& UVSet : mesh.vecUVSet)
-		{
-			UVSet.strUVSetName.clear();
-			UVSet.vecUV.clear();
-			UVSet.vecUVIdx.clear();
-		}
-		mesh.vecUVSet.clear();
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.strTexName);
-		mesh.strTexName.clear();
-
-#ifdef USING_DIRECTX
-		SAFE_RELEASE(mesh.m_pVtxBuffer);
-		SAFE_RELEASE(mesh.m_pIdxBuffer);
-		SAFE_RELEASE(s_pMeshCube);
-		SAFE_RELEASE(s_pMeshSphere);
-#endif
-	}
-	vecMesh.clear();
-
-	//Collider
-	listCollider.clear();
-
-	//Child
-	for (auto pChild : listChild)
-	{
-		pChild->Release();
-	}
-	listChild.clear();
-
-	//Other
-	Name.clear();
-	vecAttributeName.clear();
-
-	delete this;
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveUpdateMatrix
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveUpdateMatrix(const CKFMtx44& parent)
-{
-	world = local;
-	world *= parent;
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveUpdateMatrix(world);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveUpdateSkin
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
-{
-	for (auto& mesh : vecMesh)
-	{
-#ifdef USING_DIRECTX
-		// 骨あり（つまりワンスキンなど）
-		// 頂点の座標変換 
-		VERTEX_3D* pVtx;
-		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
-
-//#pragma omp parallel for 
-		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
-		{
-			CKFMtx44 mtx;
-			auto& vtxDX = mesh.m_vecVtx[nCnt];
-			if (!vtxDX.vecBornRefarence.empty())
-			{
-				ZeroMemory(&mtx, sizeof(CKFMtx44));
-				for (auto& bornRefarence : vtxDX.vecBornRefarence)
-				{
-					mtx += clusters[bornRefarence.sIndex].World * bornRefarence.fWeight;
-				}
-			}
-			pVtx[nCnt].vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
-		}
-
-		mesh.m_pVtxBuffer->Unlock();
-#endif
-	}
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveUpdateSkin(clusters);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveRecalculateClusterID
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveRecalculateClusterID(const Frame& initFrame)
-{
-	for (auto& mesh : vecMesh)
-	{
-//#pragma omp parallel for 
-		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
-		{
-			auto& vtxDX = mesh.m_vecVtx[nCnt];
-			for (auto& bornRefarence : vtxDX.vecBornRefarence)
-			{
-				for (int countBoneFrame = 0; countBoneFrame < initFrame.BoneFrames.size();++countBoneFrame)
-				{
-					if (bornRefarence.strBoneName == initFrame.BoneFrames[countBoneFrame].Name)
-					{
-						bornRefarence.sIndex = countBoneFrame;
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveRecalculateClusterID(initFrame);
-	}
-}
-
-void CMyNode::RecursiveTransformVtxToBoneSpace(const vector<Cluster>& clusters)
-{
-	for (auto& mesh : vecMesh)
-	{
-//#pragma omp parallel for 
-		for (int nCnt = 0; nCnt < (int)mesh.m_vecVtx.size(); ++nCnt)
-		{
-			CKFMtx44 mtx;
-			auto& vtxDX = mesh.m_vecVtx[nCnt];
-			if (!vtxDX.vecBornRefarence.empty())
-			{
-				ZeroMemory(&mtx, sizeof(CKFMtx44));
-				for (auto& bornRefarence : vtxDX.vecBornRefarence)
-				{
-					mtx += clusters[bornRefarence.sIndex].RelativeInitPosition * bornRefarence.fWeight;
-				}
-			}
-			//vtxDX.vtx.vPos = CKFMath::Vec3TransformCoord(vtxDX.vtx.vPos, mtx);
-		}
-	}
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveTransformVtxToBoneSpace(clusters);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveDraw
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider)
-{
-#ifdef USING_DIRECTX
-	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
-
-	//Mesh
-	if (drawMesh)
-	{
-		for (auto& mesh : vecMesh)
-		{
-			if (mesh.m_renderPriority == RP_3D_ALPHATEST)
-			{
-				pDevice->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x00000001);
-				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-				pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-			}
-
-			CRenderState* renderState = nullptr;
-			if (mesh.m_bEnableLight)
-			{
-				if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOnCullOn; }
-				else { renderState = &CDrawComponent::s_lightOnCullOff; }
-			}
-			else
-			{
-				if (mesh.m_bEnableCullFace) { renderState = &CDrawComponent::s_lightOffCullOn; }
-				else { renderState = &CDrawComponent::s_lightOffCullOff; }
-			}
-
-			renderState->SetRenderState();
-
-			//Texture
-			if (!mesh.strTexName.empty())
-			{
-				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.strTexName/*vecTex[mesh.nMaterialIndex].Name*/);
-				pDevice->SetTexture(0, pTexture);
-			}
-
-			D3DXMATRIX mtx = world;
-			pDevice->SetTransform(D3DTS_WORLD, &mtx);
-
-			// 頂点バッファをデータストリームに設定
-			pDevice->SetStreamSource(
-				0,						//ストリーム番号
-				mesh.m_pVtxBuffer,		//頂点バッファ
-				0,						//オフセット（開始位置）
-				sizeof(VERTEX_3D));		//ストライド量
-
-										// 頂点インデックスの設定
-			pDevice->SetIndices(mesh.m_pIdxBuffer);
-
-			// 頂点フォーマットの設定
-			pDevice->SetFVF(FVF_VERTEX_3D);
-
-			// マテリアルの設定
-			//D3DMATERIAL9 mat = CMain::GetManager()->GetMaterialManager()->GetMaterial(m_usMatID);
-			//pDevice->SetMaterial(&mat);
-
-			//プリミティブ描画
-			pDevice->DrawIndexedPrimitive(
-				D3DPT_TRIANGLELIST,
-				0,
-				0,
-				mesh.m_nNumVtx,
-				0,
-				mesh.m_nNumPolygon);
-
-			renderState->ResetRenderState();
-
-			if (mesh.m_renderPriority == RP_3D_ALPHATEST)
-			{
-				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			}
-		}
-	}
-
-	if(!s_pMeshSphere)
-	{
-		CMain::GetManager()->GetTextureManager()->UseTexture("polygon.png");
-		D3DXCreateSphere(pDevice, 1.0f, 10, 10, &s_pMeshSphere, nullptr); 
-	}
-	if(!s_pMeshCube){ D3DXCreateBox(pDevice, 1.0f, 1.0f, 1.0f, &s_pMeshCube, nullptr); }
-	auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture("polygon.png");
-	D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(materialID);
-	D3DMATERIAL9 matDef;
-	pDevice->GetMaterial(&matDef);
-	pDevice->SetTexture(0, pTexture);
-	pDevice->SetMaterial(&material);
-
-	// Skeleton
-	if (drawSkeleton)
-	{
-		if (!vecAttributeName.empty() && vecAttributeName[0] == "skeleton")
-		{
-			D3DXMATRIX mtx = world;
-			pDevice->SetTransform(D3DTS_WORLD, &mtx);
-			s_pMeshSphere->DrawSubset(0);
-		}
-	}
-	
-	//Draw Collider
-	if (drawCollider)
-	{
-		for (auto& col : listCollider)
-		{
-			CKFMtx44 mtxCol, mtxRot, mtxPos;
-
-			//拡縮
-			mtxCol.m_af[0][0] = col.vOffsetScale.m_fX;
-			mtxCol.m_af[1][1] = col.vOffsetScale.m_fY;
-			mtxCol.m_af[2][2] = col.vOffsetScale.m_fZ;
-
-			//回転
-			CKFMath::MtxRotationYawPitchRoll(mtxRot, col.vOffsetRot);
-			mtxCol *= mtxRot;
-
-			//平行移動
-			CKFMath::MtxTranslation(mtxPos, col.vOffsetPos);
-			mtxCol *= mtxPos;
-			mtxCol *= world;
-
-			if (col.colType == CS::COL_SPHERE)
-			{
-				D3DXMATRIX mtx = mtxCol;
-				pDevice->SetTransform(D3DTS_WORLD, &mtx);
-				s_pMeshSphere->DrawSubset(0);
-			}
-			else if (col.colType == CS::COL_AABB)
-			{
-				mtxCol.m_af[0][1] = mtxCol.m_af[0][2]
-					= mtxCol.m_af[1][0] = mtxCol.m_af[1][2]
-					= mtxCol.m_af[2][0] = mtxCol.m_af[2][1] = 0.0f;
-				D3DXMATRIX mtx = mtxCol;
-				pDevice->SetTransform(D3DTS_WORLD, &mtx);
-				s_pMeshCube->DrawSubset(0);
-			}
-			else if (col.colType == CS::COL_OBB)
-			{
-				D3DXMATRIX mtx = mtxCol;
-				pDevice->SetTransform(D3DTS_WORLD, &mtx);
-				s_pMeshCube->DrawSubset(0);
-			}
-		}
-	}
-	pDevice->SetTexture(0, nullptr);
-	pDevice->SetMaterial(&matDef);
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveDraw(drawSkeleton, drawMesh, drawCollider);
-	}
-#else
-	glPushMatrix();
-	glScalef(vScale.m_fX, vScale.m_fY, vScale.m_fZ);
-	glRotatef(vRot.m_fZ, 0.0f, 0.0f, 1.0f);
-	glRotatef(vRot.m_fX, 1.0f, 0.0f, 0.0f);
-	glRotatef(vRot.m_fY, 0.0f, 1.0f, 0.0f);
-	glTranslatef(vTrans.m_fX, vTrans.m_fY, vTrans.m_fZ);
-
-	//Mesh
-	for (auto& mesh : vecMesh)
-	{
-		//Texture
-		if (!vecTex.empty())
-		{
-			glBindTexture(GL_TEXTURE_2D, vecTex[mesh.nMaterialIndex].nID);
-		}
-
-		// ポリゴン描画         
-		glBegin(GL_TRIANGLES);
-
-		if (mesh.vecMtx.empty())
-		{// 骨なし（つまり剛体の塊）             
-			for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
-			{
-				glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
-				glNormal3f(
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
-				glTexCoord2f(
-					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
-					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
-				glVertex3f(
-					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fX,
-					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fY,
-					mesh.vecPoint[mesh.vecPointIdx[nCnt]].vPos.m_fZ);
-			}
-		}
-		else
-		{// 骨あり（つまりワンスキンなど） 
-		 // 頂点の座標変換 
-			vector<CKFVec3> vecPos;
-			vecPos.reserve(mesh.vecPoint.size());
-			CKFMtx44 mtx;
-			for (auto& point : mesh.vecPoint)
-			{
-				ZeroMemory(&mtx, sizeof(CKFMtx44));
-				for (auto& bornRefarence : point.vecBornRefarence)
-				{
-					mtx += mesh.vecMtx[bornRefarence.sIndex] * bornRefarence.fWeight;
-				}
-				CKFVec3 vPos = point.vPos;
-				CKFMath::Vec3TransformCoord(&vPos, mtx);
-				vecPos.push_back(vPos);
-			}
-
-			for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
-			{
-				glColor4f(255.0f, 255.0f, 255.0f, 255.0f);
-				glNormal3f(
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fX,
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fY,
-					mesh.vecNormal[mesh.vecNormalIdx[nCnt]].m_fZ);
-				glTexCoord2f(
-					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fX,
-					mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]].m_fY);
-				glVertex3f(
-					vecPos[mesh.vecPointIdx[nCnt]].m_fX,
-					vecPos[mesh.vecPointIdx[nCnt]].m_fY,
-					vecPos[mesh.vecPointIdx[nCnt]].m_fZ);
-			}
-		}
-
-		glEnd();
-	}
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveDraw(bDrawNormal);
-	}
-	glPopMatrix();
-#endif
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveRecalculateVtx
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveRecalculateVtx(void)
-{
-#ifdef USING_DIRECTX
-	for (auto& mesh : vecMesh)
-	{
-		list<VtxDX> listVtx;
-		list<int> listIdx;
-
-		for (int nCnt = 0; nCnt < (int)mesh.vecPointIdx.size(); ++nCnt)
-		{
-			VtxDX vtxDX;
-			auto& point = mesh.vecPoint[mesh.vecPointIdx[nCnt]];
-			vtxDX.vtx.ulColor = CKFMath::sc_cWhite;
-			vtxDX.vtx.vNormal = mesh.vecNormal[mesh.vecNormalIdx[nCnt]];
-			vtxDX.vtx.vUV = mesh.vecUVSet[0].vecUV[mesh.vecUVSet[0].vecUVIdx[nCnt]];
-			vtxDX.vtx.vPos = point.vPos;
-			vtxDX.vecBornRefarence.assign(point.vecBornRefarence.begin(), point.vecBornRefarence.end());
-
-			int nIdx = CKFUtilityFBX::FindRepetition(listVtx, vtxDX);
-			if (nIdx >= 0) { listIdx.push_back(nIdx); }
-			else
-			{
-				listIdx.push_back((int)listVtx.size());
-				listVtx.push_back(vtxDX);
-			}
-		}
-
-		mesh.m_nNumVtx = (int)listVtx.size();
-		mesh.m_nNumIdx = (int)listIdx.size();
-		mesh.m_nNumPolygon = mesh.m_nNumIdx / 3;
-
-		auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
-		HRESULT hr;
-
-		//頂点バッファ
-		hr = pDevice->CreateVertexBuffer(
-			sizeof(VERTEX_3D) * mesh.m_nNumVtx,	//作成したい頂点バッファのサイズ
-			D3DUSAGE_WRITEONLY,					//頂点バッファの使用方法
-			FVF_VERTEX_3D,						//書かなくても大丈夫
-			D3DPOOL_MANAGED,					//メモリ管理方法(managed：デバイスにお任せ)
-			&mesh.m_pVtxBuffer,					//頂点バッファのポインタ
-			NULL);
-
-		if (FAILED(hr))
-		{
-			MessageBox(NULL, "CMeshManager : CreateVertexBuffer ERROR!!", "エラー", MB_OK | MB_ICONWARNING);
-			continue;
-		}
-
-		VERTEX_3D *pVtx;
-		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
-		mesh.m_vecVtx.reserve(mesh.m_nNumVtx);
-		auto itrVtx = listVtx.begin();
-		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
-		{
-			mesh.m_vecVtx.push_back(*itrVtx);
-			pVtx[nCnt] = itrVtx->vtx;
-			++itrVtx;
-		}
-		mesh.m_pVtxBuffer->Unlock();
-
-		//インデックスバッファの作成
-		hr = pDevice->CreateIndexBuffer(
-			sizeof(WORD) * mesh.m_nNumIdx,
-			D3DUSAGE_WRITEONLY,
-			D3DFMT_INDEX16,
-			D3DPOOL_MANAGED,
-			&mesh.m_pIdxBuffer,
-			NULL);
-
-		if (FAILED(hr))
-		{
-			MessageBox(NULL, "CMeshManager : CreateIndexBuffer ERROR!!", "エラー", MB_OK | MB_ICONWARNING);
-			continue;
-		}
-
-		WORD *pIdx;
-		mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
-		auto itrIdx = listIdx.begin();
-		for (int nCnt = 0; nCnt < mesh.m_nNumIdx; ++nCnt)
-		{
-			pIdx[nCnt] = *itrIdx;
-			++itrIdx;
-		}
-		mesh.m_pIdxBuffer->Unlock();
-	}
-#endif
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveRecalculateVtx();
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveReverseTexV
-//--------------------------------------------------------------------------------
-void CMyNode::RecursiveReverseTexV(void)
-{
-#ifdef USING_DIRECTX
-	for (auto& mesh : vecMesh)
-	{
-		VERTEX_3D *pVtx;
-		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
-		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
-		{
-			mesh.m_vecVtx[nCnt].vtx.vUV.m_fY = 1.0f - mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
-			pVtx[nCnt].vUV.m_fY = mesh.m_vecVtx[nCnt].vtx.vUV.m_fY;
-		}
-		mesh.m_pVtxBuffer->Unlock();
-	}
-#endif
-
-	//Child
-	for (auto pNode : listChild)
-	{
-		pNode->RecursiveReverseTexV();
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecursiveReverseTexV
-//--------------------------------------------------------------------------------
-void CMyNode::RecalculateVtxByMatrix(const CKFMtx44& mtx)
-{
-#ifdef USING_DIRECTX
-	for (auto& mesh : vecMesh)
-	{
-		VERTEX_3D *pVtx;
-		mesh.m_pVtxBuffer->Lock(0, 0, (void**)&pVtx, 0);
-		for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
-		{
-			auto& vtx = mesh.m_vecVtx[nCnt].vtx;
-			vtx.vPos = CKFMath::Vec3TransformCoord(vtx.vPos, mtx);
-			vtx.vNormal = CKFMath::Vec3TransformNormal(vtx.vNormal, mtx);
-			CKFMath::VecNormalize(vtx.vNormal);
-			pVtx[nCnt].vPos = vtx.vPos;
-			pVtx[nCnt].vNormal = vtx.vNormal;
-		}
-		mesh.m_pVtxBuffer->Unlock();
-	}
-#endif
-
-	for (auto pChild : listChild)
-	{
-		pChild->vTrans = CKFMath::Vec3TransformCoord(pChild->vTrans, mtx);
-		pChild->RecalculateVtxByMatrix(mtx);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  analyzePos
-//--------------------------------------------------------------------------------
-void CMyNode::analyzePos(FbxMesh* pMesh)
-{
-	//頂点数の取得
-	auto nNumPoint = pMesh->GetControlPointsCount();
-
-	//頂点バッファの作成
-	auto& meshNow = vecMesh.back();
-	meshNow.vecPoint.resize(nNumPoint);
-
-	//頂点情報取得
-	auto pFbxV4 = pMesh->GetControlPoints();
-	for (int nCnt = 0; nCnt < nNumPoint; ++nCnt)
-	{
-		meshNow.vecPoint[nCnt].vPos.m_fX = static_cast<float>(pFbxV4[nCnt][0]);
-		meshNow.vecPoint[nCnt].vPos.m_fY = static_cast<float>(pFbxV4[nCnt][1]);
-		meshNow.vecPoint[nCnt].vPos.m_fZ = static_cast<float>(pFbxV4[nCnt][2]);
-	}
-
-	//インデックスの取得
-	auto nNumIdx = pMesh->GetPolygonVertexCount();
-	meshNow.vecPointIdx.resize(nNumIdx);
-	auto pIdx = pMesh->GetPolygonVertices();
-	for (int nCnt = 0; nCnt < nNumIdx; ++nCnt)
-	{
-		meshNow.vecPointIdx[nCnt] = static_cast<unsigned int>(pIdx[nCnt]);
-	}
-
-}
-
-//--------------------------------------------------------------------------------
-//  analyzeNormal
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeNormal(FbxMesh* pMesh)
-{
-	int nLayerCnt = pMesh->GetLayerCount();
-
-	for (int nCnt = 0; nCnt < nLayerCnt; ++nCnt)
-	{
-		auto pElementNormal = pMesh->GetElementNormal(nCnt);
-
-		if (!pElementNormal) { continue; }
-
-		//法線データの取得
-		auto& meshNow = vecMesh.back();
-		auto nNumNormal = pElementNormal->GetDirectArray().GetCount();
-		meshNow.vecNormal.resize(nNumNormal);
-		for (int nCnt = 0; nCnt < nNumNormal; ++nCnt)
-		{
-			meshNow.vecNormal[nCnt].m_fX = (float)pElementNormal->GetDirectArray()[nCnt][0];
-			meshNow.vecNormal[nCnt].m_fY = (float)pElementNormal->GetDirectArray()[nCnt][1];
-			meshNow.vecNormal[nCnt].m_fZ = (float)pElementNormal->GetDirectArray()[nCnt][2];
-		}
-
-		//マッピングモード、リファレンスモード取得
-		auto mappingMode = pElementNormal->GetMappingMode();
-		auto referenceMode = pElementNormal->GetReferenceMode();
-		if (mappingMode == FbxLayerElement::eByPolygonVertex)
-		{//法線独自のインデックスを使用
-			if (referenceMode == FbxLayerElement::eDirect)
-			{// インデックス参照の必要なし
-				meshNow.vecNormalIdx.resize(nNumNormal);
-				for (int nCnt = 0; nCnt < nNumNormal; ++nCnt)
-				{
-					meshNow.vecNormalIdx[nCnt] = nCnt;
-				}
-			}
-			else if (referenceMode == FbxLayerElement::eIndexToDirect
-				|| referenceMode == FbxLayerElement::eIndex)
-			{// 独自インデックスを所持 
-			 // インデックス数の取得                 
-				int nNumNormalIdx = pElementNormal->GetIndexArray().GetCount();
-
-				// 法線インデックス格納用コンテナの領域予約
-				meshNow.vecNormalIdx.resize(nNumNormalIdx);
-
-				// 法線インデックスの取得  
-				for (int nCnt = 0; nCnt < nNumNormalIdx; ++nCnt)
-				{
-					meshNow.vecNormalIdx[nCnt] = pElementNormal->GetIndexArray()[nCnt];
-				}
-			}
-		}
-
-		else if (mappingMode == FbxLayerElement::eByControlPoint)
-		{//頂点バッファと同じインデックス
-			if (referenceMode == FbxLayerElement::eDirect)
-			{
-				meshNow.vecNormalIdx.resize(meshNow.vecPointIdx.size());
-				meshNow.vecNormalIdx.assign(meshNow.vecPointIdx.begin(), meshNow.vecPointIdx.end());
-			}
-		}
-		else
-		{
-			MessageBox(NULL, "Normal Mode ERROR!!", "未実装", MB_OK);
-		}
-
-		break;
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  analyzeUV
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeUV(FbxMesh* pMesh)
-{
-	int nUVLayerCnt = pMesh->GetElementUVCount();
-	if (!nUVLayerCnt)
-	{
-		MessageBox(NULL, "レイヤーを持っていないメッシュを確認", "analyzeUV", MB_OK);
-		return;
-	}
-	auto& meshNow = vecMesh.back();
-	meshNow.vecUVSet.resize(nUVLayerCnt);
-
-	for (int nCnt = 0; nCnt < nUVLayerCnt; ++nCnt)
-	{
-		auto& UVSet = meshNow.vecUVSet[nCnt];
-
-		auto pElementUV = pMesh->GetLayer(nCnt)->GetUVs();
-
-		if (!pElementUV) { continue; }
-
-		//UVSetName
-		UVSet.strUVSetName = pElementUV->GetName();
-
-		//マッピングモード、リファレンスモード取得
-		auto mappingMode = pElementUV->GetMappingMode();
-		auto referenceMode = pElementUV->GetReferenceMode();
-
-		if (mappingMode == FbxLayerElement::eByPolygonVertex)
-		{
-			if (referenceMode == FbxLayerElement::eDirect)
-			{
-				int nNumUV = pElementUV->GetDirectArray().GetCount();
-				UVSet.vecUV.resize(nNumUV);
-				UVSet.vecUVIdx.resize(nNumUV);
-
-				for (int nCnt = 0; nCnt < nNumUV; ++nCnt)
-				{
-					UVSet.vecUV[nCnt].m_fX = static_cast<float>(pElementUV->GetDirectArray()[nCnt][0]);
-					UVSet.vecUV[nCnt].m_fY = static_cast<float>(pElementUV->GetDirectArray()[nCnt][1]);
-					UVSet.vecUVIdx[nCnt] = nCnt;
-				}
-			}
-
-			else if (referenceMode == FbxLayerElement::eIndexToDirect
-				|| referenceMode == FbxLayerElement::eIndex)
-			{
-				//Idx
-				int nNumUVIdx = pElementUV->GetIndexArray().GetCount();
-				UVSet.vecUVIdx.resize(nNumUVIdx);
-				for (int nCnt = 0; nCnt < nNumUVIdx; ++nCnt)
-				{
-					UVSet.vecUVIdx[nCnt] = pElementUV->GetIndexArray()[nCnt];
-				}
-
-				//UV
-				int nNumUV = pElementUV->GetDirectArray().GetCount();
-				UVSet.vecUV.resize(nNumUV);
-				for (int nCnt = 0; nCnt < nNumUV; ++nCnt)
-				{
-					UVSet.vecUV[nCnt].m_fX = static_cast<float>(pElementUV->GetDirectArray()[nCnt][0]);
-					UVSet.vecUV[nCnt].m_fY = static_cast<float>(pElementUV->GetDirectArray()[nCnt][1]);
-				}
-			}
-		}
-		else
-		{
-			MessageBox(NULL, "マッピングモード非対応", "analyzeUV", MB_OK);
-		}
-
-		//else if (mappingMode == FbxLayerElement::eByControlPoint)
-		//{
-		//	if (referenceMode == FbxLayerElement::eDirect)
-		//	{
-		//		part.nNumVT = pElementUV->GetDirectArray().GetCount();
-		//		//int nCntIdx = pElementUV->GetIndexArray().GetCount();
-		//		part.vecUV.resize(part.nNumVT);
-		//		for (int nCnt = 0; nCnt < part.nNumVT; nCnt++)
-		//		{
-		//			int nIdx = pElementUV->GetIndexArray().GetAt(nCnt);
-		//			part.vecUV[nCnt].m_fX = (float)pElementUV->GetDirectArray()[nIdx][0];
-		//			part.vecUV[nCnt].m_fY = (float)pElementUV->GetDirectArray()[nIdx][1];
-		//			part.vecIdx[nCnt].nVt = nCnt;
-		//		}
-		//	}
-		//}
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  analyzeTexture
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeTexture(FbxNode* pNode)
-{
-	//マテリアル数の取得
-	int nMaterialCnt = pNode->GetMaterialCount();
-	vecTex.reserve(nMaterialCnt);
-
-	for (int nCnt = 0; nCnt < nMaterialCnt; ++nCnt)
-	{
-		auto pMaterial = pNode->GetMaterial(nCnt);
-		if (!pMaterial) { continue; }
-
-		// ディフューズ情報の取得     
-		auto diffuseProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
-		int nLayeredTextureCnt = diffuseProperty.GetSrcObjectCount<FbxLayeredTexture>();
-
-		if (nLayeredTextureCnt == 0)
-		{
-			int nTextureCount = diffuseProperty.GetSrcObjectCount<FbxFileTexture>();
-			
-			//各テクスチャについてテクスチャ情報取得
-			for (int nCntTex = 0; nCntTex < nTextureCount; ++nCntTex)
-			{//nCnt番目のテクスチャオブジェクトの取得
-				auto pTexture = diffuseProperty.GetSrcObject<FbxFileTexture>(nCntTex);
-				if (!pTexture) { continue; }
-
-				//テクスチャファイル名
-				Texture texture;
-				string strPath = pTexture->GetFileName();
-				string strType;
-				
-				CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
-				CKFUtility::CorrectTexType(strType);
-				texture.Name += '.' + strType;
-
-				//UVSet名
-				texture.strUVSetName = pTexture->UVSet.Get().Buffer();
-
-				//とりあえず0番だけとる
-				vecTex.push_back(texture);
-				break;
-			}
-		}
-		else
-		{
-			//各テクスチャについてテクスチャ情報取得
-			for (int nCntLayer = 0; nCntLayer < nLayeredTextureCnt; ++nCntLayer)
-			{//nCnt番目のテクスチャオブジェクトの取得
-				auto pLayeredTexture = diffuseProperty.GetSrcObject<FbxLayeredTexture>(nCntLayer);
-				int nTextureCount = pLayeredTexture->GetSrcObjectCount<FbxFileTexture>();
-
-				//各テクスチャについてテクスチャ情報取得
-				for (int nCnt = 0; nCnt < nTextureCount; ++nCnt)
-				{//nCnt番目のテクスチャオブジェクトの取得
-					auto pTexture = pLayeredTexture->GetSrcObject<FbxFileTexture>(nCnt);
-					if (!pTexture) { continue; }
-
-					//テクスチャファイル名
-					Texture texture;
-					string strPath = pTexture->GetFileName();
-					string strType;
-
-					CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
-					CKFUtility::CorrectTexType(strType);
-					texture.Name += '.' + strType;
-
-					//UVSet名
-					texture.strUVSetName = pTexture->UVSet.Get().Buffer();
-
-					//とりあえず0番だけとる
-					vecTex.push_back(texture);
-					break;
-				}
-			}
-		}
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  analyzeMaterial
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeMaterial(FbxMesh* pMesh)
-{
-	auto& meshNow = vecMesh.back();
-	int nNumLayer = pMesh->GetLayerCount();
-
-	for (int nCnt = 0; nCnt < nNumLayer; ++nCnt)
-	{
-		auto pElementMaterial = pMesh->GetLayer(nCnt)->GetMaterials();
-		if (!pElementMaterial) { continue; }
-
-		int nNumMaterialIdx = pElementMaterial->GetIndexArray().GetCount();
-		if (nNumMaterialIdx == 0) { continue; }
-
-		auto mappingMode = pElementMaterial->GetMappingMode();
-		auto referenceMode = pElementMaterial->GetReferenceMode();
-
-		if (mappingMode == FbxLayerElement::eAllSame)
-		{
-			if (referenceMode == FbxLayerElement::eIndexToDirect)
-			{// メッシュ全部がこのマテリアルインデックス 
-				meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
-				if (meshNow.nMaterialIndex < vecTex.size())
-				{
-					meshNow.strTexName = vecTex[meshNow.nMaterialIndex].Name;
-					CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
-				}
-			}
-			else
-			{
-				MessageBox(NULL, "...未対応のリファレンスモードを取得した", "Material MappingMode = eAllSame", MB_OK);
-			}
-		}
-		else if (mappingMode == FbxLayerElement::eByControlPoint)
-		{
-			MessageBox(NULL, "...未対応のマッピングモード[eByControlPoint]を取得した", "Material MappingMode", MB_OK);
-		}
-		else if (mappingMode == FbxLayerElement::eByPolygon)
-		{// マテリアル分割されているはずだから、一番はじめのだけでいい         
-			meshNow.nMaterialIndex = pElementMaterial->GetIndexArray()[0];
-			if (meshNow.nMaterialIndex < vecTex.size())
-			{
-				meshNow.strTexName = vecTex[meshNow.nMaterialIndex].Name;
-				CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.strTexName);
-			}
-		}
-		else if (mappingMode == FbxLayerElement::eByEdge)
-		{
-			MessageBox(NULL, "...未対応のマッピングモード[eByEdge]を取得した", "Material MappingMode", MB_OK);
-		}
-		else
-		{
-			MessageBox(NULL, "...未対応のマッピングモードを取得した", "Material MappingMode", MB_OK);
-		}
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  analyzeCluster
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeCluster(FbxMesh* pMesh)
-{
-	auto& meshNow = vecMesh.back();
-	//CKFMtx44 mtxIdentity;
-
-	// スキンの数を取得 
-	int nNumSkin = pMesh->GetDeformerCount(FbxDeformer::eSkin);
-
-	for (int nCntSkin = 0; nCntSkin < nNumSkin; ++nCntSkin)
-	{
-		// スキンを取得 
-		auto pSkin = (FbxSkin*)pMesh->GetDeformer(nCntSkin, FbxDeformer::eSkin);
-
-		// クラスターの数を取得 
-		int nNumCluster = pSkin->GetClusterCount();
-		//vector<CKFMtx44> matrices;
-		//matrices.resize(meshNow.vecPoint.size());
-		//CKFMtx44 zero;
-		//ZeroMemory(&zero, sizeof(CKFMtx44));
-		//for (auto& mtx : matrices) { mtx = zero; }
-
-		for (int nCntCluster = 0; nCntCluster < nNumCluster; ++nCntCluster)
-		{
-			// In FBX, to get the local coordinates in "LinkNode" space you need to do two steps:
-			// 1. Control points are stored as in the mesh's object space. First move them from object space to world space.
-			// Note: For all clusters related to one mesh, their Transform matrix is actually the same, because there is actually only one mesh.
-			//FbxAMatrix meshGlobal;
-			//auto lCluster = pSkin->GetCluster(nCntCluster);
-			//lCluster->GetTransformMatrix(meshGlobal);
-			////FbxAMatrix meshGeometry = pMesh->GetNode()->EvaluateLocalTransform();
-			////meshGlobal *= meshGeometry;
-			//auto& kfMeshClobal = CKFMtx44::FbxToMtx(meshGlobal);
-			//
-			//// 2. Transform control points from World Space to the Bone’s space at binding moment.
-			//FbxAMatrix boneBindingMatrix;
-			//lCluster->GetTransformLinkMatrix(boneBindingMatrix);
-			//auto& boneBindingMatrixInverse = CKFMtx44::FbxToMtx(boneBindingMatrix.Inverse());
-			//auto& result = boneBindingMatrixInverse * kfMeshClobal;
-			//for (auto& point : meshNow.vecPoint)
-			//{
-			//	// lDstVertex = meshGlobal.MultT(lSrcVertex);
-			//	point.vPos = CKFMath::Vec3TransformCoord(point.vPos, kfMeshClobal);
-			//	
-			//	// lBoneBindingMatrix.Inverse() * lDstVertex;
-			//	point.vPos = CKFMath::Vec3TransformCoord(point.vPos, boneBindingMatrixInverse);
-			//}
-
-			// クラスタを取得
-			auto pCluster = pSkin->GetCluster(nCntCluster);
-			string strClusterName = pCluster->GetLink()->GetName();
-
-			// このクラスタが影響を及ぼす頂点インデックスの個数を取得 
-			int nNumPointIdx = pCluster->GetControlPointIndicesCount();
-			auto pPointIndexArray = pCluster->GetControlPointIndices();
-			auto pWeightArray = pCluster->GetControlPointWeights();
-			for (int nCnt = 0; nCnt < nNumPointIdx; ++nCnt)
-			{
-				meshNow.vecPoint[pPointIndexArray[nCnt]].vecBornRefarence.push_back(
-					BornRefarence(nCntCluster, static_cast<float>(pWeightArray[nCnt]), strClusterName));
-				
-				// Test
-				//matrices[pPointIndexArray[nCnt]] += result * static_cast<float>(pWeightArray[nCnt]);
-			}
-		}
-
-		//for (int count = 0; count < meshNow.vecPoint.size(); ++count)
-		//{
-		//	meshNow.vecPoint[count].vPos = CKFMath::Vec3TransformCoord(meshNow.vecPoint[count].vPos, matrices[count]);
-		//}
+		Clusters[count].Node->Local = current.BoneFrames[count].Matrix;
 	}
 }
 
@@ -1215,12 +192,12 @@ MyModel CKFUtilityFBX::LoadFromTxt(const string& strFilePath)
 
 	//		auto offsetRotation = CKFVec3((float)atof(rotationBuffer[0]), (float)atof(rotationBuffer[1]), (float)atof(rotationBuffer[2]));
 	//		nodes[countPart] = new CMyNode;
-	//		nodes[countPart]->vTrans = offsetPosition;
-	//		nodes[countPart]->vRot = offsetRotation;
-	//		nodes[countPart]->vScale = CKFVec3(1.0f);
+	//		nodes[countPart]->Translation = offsetPosition;
+	//		nodes[countPart]->Rotation = offsetRotation;
+	//		nodes[countPart]->Scale = CKFVec3(1.0f);
 	//		if (parentID >= 0)
 	//		{
-	//			nodes[parentID]->listChild.push_back(nodes[countPart]);
+	//			nodes[parentID]->Children.push_back(nodes[countPart]);
 	//		}
 
 	//		// mesh
@@ -1441,7 +418,7 @@ bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
 //  FindRepetition
 //	重ねたら番号を返す、そうじゃないなら-1を返す
 //--------------------------------------------------------------------------------
-int CKFUtilityFBX::FindRepetition(const list<VtxDX>& listVtx, const VtxDX& vtx)
+int CKFUtilityFBX::FindRepetition(const list<VertexDX>& listVtx, const VertexDX& vtx)
 {
 	int nCnt = 0;
 	for (auto itr = listVtx.begin(); itr != listVtx.end(); ++itr, ++nCnt)
@@ -1461,25 +438,25 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	if (!pNode) { return NULL; }
 	auto pMyNode = new CMyNode;
 	pMyNode->Name = pNode->GetName();
-	pMyNode->vTrans.m_fX = static_cast<float>(pNode->LclTranslation.Get()[0]);
-	pMyNode->vTrans.m_fY = static_cast<float>(pNode->LclTranslation.Get()[1]);
-	pMyNode->vTrans.m_fZ = static_cast<float>(pNode->LclTranslation.Get()[2]);
-	pMyNode->vRot.m_fX = static_cast<float>(pNode->LclRotation.Get()[0]);
-	pMyNode->vRot.m_fY = static_cast<float>(pNode->LclRotation.Get()[1]);
-	pMyNode->vRot.m_fZ = static_cast<float>(pNode->LclRotation.Get()[2]);
-	pMyNode->vRot /= 180.0f * KF_PI; //Degree to Radian
-	pMyNode->vScale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
-	pMyNode->vScale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
-	pMyNode->vScale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);
-	pMyNode->local.m_af[0][0] = pMyNode->vScale.m_fX;
-	pMyNode->local.m_af[1][1] = pMyNode->vScale.m_fY;
-	pMyNode->local.m_af[2][2] = pMyNode->vScale.m_fZ;
+	pMyNode->Translation.m_fX = static_cast<float>(pNode->LclTranslation.Get()[0]);
+	pMyNode->Translation.m_fY = static_cast<float>(pNode->LclTranslation.Get()[1]);
+	pMyNode->Translation.m_fZ = static_cast<float>(pNode->LclTranslation.Get()[2]);
+	pMyNode->Rotation.m_fX = static_cast<float>(pNode->LclRotation.Get()[0]);
+	pMyNode->Rotation.m_fY = static_cast<float>(pNode->LclRotation.Get()[1]);
+	pMyNode->Rotation.m_fZ = static_cast<float>(pNode->LclRotation.Get()[2]);
+	pMyNode->Rotation /= 180.0f * KF_PI; //Degree to Radian
+	pMyNode->Scale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
+	pMyNode->Scale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
+	pMyNode->Scale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);
+	pMyNode->Local.m_af[0][0] = pMyNode->Scale.m_fX;
+	pMyNode->Local.m_af[1][1] = pMyNode->Scale.m_fY;
+	pMyNode->Local.m_af[2][2] = pMyNode->Scale.m_fZ;
 	CKFMtx44 mtxRot;
-	CKFMath::MtxRotationYawPitchRoll(mtxRot, pMyNode->vRot);
-	pMyNode->local *= mtxRot;
+	CKFMath::MtxRotationYawPitchRoll(mtxRot, pMyNode->Rotation);
+	pMyNode->Local *= mtxRot;
 	CKFMtx44 mtxPos;
-	CKFMath::MtxTranslation(mtxPos, pMyNode->vTrans);
-	pMyNode->local *= mtxPos;
+	CKFMath::MtxTranslation(mtxPos, pMyNode->Translation);
+	pMyNode->Local *= mtxPos;
 
 	// マテリアル情報の解析（マテリアルリスト化）                
 	pMyNode->analyzeTexture(pNode);
@@ -1487,17 +464,17 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
 	{
 		auto type = pNode->GetNodeAttributeByIndex(nCnt)->GetAttributeType();
-		pMyNode->vecAttributeName.push_back(getAttributeTypeName(type));
+		pMyNode->AttributeNames.push_back(getAttributeTypeName(type));
 
 		if (type == FbxNodeAttribute::eMesh)
 		{//Mesh情報
-			pMyNode->vecMesh.push_back(Mesh());
+			pMyNode->Meshes.push_back(Mesh());
 
 			// メッシュ情報の取得                 
 			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));
 
 			// 頂点座標解析                 
-			pMyNode->analyzePos(pMesh);
+			pMyNode->analyzePoint(pMesh);
 
 			// 法線解析                 
 			pMyNode->analyzeNormal(pMesh);
@@ -1525,7 +502,7 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 
 	for (int nCnt = 0; nCnt < pNode->GetChildCount(); ++nCnt)
 	{
-		pMyNode->listChild.push_back(recursiveNode(pManager, pNode->GetChild(nCnt)));
+		pMyNode->Children.push_back(recursiveNode(pManager, pNode->GetChild(nCnt)));
 	}
 
 	return pMyNode;
@@ -1576,7 +553,7 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 		pair.second->GetTransformMatrix(meshGlobalInitPosition);
 		FbxAMatrix boneGlobalInitPosition;
 		pair.second->GetTransformLinkMatrix(boneGlobalInitPosition);
-		pAnimator->Clusters[countCluster].RelativeInitPosition = CKFMtx44::FbxToMtx(boneGlobalInitPosition.Inverse() * meshGlobalInitPosition);
+		pAnimator->Clusters[countCluster].BindPoseInverse = CKFMtx44::FbxToMtx(boneGlobalInitPosition.Inverse() * meshGlobalInitPosition);
 		++countCluster;
 	}
 
@@ -1611,7 +588,7 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 				auto skeletonGlobalCurrentTransform = pair.second->GetLink()->EvaluateGlobalTransform(currentTime);
 				FbxAMatrix lReferenceGlobalCurrentPosition;
 				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].RelativeInitPosition;
+				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].BindPoseInverse;
 				boneFrame.Matrix = CKFMtx44::FbxToMtx(pair.second->GetLink()->EvaluateLocalTransform(currentTime));
 				frame.BoneFrames.push_back(boneFrame);
 				++countCluster;
@@ -1688,7 +665,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 				//auto skeletonGlobalCurrentTransform = skeleton->EvaluateGlobalTransform(currentTime);
 				//FbxAMatrix lReferenceGlobalCurrentPosition;
 				//auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].RelativeInitPosition;
+				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].BindPoseInverse;
 				frame.BoneFrames[clusterNo].Matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
 			}
 			motion.Frames.push_back(frame);
@@ -1759,7 +736,7 @@ void CKFUtilityFBX::matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode*
 			break;
 		}
 	}
-	for (auto child : node->listChild)
+	for (auto child : node->Children)
 	{
 		matchClusterWithSkeleton(clusters, child);
 	}
@@ -1776,25 +753,25 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 	fwrite(&pNode->Name[0], sizeof(char), nSize, pFile);
 
 	//Offset
-	fwrite(&pNode->vTrans, sizeof(CKFVec3), 1, pFile);
-	fwrite(&pNode->vRot, sizeof(CKFVec3), 1, pFile);
-	fwrite(&pNode->vScale, sizeof(CKFVec3), 1, pFile);
+	fwrite(&pNode->Translation, sizeof(CKFVec3), 1, pFile);
+	fwrite(&pNode->Rotation, sizeof(CKFVec3), 1, pFile);
+	fwrite(&pNode->Scale, sizeof(CKFVec3), 1, pFile);
 	
 	//Collider
-	int nNumCollider = (int)pNode->listCollider.size();
+	int nNumCollider = (int)pNode->Colliders.size();
 	fwrite(&nNumCollider, sizeof(int), 1, pFile);
-	for (auto& colInfo : pNode->listCollider)
+	for (auto& colInfo : pNode->Colliders)
 	{
-		fwrite(&colInfo.colType, sizeof(int), 1, pFile);
-		fwrite(&colInfo.vOffsetPos, sizeof(CKFVec3), 1, pFile);
-		fwrite(&colInfo.vOffsetRot, sizeof(CKFVec3), 1, pFile);
-		fwrite(&colInfo.vOffsetScale, sizeof(CKFVec3), 1, pFile);
+		fwrite(&colInfo.Type, sizeof(int), 1, pFile);
+		fwrite(&colInfo.Position, sizeof(CKFVec3), 1, pFile);
+		fwrite(&colInfo.Rotation, sizeof(CKFVec3), 1, pFile);
+		fwrite(&colInfo.Scale, sizeof(CKFVec3), 1, pFile);
 	}
 
 	//Texture
-	int nNumTexture = (int)pNode->vecTex.size();
+	int nNumTexture = (int)pNode->Textures.size();
 	fwrite(&nNumTexture, sizeof(int), 1, pFile);
-	for (auto& texture : pNode->vecTex)
+	for (auto& texture : pNode->Textures)
 	{
 		nSize = (int)texture.Name.size();
 		fwrite(&nSize, sizeof(int), 1, pFile);
@@ -1802,11 +779,11 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 	}
 
 	//Mesh
-	int nNumMesh = (int)pNode->vecMesh.size();
+	int nNumMesh = (int)pNode->Meshes.size();
 	fwrite(&nNumMesh, sizeof(int), 1, pFile);
 	for (int nCnt = 0; nCnt < nNumMesh; ++nCnt)
 	{
-		auto& mesh = pNode->vecMesh[nCnt];
+		auto& mesh = pNode->Meshes[nCnt];
 		//if (mesh.vecMtx.empty())
 		{//骨なし
 			//Name
@@ -1832,9 +809,9 @@ void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string&
 	}
 	
 	//Child
-	int nNumChild = (int)pNode->listChild.size();
+	int nNumChild = (int)pNode->Children.size();
 	fwrite(&nNumChild, sizeof(int), 1, pFile);
-	for (auto& pChild : pNode->listChild)
+	for (auto& pChild : pNode->Children)
 	{
 		recursiveSaveNode(pFile, pChild, strFileName);
 	}
@@ -1856,37 +833,37 @@ void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const strin
 	fwrite(&nDrawType, sizeof(int), 1, pFile);
 	
 	//NumVtx
-	fwrite(&mesh.m_nNumVtx, sizeof(int), 1, pFile);
+	fwrite(&mesh.VertexNumber, sizeof(int), 1, pFile);
 	
 	//NumIdx
-	fwrite(&mesh.m_nNumIdx, sizeof(int), 1, pFile);
+	fwrite(&mesh.IndexNumber, sizeof(int), 1, pFile);
 	
 	//NumPolygon
-	fwrite(&mesh.m_nNumPolygon, sizeof(int), 1, pFile);
+	fwrite(&mesh.PolygonNumber, sizeof(int), 1, pFile);
 	
 	//Vtx
 	vector<VERTEX_3D> vecVtx;
-	vecVtx.resize(mesh.m_nNumVtx);
-	for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+	vecVtx.resize(mesh.VertexNumber);
+	for (int nCnt = 0; nCnt < mesh.VertexNumber; ++nCnt)
 	{
-		vecVtx[nCnt] = mesh.m_vecVtx[nCnt].vtx;
+		vecVtx[nCnt] = mesh.Verteces[nCnt].Vertex;
 	}
-	fwrite(&vecVtx[0], sizeof(VERTEX_3D), mesh.m_nNumVtx, pFile);
+	fwrite(&vecVtx[0], sizeof(VERTEX_3D), mesh.VertexNumber, pFile);
 	vecVtx.clear();
 
 	//Idx
 	WORD *pIdx;
-	mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
-	fwrite(pIdx, sizeof(WORD), mesh.m_nNumIdx, pFile);
-	mesh.m_pIdxBuffer->Unlock();
+	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	fwrite(pIdx, sizeof(WORD), mesh.IndexNumber, pFile);
+	mesh.IndexBuffer->Unlock();
 
 	//Texture
-	if (!mesh.strTexName.empty())
+	if (!mesh.DiffuseTextureName.empty())
 	{
 		//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-		int nSize = (int)mesh.strTexName.size();
+		int nSize = (int)mesh.DiffuseTextureName.size();
 		fwrite(&nSize, sizeof(int), 1, pFile);
-		fwrite(&mesh.strTexName[0], sizeof(char), nSize, pFile);
+		fwrite(&mesh.DiffuseTextureName[0], sizeof(char), nSize, pFile);
 	}
 	else
 	{
@@ -1895,18 +872,18 @@ void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const strin
 	}
 
 	//Render Priority
-	fwrite(&mesh.m_renderPriority, sizeof(RENDER_PRIORITY), 1, pFile);
+	fwrite(&mesh.RenderPriority, sizeof(RENDER_PRIORITY), 1, pFile);
 	
 	//Render State
 	RENDER_STATE rs;
-	if (mesh.m_bEnableLight)
+	if (mesh.EnableLight)
 	{
-		if (mesh.m_bEnableCullFace) { rs = RS_LIGHTON_CULLFACEON_MUL; }
+		if (mesh.EnableCullFace) { rs = RS_LIGHTON_CULLFACEON_MUL; }
 		else { rs = RS_LIGHTON_CULLFACEOFF_MUL; }
 	}
 	else
 	{
-		if (mesh.m_bEnableCullFace) { rs = RS_LIGHTOFF_CULLFACEON_MUL; }
+		if (mesh.EnableCullFace) { rs = RS_LIGHTOFF_CULLFACEON_MUL; }
 		else { rs = RS_LIGHTOFF_CULLFACEOFF_MUL; }
 	}
 	fwrite(&rs, sizeof(RENDER_STATE), 1, pFile);
@@ -1932,34 +909,34 @@ void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, cons
 	//fwrite(&nDrawType, sizeof(int), 1, pFile);
 
 	////NumVtx
-	//fwrite(&mesh.m_nNumVtx, sizeof(int), 1, pFile);
+	//fwrite(&mesh.VertexNumber, sizeof(int), 1, pFile);
 
 	////NumIdx
-	//fwrite(&mesh.m_nNumIdx, sizeof(int), 1, pFile);
+	//fwrite(&mesh.IndexNumber, sizeof(int), 1, pFile);
 
 	////NumPolygon
 	//fwrite(&mesh.m_nNumPolygon, sizeof(int), 1, pFile);
 
 	////Vtx
-	//for (int nCnt = 0; nCnt < mesh.m_nNumVtx; ++nCnt)
+	//for (int nCnt = 0; nCnt < mesh.VertexNumber; ++nCnt)
 	//{
-	//	auto& vtxDX = mesh.m_vecVtx[nCnt];
+	//	auto& VertexDX = mesh.Verteces[nCnt];
 
 	//	//Vtx
-	//	fwrite(&vtxDX.vtx, sizeof(VERTEX_3D), 1, pFile);
+	//	fwrite(&VertexDX.vtx, sizeof(VERTEX_3D), 1, pFile);
 
 	//	//MtxIdx
-	//	int nSize = (int)vtxDX.vecBornRefarence.size();
+	//	int nSize = (int)VertexDX.vecBornRefarence.size();
 	//	fwrite(&nSize, sizeof(int), 1, pFile);
-	//	fwrite(&vtxDX.vecBornRefarence[0], sizeof(BornRefarence), nSize, pFile);
+	//	fwrite(&VertexDX.vecBornRefarence[0], sizeof(BornRefarence), nSize, pFile);
 	//	
 	//}
 
 	////Idx
 	//WORD *pIdx;
-	//mesh.m_pIdxBuffer->Lock(0, 0, (void**)&pIdx, 0);
-	//fwrite(pIdx, sizeof(WORD), mesh.m_nNumIdx, pFile);
-	//mesh.m_pIdxBuffer->Unlock();
+	//mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	//fwrite(pIdx, sizeof(WORD), mesh.IndexNumber, pFile);
+	//mesh.IndexBuffer->Unlock();
 
 	////Texture
 	//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
