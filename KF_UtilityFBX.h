@@ -16,6 +16,15 @@
 #include "animator.h"
 
 //--------------------------------------------------------------------------------
+//  óÒãìå^
+//--------------------------------------------------------------------------------
+enum OutType
+{
+	Json,
+	Binary
+};
+
+//--------------------------------------------------------------------------------
 //  ç\ë¢ëÃíËã`
 //--------------------------------------------------------------------------------
 struct MyModel
@@ -33,7 +42,7 @@ class CKFUtilityFBX
 public:
 	static MyModel	Load(const string& strFilePath);
 	static MyModel	LoadFromTxt(const string& strFilePath);
-	static bool		Save(CMyNode* pRootNode, const string& strFileName);
+	static bool		Save(const MyModel& model, const string& fileName, const OutType& type);
 	static void		LoadAnimation(const string& strFilePath, CAnimator* animator);
 
 #ifdef USING_DIRECTX
@@ -49,9 +58,6 @@ private:
 	static void			analyzePose(FbxScene* lScene);
 	static void			findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton);
 	static void			matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node);
-	static void			recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName);
-	static void			saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
-	static void			saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName);
 	static FbxAMatrix	getGeometry(FbxNode* pNode);
 	static string		getAttributeTypeName(FbxNodeAttribute::EType type);
 };

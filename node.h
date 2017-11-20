@@ -14,6 +14,10 @@
 #include "animator.h"
 
 //--------------------------------------------------------------------------------
+//  ëOï˚êÈåæ
+//--------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------
 //  ç\ë¢ëÃíËã`
 //--------------------------------------------------------------------------------
 struct BoneReference
@@ -23,6 +27,12 @@ struct BoneReference
 	us		Index;
 	string	Name;
 	float	Weight;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Index", Index), make_nvp("Weight", Weight));
+	}
 };
 
 struct ControlPoint
@@ -63,12 +73,63 @@ struct UVSet
 };
 
 #ifdef USING_DIRECTX
+struct VertexOutNoSkin
+{
+	CKFVec3	 Position;
+	CKFVec3	 Normal;
+	CKFColor Color;
+	CKFVec2	 UV;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color), make_nvp("UV", UV));
+	}
+};
+
+struct VertexOutSkin
+{
+	CKFVec3					Position;
+	CKFVec3					Normal;
+	CKFColor				Color;
+	CKFVec2					UV;
+	vector<BoneReference>	BoneReferences;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color)
+			, make_nvp("UV", UV), make_nvp("BoneReferences", BoneReferences));
+	}
+};
+
 struct VertexDX
 {
 	VERTEX_3D				Vertex;
 	vector<BoneReference>	BoneReferences;
+
 	bool operator==(const VertexDX& vValue) const;
+	operator VertexOutNoSkin () const
+	{
+		VertexOutNoSkin result;
+		result.Position = Vertex.vPos;
+		result.Normal = Vertex.vNormal;
+		result.Color = CKFMath::sc_cWhite;
+		result.UV = Vertex.vUV;
+		return result;
+	}
+	operator VertexOutSkin () const
+	{
+		VertexOutSkin result;
+		result.Position = Vertex.vPos;
+		result.Normal = Vertex.vNormal;
+		result.Color = CKFMath::sc_cWhite;
+		result.UV = Vertex.vUV;
+		result.BoneReferences = BoneReferences;
+		return result;
+	}
 };
+
 #endif
 
 struct Mesh
@@ -83,7 +144,7 @@ struct Mesh
 		, Specular(CKFColor(1.0f))
 		, Emissive(CKFColor(1.0f))
 		, Power(1.0f)
-		, RenderPriority(RP_3D)
+		, MyRenderPriority(RenderPriority::RP_Default)
 #ifdef USING_DIRECTX
 		, VertexNumber(0)
 		, IndexNumber(0)
@@ -110,7 +171,7 @@ struct Mesh
 	bool					EnableCullFace;
 	bool					EnableLight;
 	bool					EnableFog;
-	RENDER_PRIORITY			RenderPriority;
+	RenderPriority			MyRenderPriority;
 
 #ifdef USING_DIRECTX
 	int						VertexNumber;
@@ -128,6 +189,12 @@ struct ColliderInfo
 	CKFVec3			Position;
 	CKFVec3			Rotation;
 	CKFVec3			Scale;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Type", Type), make_nvp("Position", Position), make_nvp("Rotation", Rotation), make_nvp("Scale", Scale));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -154,7 +221,7 @@ public:
 	CKFVec3			Translation;
 	CKFVec3			Rotation;
 	CKFVec3			Scale;
-	
+
 	// Matrix
 	CKFMtx44		Local;
 	CKFMtx44		World;
@@ -174,6 +241,8 @@ public:
 	void RecursiveReverseTexV(void);
 	void RecalculateMeshesBy(const CKFMtx44& matrix);
 	void RecursiveMatchClusterID(const Frame& initFrame);
+	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
+	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 
 private:
 	void analyzePoint(FbxMesh* pMesh);
@@ -182,6 +251,12 @@ private:
 	void analyzeTexture(FbxNode* pNode);
 	void analyzeMaterial(FbxMesh* pMesh);
 	void analyzeCluster(FbxMesh* pMesh);
+	void saveMeshJson(const Mesh& mesh, const string& meshName);
+	void saveSkinMeshJson(const Mesh& mesh, const string& meshName);
+	void saveMaterialJson(const Mesh& mesh, const string& meshName);
+	void saveMeshBinary(const Mesh& mesh, const string& meshName);
+	void saveSkinMeshBinary(const Mesh& mesh, const string& meshName);
+	void saveMaterialBinary(const Mesh& mesh, const string& meshName);
 
 #ifdef USING_DIRECTX
 	static LPD3DXMESH s_pMeshSphere;

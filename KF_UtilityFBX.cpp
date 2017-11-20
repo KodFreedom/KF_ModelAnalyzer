@@ -7,31 +7,13 @@
 //--------------------------------------------------------------------------------
 //  インクルードファイル
 //--------------------------------------------------------------------------------
+#include "main.h"
 #include "KF_UtilityFBX.h"
 #include "KF_Utility.h"
-#include "manager.h"
-#include "textureManager.h"
-#include "materialManager.h"
-#include "rendererDX.h"
-#include "meshManager.h"
-#include <map>
-
-
-
-//--------------------------------------------------------------------------------
-//  クラス
-//--------------------------------------------------------------------------------
-void CAnimator::UpdateBones(const Frame& current)
-{
-	for (int count = 0; count < Clusters.size(); ++count)
-	{
-		Clusters[count].Node->Local = current.BoneFrames[count].Matrix;
-	}
-}
 
 //--------------------------------------------------------------------------------
 //
-//  CKFUtilityFBX
+//  Public
 //
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
@@ -391,25 +373,52 @@ void CKFUtilityFBX::LoadAnimation(const string& strFilePath, CAnimator* animator
 //--------------------------------------------------------------------------------
 //  Save
 //--------------------------------------------------------------------------------
-bool CKFUtilityFBX::Save(CMyNode* pRootNode, const string& strFileName)
+bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const OutType& type)
 {
-	//Modelファイルの保存
-	string Name = "data/MODEL/" + strFileName + ".model";
+	if (type == Json)
+	{
+		//Model
+		auto& filePath = "data/model/" + fileName + ".json";
 
-	//あるかどうかをチェック
-	FILE *pFile;
-	fopen_s(&pFile, Name.c_str(), "rb");
-	if (pFile)
-	{//上書き確認
-		fclose(pFile);
-		auto nID = MessageBox(NULL, "上書きしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
-		if (nID == IDNO) { return false; }
+		//上書き確認
+		ifstream checkFile(filePath);
+		if (checkFile.is_open())
+		{
+			checkFile.close();
+			auto id = MessageBox(NULL, "上書きしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+			if (id == IDNO) return false;
+		}
+
+		//Save
+		ofstream file(filePath);
+		if (!file.is_open()) return false;
+		JSONOutputArchive archive(file);
+		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
+		file.close();
 	}
+	else if (type == Binary)
+	{
+		//Model
+		auto& filePath = "data/model/" + fileName + ".model";
 
-	//Save
-	fopen_s(&pFile, Name.c_str(), "wb");
-	recursiveSaveNode(pFile, pRootNode, strFileName);
-	fclose(pFile);
+		//上書き確認
+		ifstream checkFile(filePath);
+		if (checkFile.is_open())
+		{
+			checkFile.close();
+			auto id = MessageBox(NULL, "上書きしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+			if (id == IDNO) return false;
+		}
+
+		//Save
+		ofstream file(filePath);
+		if (!file.is_open()) return false;
+		BinaryOutputArchive archive(file);
+		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
+		file.close();
+	}
+	//Animator
+
 	return true;
 }
 
@@ -430,6 +439,11 @@ int CKFUtilityFBX::FindRepetition(const list<VertexDX>& listVtx, const VertexDX&
 }
 #endif
 
+//--------------------------------------------------------------------------------
+//
+//  Private
+//
+//--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 //  recursiveNode
 //--------------------------------------------------------------------------------
@@ -740,214 +754,6 @@ void CKFUtilityFBX::matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode*
 	{
 		matchClusterWithSkeleton(clusters, child);
 	}
-}
-
-//--------------------------------------------------------------------------------
-//  recursiveSaveNode
-//--------------------------------------------------------------------------------
-void CKFUtilityFBX::recursiveSaveNode(FILE* pFile, CMyNode* pNode, const string& strFileName)
-{
-	//Node名
-	int nSize = (int)pNode->Name.size();
-	fwrite(&nSize, sizeof(int), 1, pFile);
-	fwrite(&pNode->Name[0], sizeof(char), nSize, pFile);
-
-	//Offset
-	fwrite(&pNode->Translation, sizeof(CKFVec3), 1, pFile);
-	fwrite(&pNode->Rotation, sizeof(CKFVec3), 1, pFile);
-	fwrite(&pNode->Scale, sizeof(CKFVec3), 1, pFile);
-	
-	//Collider
-	int nNumCollider = (int)pNode->Colliders.size();
-	fwrite(&nNumCollider, sizeof(int), 1, pFile);
-	for (auto& colInfo : pNode->Colliders)
-	{
-		fwrite(&colInfo.Type, sizeof(int), 1, pFile);
-		fwrite(&colInfo.Position, sizeof(CKFVec3), 1, pFile);
-		fwrite(&colInfo.Rotation, sizeof(CKFVec3), 1, pFile);
-		fwrite(&colInfo.Scale, sizeof(CKFVec3), 1, pFile);
-	}
-
-	//Texture
-	int nNumTexture = (int)pNode->Textures.size();
-	fwrite(&nNumTexture, sizeof(int), 1, pFile);
-	for (auto& texture : pNode->Textures)
-	{
-		nSize = (int)texture.Name.size();
-		fwrite(&nSize, sizeof(int), 1, pFile);
-		fwrite(&texture.Name[0], sizeof(char), nSize, pFile);
-	}
-
-	//Mesh
-	int nNumMesh = (int)pNode->Meshes.size();
-	fwrite(&nNumMesh, sizeof(int), 1, pFile);
-	for (int nCnt = 0; nCnt < nNumMesh; ++nCnt)
-	{
-		auto& mesh = pNode->Meshes[nCnt];
-		//if (mesh.vecMtx.empty())
-		{//骨なし
-			//Name
-			string strMeshName = strFileName + '_' + pNode->Name + '_' + to_string(nCnt) + ".mesh";
-			nSize = (int)strMeshName.size();
-			fwrite(&nSize, sizeof(int), 1, pFile);
-			fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
-
-			//Mesh
-			saveMesh(pNode, mesh, strMeshName);
-		}
-		//else
-		//{//ワンスキーンメッシュ
-		//	//Name
-		//	string strMeshName = pNode->Name + '_' + to_string(nCnt) + ".oneSkinMesh";
-		//	nSize = (int)strMeshName.size();
-		//	fwrite(&nSize, sizeof(int), 1, pFile);
-		//	fwrite(&strMeshName[0], sizeof(char), nSize, pFile);
-
-		//	//Mesh
-		//	saveOneSkinMesh(pNode, mesh, strMeshName);
-		//}
-	}
-	
-	//Child
-	int nNumChild = (int)pNode->Children.size();
-	fwrite(&nNumChild, sizeof(int), 1, pFile);
-	for (auto& pChild : pNode->Children)
-	{
-		recursiveSaveNode(pFile, pChild, strFileName);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  saveMesh
-//--------------------------------------------------------------------------------
-void CKFUtilityFBX::saveMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName)
-{
-	string Name = "data/MESH/" + strMeshName;
-	FILE *pFile;
-	
-	//file open
-	fopen_s(&pFile, Name.c_str(), "wb");
-	
-	//DrawType
-	int nDrawType = (int)D3DPT_TRIANGLELIST;
-	fwrite(&nDrawType, sizeof(int), 1, pFile);
-	
-	//NumVtx
-	fwrite(&mesh.VertexNumber, sizeof(int), 1, pFile);
-	
-	//NumIdx
-	fwrite(&mesh.IndexNumber, sizeof(int), 1, pFile);
-	
-	//NumPolygon
-	fwrite(&mesh.PolygonNumber, sizeof(int), 1, pFile);
-	
-	//Vtx
-	vector<VERTEX_3D> vecVtx;
-	vecVtx.resize(mesh.VertexNumber);
-	for (int nCnt = 0; nCnt < mesh.VertexNumber; ++nCnt)
-	{
-		vecVtx[nCnt] = mesh.Verteces[nCnt].Vertex;
-	}
-	fwrite(&vecVtx[0], sizeof(VERTEX_3D), mesh.VertexNumber, pFile);
-	vecVtx.clear();
-
-	//Idx
-	WORD *pIdx;
-	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
-	fwrite(pIdx, sizeof(WORD), mesh.IndexNumber, pFile);
-	mesh.IndexBuffer->Unlock();
-
-	//Texture
-	if (!mesh.DiffuseTextureName.empty())
-	{
-		//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-		int nSize = (int)mesh.DiffuseTextureName.size();
-		fwrite(&nSize, sizeof(int), 1, pFile);
-		fwrite(&mesh.DiffuseTextureName[0], sizeof(char), nSize, pFile);
-	}
-	else
-	{
-		int nSize = 0;
-		fwrite(&nSize, sizeof(int), 1, pFile);
-	}
-
-	//Render Priority
-	fwrite(&mesh.RenderPriority, sizeof(RENDER_PRIORITY), 1, pFile);
-	
-	//Render State
-	RENDER_STATE rs;
-	if (mesh.EnableLight)
-	{
-		if (mesh.EnableCullFace) { rs = RS_LIGHTON_CULLFACEON_MUL; }
-		else { rs = RS_LIGHTON_CULLFACEOFF_MUL; }
-	}
-	else
-	{
-		if (mesh.EnableCullFace) { rs = RS_LIGHTOFF_CULLFACEON_MUL; }
-		else { rs = RS_LIGHTOFF_CULLFACEOFF_MUL; }
-	}
-	fwrite(&rs, sizeof(RENDER_STATE), 1, pFile);
-	
-	fclose(pFile);
-}
-
-//--------------------------------------------------------------------------------
-//  saveMesh
-//--------------------------------------------------------------------------------
-void CKFUtilityFBX::saveOneSkinMesh(const CMyNode* pNode, const Mesh& mesh, const string& strMeshName)
-{
-	MessageBox(NULL, "未対応", "saveOneSkinMesh", MB_OK | MB_ICONWARNING);
-
-	//string Name = "data/MESH/" + strMeshName;
-	//FILE *pFile;
-
-	////file open
-	//fopen_s(&pFile, Name.c_str(), "wb");
-
-	////DrawType
-	//int nDrawType = (int)D3DPT_TRIANGLELIST;
-	//fwrite(&nDrawType, sizeof(int), 1, pFile);
-
-	////NumVtx
-	//fwrite(&mesh.VertexNumber, sizeof(int), 1, pFile);
-
-	////NumIdx
-	//fwrite(&mesh.IndexNumber, sizeof(int), 1, pFile);
-
-	////NumPolygon
-	//fwrite(&mesh.m_nNumPolygon, sizeof(int), 1, pFile);
-
-	////Vtx
-	//for (int nCnt = 0; nCnt < mesh.VertexNumber; ++nCnt)
-	//{
-	//	auto& VertexDX = mesh.Verteces[nCnt];
-
-	//	//Vtx
-	//	fwrite(&VertexDX.vtx, sizeof(VERTEX_3D), 1, pFile);
-
-	//	//MtxIdx
-	//	int nSize = (int)VertexDX.vecBornRefarence.size();
-	//	fwrite(&nSize, sizeof(int), 1, pFile);
-	//	fwrite(&VertexDX.vecBornRefarence[0], sizeof(BornRefarence), nSize, pFile);
-	//	
-	//}
-
-	////Idx
-	//WORD *pIdx;
-	//mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
-	//fwrite(pIdx, sizeof(WORD), mesh.IndexNumber, pFile);
-	//mesh.IndexBuffer->Unlock();
-
-	////Texture
-	//auto& texture = pNode->vecTex[mesh.nMaterialIndex];
-	//int nSize = (int)texture.Name.size();
-	//fwrite(&nSize, sizeof(int), 1, pFile);
-	//fwrite(&texture.Name[0], sizeof(char), nSize, pFile);
-
-	////Mtx
-	//
-
-	//fclose(pFile);
 }
 
 //--------------------------------------------------------------------------------

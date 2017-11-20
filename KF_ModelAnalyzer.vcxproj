@@ -26,6 +26,7 @@
     <ClCompile Include="3DRigidbodyComponent.cpp" />
     <ClCompile Include="actionGameCamera.cpp" />
     <ClCompile Include="actorBehaviorComponent.cpp" />
+    <ClCompile Include="animator.cpp" />
     <ClCompile Include="boxColliderComponent.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="colliderComponent.cpp" />
@@ -185,7 +186,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\</OutDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
-    <IncludePath>$(DXSDK_DIR)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(DXSDK_DIR)include;$(ProjectDir)include;$(IncludePath)</IncludePath>
     <LibraryPath>$(DXSDK_DIR)lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

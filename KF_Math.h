@@ -63,6 +63,12 @@ public:
 	CKFVec2 operator*(const float& fValue) const;
 	void operator*=(const float& fValue);
 	float operator*(const CKFVec2& vValue) const;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("X", m_fX), make_nvp("Y", m_fY));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -105,6 +111,12 @@ public:
 
 	CKFVec3 operator/(const float& fValue) const;
 	void operator/=(const float& fValue);
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("X", m_fX), make_nvp("Y", m_fY), make_nvp("Z", m_fZ));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -225,6 +237,12 @@ public:
 
 	CKFColor operator*(const float& fValue) const;
 	void operator*=(const float& fValue);
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("R", m_fR), make_nvp("G", m_fG), make_nvp("B", m_fB), make_nvp("A", m_fA));
+	}
 };
 
 //--------------------------------------------------------------------------------

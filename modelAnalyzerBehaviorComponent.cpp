@@ -175,12 +175,10 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		}
 		m_pRootNode = myModel.pNode;
 		m_pAnimator = myModel.pAnimator;
-		m_pRootNode->RecursiveRecalculateVtx();
+		m_pRootNode->RecursiveRecombineMeshes();
 		if (m_pAnimator)
 		{
-			m_pRootNode->RecursiveRecalculateClusterID(myModel.pAnimator->Motions[0].Frames[0]);
-			m_pRootNode->RecursiveTransformVtxToBoneSpace(m_pAnimator->Clusters);
-			m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
+			m_pRootNode->RecursiveMatchClusterID(myModel.pAnimator->Motions[0].Frames[0]);
 		}
 	}
 	else
@@ -192,9 +190,12 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 //--------------------------------------------------------------------------------
 // ChangeModel
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::SaveModel(void)
+void CModelAnalyzerBehaviorComponent::SaveModel(const OutType& type)
 {
-	if (CKFUtilityFBX::Save(m_pRootNode, m_strFileName))
+	MyModel model;
+	model.pAnimator = m_pAnimator;
+	model.pNode = m_pRootNode;
+	if (CKFUtilityFBX::Save(model, m_strFileName, type))
 	{
 		m_bSaved = true;
 		MessageBox(NULL, "セーブしました。", "SaveModel", MB_OK);
@@ -214,9 +215,12 @@ void CModelAnalyzerBehaviorComponent::releaseModel(void)
 	if (!m_bSaved)
 	{//Save確認
 		auto nID = MessageBox(NULL, "今のモデルセーブしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
-		if (nID == IDYES) { SaveModel(); }
+		if (nID == IDYES) 
+		{
+			auto nID = MessageBox(NULL, "Jsonでセーブしますか？(Noの場合Binaryでセーブします)", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+			SaveModel(nID == IDYES ? Json : Binary);
+		}
 	}
-
 	SAFE_RELEASE(m_pRootNode);
 	SAFE_RELEASE(m_pAnimator);
 	Init();
@@ -294,9 +298,13 @@ void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 			ChangeModel(strFileName);
 		}
 	}
-	if (ImGui::MenuItem("Save Model")) 
+	if (ImGui::MenuItem("Save As Json")) 
 	{
-		SaveModel();
+		SaveModel(Json);
+	}
+	if (ImGui::MenuItem("Save As Binary"))
+	{
+		SaveModel(Binary);
 	}
 }
 
@@ -346,77 +354,77 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 		if (ImGui::CollapsingHeader("Info"))
 		{
 			//Type
-			for (int nCnt = 0; nCnt < (int)pNode->vecAttributeName.size(); ++nCnt)
+			for (int nCnt = 0; nCnt < (int)pNode->AttributeNames.size(); ++nCnt)
 			{
-				ImGui::Text("Type%d : %s", nCnt, pNode->vecAttributeName[nCnt].c_str());
+				ImGui::Text("Type%d : %s", nCnt, pNode->AttributeNames[nCnt].c_str());
 			}
 
 			//Offset
-			pNode->vTrans.m_fX = pNode->local.m_af[3][0];
-			pNode->vTrans.m_fY = pNode->local.m_af[3][1];
-			pNode->vTrans.m_fZ = pNode->local.m_af[3][2];
-			if (ImGui::InputFloat3("Trans", &pNode->vTrans.m_fX))
+			pNode->Translation.m_fX = pNode->Local.m_af[3][0];
+			pNode->Translation.m_fY = pNode->Local.m_af[3][1];
+			pNode->Translation.m_fZ = pNode->Local.m_af[3][2];
+			if (ImGui::InputFloat3("Trans", &pNode->Translation.m_fX))
 			{
-				CKFMath::MtxIdentity(pNode->local);
-				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
-				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
-				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMath::MtxIdentity(pNode->Local);
+				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
+				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
+				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
 				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
-				pNode->local *= mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
+				pNode->Local *= mtxRot;
 				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
-				pNode->local *= mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
+				pNode->Local *= mtxPos;
 			}
-			if (ImGui::SliderFloat3("Rot", &pNode->vRot.m_fX, 0.0f, KF_PI * 2.0f))
+			if (ImGui::SliderFloat3("Rot", &pNode->Rotation.m_fX, 0.0f, KF_PI * 2.0f))
 			{
-				CKFMath::MtxIdentity(pNode->local);
-				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
-				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
-				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMath::MtxIdentity(pNode->Local);
+				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
+				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
+				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
 				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
-				pNode->local *= mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
+				pNode->Local *= mtxRot;
 				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
-				pNode->local *= mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
+				pNode->Local *= mtxPos;
 			}
-			if (ImGui::InputFloat3("Scale", &pNode->vScale.m_fX))
+			if (ImGui::InputFloat3("Scale", &pNode->Scale.m_fX))
 			{
-				CKFMath::MtxIdentity(pNode->local);
-				pNode->local.m_af[0][0] = pNode->vScale.m_fX;
-				pNode->local.m_af[1][1] = pNode->vScale.m_fY;
-				pNode->local.m_af[2][2] = pNode->vScale.m_fZ;
+				CKFMath::MtxIdentity(pNode->Local);
+				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
+				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
+				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
 				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->vRot);
-				pNode->local *= mtxRot;
+				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
+				pNode->Local *= mtxRot;
 				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->vTrans);
-				pNode->local *= mtxPos;
+				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
+				pNode->Local *= mtxPos;
 			}
 
 			//Mesh
 			if (ImGui::TreeNode("Mesh"))
 			{
-				for (int nCnt = 0; nCnt < (int)pNode->vecMesh.size(); ++nCnt)
+				for (int nCnt = 0; nCnt < (int)pNode->Meshes.size(); ++nCnt)
 				{
-					auto& mesh = pNode->vecMesh[nCnt];
+					auto& mesh = pNode->Meshes[nCnt];
 					auto strMeshName = to_string(nCnt);
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
 						//Info
-						ImGui::Text("NumPolygon : %d", mesh.m_nNumPolygon);
-						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.m_nNumVtx, mesh.m_nNumIdx);
+						ImGui::Text("NumPolygon : %d", mesh.PolygonNumber);
+						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.VertexNumber, mesh.IndexNumber);
 
 						// Light
-						ImGui::Checkbox("Enable Light", &mesh.m_bEnableLight);
+						ImGui::Checkbox("Enable Light", &mesh.EnableFog);
 
 						// CullFace
-						ImGui::Checkbox("Enable CullFace", &mesh.m_bEnableCullFace);
+						ImGui::Checkbox("Enable CullFace", &mesh.EnableCullFace);
 
 						// Texture
-						ImGui::Text("Texture : %s", mesh.strTexName.c_str());
-						if (ImGui::Button("Change Texture"))
+						ImGui::Text("Texture : %s", mesh.DiffuseTextureName.c_str());
+						if (ImGui::Button("Change Diffuse Texture"))
 						{
 							changeTexture(mesh);
 						}
@@ -426,7 +434,7 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 						{ "3D"
 							, "3D_ALPHATEST"
 							, "3D_ZSORT" };
-						ImGui::ListBox("Render Priority\n(single select)", (int*)&mesh.m_renderPriority, listbox_rp, 3, 3);
+						ImGui::ListBox("Render Priority\n(single select)", (int*)&mesh.MyRenderPriority, listbox_rp, 3, 3);
 						ImGui::TreePop();
 					}
 				}
@@ -434,20 +442,20 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Collider
-			ImGui::Text("Collider : %d", (int)pNode->listCollider.size());
+			ImGui::Text("Collider : %d", (int)pNode->Colliders.size());
 
 			//Edit
 			if (!m_pNodeNow && ImGui::Button("Edit Node"))
 			{
 				m_pNodeNow = pNode;
-				m_pNodeNow->materialID = 2;
+				m_pNodeNow->ColliderMaterialID = 2;
 			}
 		}
 
 		if (ImGui::CollapsingHeader("Child"))
 		{
 			//Child
-			for (auto pChild : pNode->listChild)
+			for (auto pChild : pNode->Children)
 			{
 				showNodeInfo(pChild);
 			}
@@ -485,7 +493,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 			, "AABB"
 			, "OBB" };
 		int nCnt = 0;
-		for (auto itr = m_pNodeNow->listCollider.begin(); itr != m_pNodeNow->listCollider.end();)
+		for (auto itr = m_pNodeNow->Colliders.begin(); itr != m_pNodeNow->Colliders.end();)
 		{
 			bool bDelete = false;
 			char aBuf[128];
@@ -493,18 +501,18 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 			if (ImGui::TreeNode(aBuf))
 			{
 				//Type
-				ImGui::ListBox("Collider Type\n(single select)", (int*)&itr->colType, listbox_items, 3, 3);
+				ImGui::ListBox("Collider Type\n(single select)", (int*)&itr->Type, listbox_items, 3, 3);
 				
 				//Offset
-				ImGui::InputFloat3("Trans", &itr->vOffsetPos.m_fX);
-				ImGui::SliderFloat3("Rot", &itr->vOffsetRot.m_fX, 0.0f, KF_PI * 2.0f);
-				ImGui::InputFloat3("Scale", &itr->vOffsetScale.m_fX);
+				ImGui::InputFloat3("Trans", &itr->Position.m_fX);
+				ImGui::SliderFloat3("Rot", &itr->Rotation.m_fX, 0.0f, KF_PI * 2.0f);
+				ImGui::InputFloat3("Scale", &itr->Scale.m_fX);
 
-				if (itr->colType == CS::COL_SPHERE)
+				if (itr->Type == CS::COL_SPHERE)
 				{//same scale xyz by x
-					itr->vOffsetScale.m_fY =
-						itr->vOffsetScale.m_fZ =
-						itr->vOffsetScale.m_fX;
+					itr->Scale.m_fY =
+						itr->Scale.m_fZ =
+						itr->Scale.m_fX;
 				}
 
 				bDelete = ImGui::Button("Delete Collider");
@@ -513,7 +521,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 
 			if(bDelete)
 			{
-				itr = m_pNodeNow->listCollider.erase(itr);
+				itr = m_pNodeNow->Colliders.erase(itr);
 			}
 			else
 			{
@@ -525,12 +533,12 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 		//Add Collider
 		if (ImGui::Button("Add Collider"))
 		{
-			COL_INFO col;
-			col.colType = CS::COL_SPHERE;
-			col.vOffsetPos = CKFMath::sc_vZero;
-			col.vOffsetRot = CKFMath::sc_vZero;
-			col.vOffsetScale = CKFMath::sc_vOne;
-			m_pNodeNow->listCollider.push_back(col);
+			ColliderInfo col;
+			col.Type = CS::COL_SPHERE;
+			col.Position = CKFMath::sc_vZero;
+			col.Rotation = CKFMath::sc_vZero;
+			col.Scale = CKFMath::sc_vOne;
+			m_pNodeNow->Colliders.push_back(col);
 		}
 	}
 
@@ -563,7 +571,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 			mtxThis *= mtxPos;
 
 			//Recalculate
-			m_pNodeNow->RecalculateVtxByMatrix(mtxThis);
+			m_pNodeNow->RecalculateMeshesBy(mtxThis);
 
 			//Reset
 			m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
@@ -577,7 +585,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 
 	if (!bNodeNow) 
 	{
-		m_pNodeNow->materialID = 1;
+		m_pNodeNow->ColliderMaterialID = 1;
 		m_pNodeNow = nullptr;
 		m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
 		m_vNodeNowCorrectRot = CKFMath::sc_vZero;
@@ -729,12 +737,12 @@ void CModelAnalyzerBehaviorComponent::changeTexture(Mesh& mesh)
 		CKFUtility::AnalyzeFilePath(strTex, strName, strType);
 		if (CKFUtility::CheckIsTexture(strType))
 		{
-			if (!mesh.strTexName.empty())
+			if (!mesh.DiffuseTextureName.empty())
 			{
-				CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.strTexName);
+				CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.DiffuseTextureName);
 			}
-			mesh.strTexName = strName + '.' + strType;
-			CMain::GetManager()->GetTextureManager()->UseTexture(mesh.strTexName);
+			mesh.DiffuseTextureName = strName + '.' + strType;
+			CMain::GetManager()->GetTextureManager()->UseTexture(mesh.DiffuseTextureName);
 		}
 	}
 }

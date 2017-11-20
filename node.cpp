@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------------
 //
-//　node.h
+//　node.cpp
 //	Author : Xu Wenjie
 //	Date   : 2017-09-15
 //--------------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 #include "textureManager.h"
 #include "rendererDX.h"
 #include "materialManager.h"
+
 
 //--------------------------------------------------------------------------------
 //  静的メンバ変数
@@ -57,7 +58,12 @@ bool VertexDX::operator==(const VertexDX& value) const
 //
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
-//  RecursiveDraw
+//
+//  Public
+//
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//  Release
 //--------------------------------------------------------------------------------
 void CMyNode::Release(void)
 {
@@ -142,7 +148,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 		VERTEX_3D* pVtx;
 		mesh.VertexBuffer->Lock(0, 0, (void**)&pVtx, 0);
 
-		//#pragma omp parallel for 
+		#pragma omp parallel for 
 		for (int count = 0; count < (int)mesh.Verteces.size(); ++count)
 		{
 			CKFMtx44 mtx;
@@ -214,7 +220,7 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 	{
 		for (auto& mesh : Meshes)
 		{
-			if (mesh.RenderPriority == RP_3D_ALPHATEST)
+			if (mesh.MyRenderPriority == RP_AlphaTest)
 			{
 				pDevice->SetRenderState(D3DRS_ALPHAREF, (DWORD)0x00000001);
 				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
@@ -273,7 +279,7 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 
 			renderState->ResetRenderState();
 
-			if (mesh.RenderPriority == RP_3D_ALPHATEST)
+			if (mesh.MyRenderPriority == RP_AlphaTest)
 			{
 				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 			}
@@ -596,6 +602,98 @@ void CMyNode::RecalculateMeshesBy(const CKFMtx44& matrix)
 }
 
 //--------------------------------------------------------------------------------
+//  RecursiveSave(Json)
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator)
+{
+	//Node名
+	archive(make_nvp("Name", Name));
+
+	//Offset
+	archive(make_nvp("Translation", Translation)
+		, make_nvp("Rotation", Rotation)
+		, make_nvp("Scale", Scale));
+
+	//Collider
+	int colliderNumber = (int)Colliders.size();
+	archive(make_nvp("ColliderNumber", colliderNumber));
+	for (auto& collider : Colliders)
+	{
+		archive(make_nvp("Collider", collider));
+	}
+
+	//Mesh
+	int meshNumber = (int)Meshes.size();
+	archive(make_nvp("MeshNumber", meshNumber));
+	for (int count = 0; count < meshNumber; ++count)
+	{
+		auto& mesh = Meshes[count];
+		auto& meshName = fileName + '_' + Name + '_' + to_string(count);
+		archive(make_nvp("MeshName", meshName));
+		if (haveAnimator) saveSkinMeshJson(mesh, meshName);
+		else saveMeshJson(mesh, meshName);
+	}
+
+	//Child
+	int childNumber = (int)Children.size();
+	archive(make_nvp("ChildNumber", childNumber));
+	for (auto& pChild : Children)
+	{
+		pChild->RecursiveSave(archive, fileName, haveAnimator);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveSave(Binary
+//--------------------------------------------------------------------------------
+void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator)
+{
+	//Node名
+	int size = (int)Name.size();
+	archive.saveBinary(&size, sizeof(int));
+	archive.saveBinary(&Name, size);
+
+	//Offset
+	archive.saveBinary(&Translation, sizeof(CKFVec3));
+	archive.saveBinary(&Rotation, sizeof(CKFVec3));
+	archive.saveBinary(&Scale, sizeof(CKFVec3));
+
+	//Collider
+	int colliderNumber = (int)Colliders.size();
+	archive.saveBinary(&colliderNumber, sizeof(int));
+	for (auto& collider : Colliders)
+	{
+		archive.saveBinary(&collider, sizeof(ColliderInfo));
+	}
+
+	//Mesh
+	int meshNumber = (int)Meshes.size();
+	archive.saveBinary(&meshNumber, sizeof(int));
+	for (int count = 0; count < meshNumber; ++count)
+	{
+		auto& meshName = fileName + '_' + Name + '_' + to_string(count);
+		size = (int)meshName.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&meshName, size);
+		if (haveAnimator) saveSkinMeshBinary(Meshes[count], meshName);
+		else saveMeshBinary(Meshes[count], meshName);
+	}
+
+	//Child
+	int childNumber = (int)Children.size();
+	archive.saveBinary(&childNumber, sizeof(int));
+	for (auto& pChild : Children)
+	{
+		pChild->RecursiveSave(archive, fileName, haveAnimator);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//
+//  Private
+//
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 //  analyzePos
 //--------------------------------------------------------------------------------
 void CMyNode::analyzePoint(FbxMesh* pMesh)
@@ -624,7 +722,6 @@ void CMyNode::analyzePoint(FbxMesh* pMesh)
 	{
 		meshNow.PointIndeces[count] = static_cast<unsigned int>(pIdx[count]);
 	}
-
 }
 
 //--------------------------------------------------------------------------------
@@ -962,4 +1059,267 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 			}
 		}
 	}
+}
+
+//--------------------------------------------------------------------------------
+//  saveMeshJson
+//--------------------------------------------------------------------------------
+void CMyNode::saveMeshJson(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/mesh/" + meshName + ".json";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	JSONOutputArchive archive(file);
+
+	//Render Priority
+	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
+
+	//Render State
+	RenderStateType renderStateType = RenderStateType::RS_Default;
+	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
+	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
+	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
+	archive(make_nvp("RenderStateType", renderStateType));
+	
+	//DrawType
+	int drawType = (int)TriangleList;
+	archive(make_nvp("DrawType", drawType));
+
+	//NumVtx,Idx,Polygon
+	archive(make_nvp("VertexNumber", mesh.VertexNumber));
+	archive(make_nvp("IndexNumber", mesh.IndexNumber));
+	archive(make_nvp("PolygonNumber", mesh.PolygonNumber));
+
+	//Vtx
+	vector<VertexOutNoSkin> verteces;
+	verteces.reserve(mesh.VertexNumber);
+	for (int count = 0; count < mesh.VertexNumber; ++count)
+	{
+		verteces.push_back((VertexOutNoSkin)mesh.Verteces[count]);
+	}
+	archive(make_nvp("Verteces", verteces));
+	verteces.clear();
+
+	//Idx
+	vector<WORD> indeces;
+	indeces.reserve(mesh.IndexNumber);
+	WORD *pIdx;
+	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	for (int count = 0; count < mesh.IndexNumber; ++count)
+	{
+		indeces.push_back(pIdx[count]);
+	}
+	mesh.IndexBuffer->Unlock();
+	archive(make_nvp("Indeces", indeces));
+	indeces.clear();
+	file.close();
+
+	//Material
+	saveMaterialJson(mesh, meshName);
+}
+
+//--------------------------------------------------------------------------------
+//  saveSkinMeshJson
+//--------------------------------------------------------------------------------
+void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/skinMesh/" + meshName + ".json";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	JSONOutputArchive archive(file);
+
+	//Render Priority
+	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
+
+	//Render State
+	RenderStateType renderStateType = RenderStateType::RS_Default;
+	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
+	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
+	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
+	archive(make_nvp("RenderStateType", renderStateType));
+
+	//DrawType
+	int drawType = (int)TriangleList;
+	archive(make_nvp("DrawType", drawType));
+
+	//NumVtx,Idx,Polygon
+	archive(make_nvp("VertexNumber", mesh.VertexNumber));
+	archive(make_nvp("IndexNumber", mesh.IndexNumber));
+	archive(make_nvp("PolygonNumber", mesh.PolygonNumber));
+
+	//Vtx
+	vector<VertexOutSkin> verteces;
+	verteces.reserve(mesh.VertexNumber);
+	for (int count = 0; count < mesh.VertexNumber; ++count)
+	{
+		verteces.push_back((VertexOutSkin)mesh.Verteces[count]);
+	}
+	archive(make_nvp("SkinVerteces", verteces));
+	verteces.clear();
+
+	//Idx
+	vector<WORD> indeces;
+	indeces.reserve(mesh.IndexNumber);
+	WORD *pIdx;
+	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	for (int count = 0; count < mesh.IndexNumber; ++count)
+	{
+		indeces.push_back(pIdx[count]);
+	}
+	mesh.IndexBuffer->Unlock();
+	archive(make_nvp("Indeces", indeces));
+	indeces.clear();
+
+	file.close();
+
+	//Material
+	saveMaterialJson(mesh, meshName);
+}
+
+//--------------------------------------------------------------------------------
+//  saveMaterialJson
+//--------------------------------------------------------------------------------
+void CMyNode::saveMaterialJson(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/material/" + meshName + ".json";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	JSONOutputArchive archive(file);
+	archive(make_nvp("DiffuseTextureName", mesh.DiffuseTextureName));
+	archive(make_nvp("SpecularTextureName", mesh.SpecularTextureName));
+	archive(make_nvp("NormalTextureName", mesh.NormalTextureName));
+	archive(make_nvp("Ambient", mesh.Ambient));
+	archive(make_nvp("Diffuse", mesh.Diffuse));
+	archive(make_nvp("Specular", mesh.Specular));
+	archive(make_nvp("Emissive", mesh.Emissive));
+	archive(make_nvp("Power", mesh.Power));
+	file.close();
+}
+
+//--------------------------------------------------------------------------------
+//  saveMeshBinary
+//--------------------------------------------------------------------------------
+void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/mesh/" + meshName + ".mesh";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	BinaryOutputArchive archive(file);
+
+	//Render Priority
+	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));
+
+	//Render State
+	RenderStateType renderStateType = RenderStateType::RS_Default;
+	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
+	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
+	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
+	archive.saveBinary(&renderStateType, sizeof(RenderStateType));
+
+	//DrawType
+	auto drawType = TriangleList;
+	archive.saveBinary(&drawType, sizeof(DrawType));
+
+	//NumVtx,Idx,Polygon
+	archive.saveBinary(&mesh.VertexNumber, sizeof(int));
+	archive.saveBinary(&mesh.IndexNumber, sizeof(int));
+	archive.saveBinary(&mesh.PolygonNumber, sizeof(int));
+
+	//Vtx
+	vector<VertexOutNoSkin> verteces;
+	verteces.reserve(mesh.VertexNumber);
+	for (int count = 0; count < mesh.VertexNumber; ++count)
+	{
+		verteces.push_back((VertexOutNoSkin)mesh.Verteces[count]);
+	}
+	archive.saveBinary(&verteces[0], sizeof(VertexOutNoSkin) * mesh.VertexNumber);
+	verteces.clear();
+
+	//Idx
+	WORD *pIdx;
+	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	archive.saveBinary(&pIdx[0], sizeof(WORD) * mesh.IndexNumber);
+	mesh.IndexBuffer->Unlock();
+	
+	file.close();
+
+	//Material
+	saveMaterialBinary(mesh, meshName);
+}
+
+//--------------------------------------------------------------------------------
+//  saveSkinMeshBinary
+//--------------------------------------------------------------------------------
+void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/skinMesh/" + meshName + ".skinMesh";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	BinaryOutputArchive archive(file);
+
+	//Render Priority
+	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));
+
+	//Render State
+	RenderStateType renderStateType = RenderStateType::RS_Default;
+	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
+	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
+	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
+	archive.saveBinary(&renderStateType, sizeof(RenderStateType));
+
+	//DrawType
+	auto drawType = TriangleList;
+	archive.saveBinary(&drawType, sizeof(DrawType));
+
+	//NumVtx,Idx,Polygon
+	archive.saveBinary(&mesh.VertexNumber, sizeof(int));
+	archive.saveBinary(&mesh.IndexNumber, sizeof(int));
+	archive.saveBinary(&mesh.PolygonNumber, sizeof(int));
+
+	//Vtx
+	vector<VertexOutSkin> verteces;
+	verteces.reserve(mesh.VertexNumber);
+	for (int count = 0; count < mesh.VertexNumber; ++count)
+	{
+		verteces.push_back((VertexOutSkin)mesh.Verteces[count]);
+	}
+	archive.saveBinary(&verteces[0], sizeof(VertexOutSkin) * mesh.VertexNumber);
+	verteces.clear();
+
+	//Idx
+	WORD *pIdx;
+	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
+	archive.saveBinary(&pIdx[0], sizeof(WORD) * mesh.IndexNumber);
+	mesh.IndexBuffer->Unlock();
+
+	file.close();
+
+	//Material
+	saveMaterialBinary(mesh, meshName);
+}
+
+//--------------------------------------------------------------------------------
+//  saveMaterialBinary
+//--------------------------------------------------------------------------------
+void CMyNode::saveMaterialBinary(const Mesh& mesh, const string& meshName)
+{
+	auto& filePath = "data/material/" + meshName + ".material";
+	ofstream file(filePath);
+	if (!file.is_open()) return;
+	BinaryOutputArchive archive(file);
+	int size = (int)mesh.DiffuseTextureName.size();
+	archive.saveBinary(&size, sizeof(int));
+	archive.saveBinary(&mesh.DiffuseTextureName[0], size);
+	size = (int)mesh.SpecularTextureName.size();
+	archive.saveBinary(&size, sizeof(int));
+	archive.saveBinary(&mesh.SpecularTextureName[0], size);
+	size = (int)mesh.NormalTextureName.size();
+	archive.saveBinary(&size, sizeof(int));
+	archive.saveBinary(&mesh.NormalTextureName[0], size);
+	archive.saveBinary(&mesh.Ambient, sizeof(CKFColor));
+	archive.saveBinary(&mesh.Diffuse, sizeof(CKFColor));
+	archive.saveBinary(&mesh.Specular, sizeof(CKFColor));
+	archive.saveBinary(&mesh.Emissive, sizeof(CKFColor));
+	archive.saveBinary(&mesh.Power, sizeof(float));
+	file.close();
 }

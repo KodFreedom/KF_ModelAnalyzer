@@ -6,6 +6,7 @@
 //--------------------------------------------------------------------------------
 #pragma once
 
+#define NOMINMAX
 //--------------------------------------------------------------------------------
 //  インクルードファイル
 //--------------------------------------------------------------------------------
@@ -20,7 +21,17 @@
 #include <algorithm>
 #include <sstream>
 #include <assert.h>
+#include <fstream>
+#include <iostream>
+#include <map>
 using namespace std;
+
+//Cereal
+#include <cereal/archives/JSON.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+using namespace cereal;
 
 //FBX
 #include <fbxsdk.h>
@@ -111,6 +122,7 @@ public:
 
 	//Get関数
 	static CManager*		GetManager(void) { return m_pManager; }
+
 private:
 	//--------------------------------------------------------------------------------
 	//  関数定義
