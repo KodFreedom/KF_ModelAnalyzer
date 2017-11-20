@@ -23,6 +23,12 @@ struct BoneFrame
 {
 	string		Name;
 	CKFMtx44	Matrix;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Matrix", Matrix));
+	}
 };
 
 struct Frame
@@ -30,11 +36,17 @@ struct Frame
 	Frame() {}
 	~Frame() { BoneFrames.clear(); BoneFrames.shrink_to_fit(); }
 	vector<BoneFrame> BoneFrames;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("BoneFrames", BoneFrames));
+	}
 };
 
 struct Motion
 {
-	Motion() : StartFrame(0), EndFrame(0)
+	Motion() : StartFrame(0), EndFrame(0), IsLoop(true)
 	{
 		Name.clear();
 		Frames.clear();
@@ -43,6 +55,13 @@ struct Motion
 	vector<Frame>	Frames;
 	int				StartFrame;
 	int				EndFrame;
+	bool			IsLoop;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("IsLoop", IsLoop), make_nvp("Frames", Frames));
+	}
 };
 
 struct Cluster
@@ -52,6 +71,12 @@ struct Cluster
 	CMyNode*	Node;
 	CKFMtx44	BindPoseInverse;
 	CKFMtx44	World;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Name", Name), make_nvp("BindPoseInverse", BindPoseInverse));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -79,6 +104,14 @@ public:
 
 	vector<Motion> Motions;
 	vector<Cluster> Clusters;
+
 	void UpdateBones(const Frame& current);
 	void UpdateClusterWorld(void);
+	void DeleteOutOfRangeFrames(const int motionNo);
+	void SaveAsJson(const string& fileName);
+	void SaveAsBinary(const string& fileName);
+
+private:
+	void saveAsJson(const Motion& motion);
+	void saveAsBinary(const Motion& motion);
 };

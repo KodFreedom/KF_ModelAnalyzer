@@ -147,6 +147,12 @@ public:
 	void operator+=(const CKFMtx44& mtxValue);
 	void operator*=(const CKFMtx44& mtxValue);
 	static CKFMtx44 FbxToMtx(const FbxAMatrix& fbxMatrix);
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Elements", m_af));
+	}
 };
 
 //--------------------------------------------------------------------------------
