@@ -188,7 +188,7 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 			auto& vertexDX = mesh.Verteces[count];
 			for (auto& bornRefarence : vertexDX.BoneReferences)
 			{
-				for (int countBoneFrame = 0; countBoneFrame < initFrame.BoneFrames.size(); ++countBoneFrame)
+				for (int countBoneFrame = 0; countBoneFrame < (int)initFrame.BoneFrames.size(); ++countBoneFrame)
 				{
 					if (bornRefarence.Name == initFrame.BoneFrames[countBoneFrame].Name)
 					{
@@ -989,7 +989,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 			if (referenceMode == FbxLayerElement::eIndexToDirect)
 			{// メッシュ全部がこのマテリアルインデックス 
 				meshNow.MaterialIndex = pElementMaterial->GetIndexArray()[0];
-				if (meshNow.MaterialIndex < Textures.size())
+				if (meshNow.MaterialIndex < (int)Textures.size())
 				{
 					meshNow.DiffuseTextureName = Textures[meshNow.MaterialIndex].Name;
 					CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.DiffuseTextureName);
@@ -1007,7 +1007,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 		else if (mappingMode == FbxLayerElement::eByPolygon)
 		{// マテリアル分割されているはずだから、一番はじめのだけでいい         
 			meshNow.MaterialIndex = pElementMaterial->GetIndexArray()[0];
-			if (meshNow.MaterialIndex < Textures.size())
+			if (meshNow.MaterialIndex < (int)Textures.size())
 			{
 				meshNow.DiffuseTextureName = Textures[meshNow.MaterialIndex].Name;
 				CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.DiffuseTextureName);

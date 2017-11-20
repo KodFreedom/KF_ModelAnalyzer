@@ -394,6 +394,7 @@ bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const Out
 		if (!file.is_open()) return false;
 		JSONOutputArchive archive(file);
 		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
+		if (model.pAnimator)model.pAnimator->SaveAsJson(fileName);
 		file.close();
 	}
 	else if (type == Binary)
@@ -415,6 +416,7 @@ bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const Out
 		if (!file.is_open()) return false;
 		BinaryOutputArchive archive(file);
 		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
+		if (model.pAnimator)model.pAnimator->SaveAsBinary(fileName);
 		file.close();
 	}
 	//Animator
@@ -665,7 +667,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 			{
 				string name = skeleton->GetName();
 				int clusterNo = 0;
-				for (int countCluster = 0; countCluster < animator->Clusters.size(); ++countCluster)
+				for (int countCluster = 0; countCluster < (int)animator->Clusters.size(); ++countCluster)
 				{
 					if (name == animator->Clusters[countCluster].Name)
 					{

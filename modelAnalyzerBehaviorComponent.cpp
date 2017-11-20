@@ -325,6 +325,12 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 	// Model Name
 	string strBuf = "Model Name : " + m_strFileName;
 	ImGui::Text(strBuf.c_str());
+	char buffer[256] = {};
+	strcpy_s(buffer, m_strFileName.c_str());
+	if (ImGui::InputText("EditName", buffer, 256))
+	{
+		m_strFileName = buffer;
+	}
 
 	// Reverse Tex V
 	if (ImGui::Checkbox("Reverse Texture V", &m_bReverseV))
@@ -637,6 +643,7 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	auto& current = m_pAnimator->Motions[m_nNoMotion];
 	ImGui::Text("CurrentAnimation : %s", current.Name.c_str());
 	char buffer[256] = {};
+	strcpy_s(buffer, current.Name.c_str());
 	if (ImGui::InputText("EditName", buffer, 256))
 	{
 		current.Name = buffer;
@@ -665,23 +672,7 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	// Delete Frame that out of range
 	if (ImGui::Button("Delete frames that out of range"))
 	{
-		if (current.StartFrame > 0 || current.EndFrame < current.Frames.size() - 1)
-		{
-			vector<Frame> newFrames;
-			newFrames.reserve(current.EndFrame - current.StartFrame);
-			for (int count = current.StartFrame; count < current.EndFrame; ++count)
-			{
-				newFrames.push_back(current.Frames[count]);
-			}
-			current.Frames.clear();
-			for (auto& frame : newFrames)
-			{
-				current.Frames.push_back(frame);
-			}
-			current.Frames.shrink_to_fit();
-			current.StartFrame = 0;
-			current.EndFrame = current.Frames.size() - 1;
-		}
+		m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
 	}
 
 	// AddAnimation
