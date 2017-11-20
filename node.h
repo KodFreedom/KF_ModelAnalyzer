@@ -1,4 +1,4 @@
-/*//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 //
 //　node.h
 //	Author : Xu Wenjie
@@ -11,121 +11,190 @@
 //--------------------------------------------------------------------------------
 #include "main.h"
 #include "KF_CollisionSystem.h"
+#include "animator.h"
 
 //--------------------------------------------------------------------------------
 //  前方宣言
 //--------------------------------------------------------------------------------
-class Frame;
 
 //--------------------------------------------------------------------------------
 //  構造体定義
 //--------------------------------------------------------------------------------
-struct BornRefarence
+struct BoneReference
 {
-	BornRefarence(short sIndex, float fWeight, const string& Name)
-		: sIndex(sIndex), fWeight(fWeight), strBoneName(Name) {}
-	short			sIndex;
-	string			strBoneName;	//保存用
-	float			fWeight;
+	BoneReference(const us index, float weight, const string& name)
+		: Index(index), Weight(weight), Name(name) {}
+	us		Index;
+	string	Name;
+	float	Weight;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Index", Index), make_nvp("Weight", Weight));
+	}
 };
 
 struct ControlPoint
 {
 	ControlPoint() {}
-	ControlPoint(const CKFVec3& vPos) : vPos(vPos) {}
-	CKFVec3					vPos;
-	vector<BornRefarence>	vecBornRefarence;
+	ControlPoint(const CKFVec3& position) : Position(position) {}
+	CKFVec3					Position;
+	vector<BoneReference>	BoneReferences;
 };
 
 struct Texture
 {
-	string					strUVSetName;
-	string					Name;
+	string	UVSetName;
+	string	Name;
 };
 
-struct UVSET
+struct Lambert
 {
-	string					strUVSetName;
-	vector<CKFVec2>			vecUV;
-	vector<unsigned short>	vecUVIdx;
+	CKFVec4			Ambient;
+	CKFVec4			Diffuse;
+	CKFVec4			Emissive;
+	CKFVec3			Bump;
+	float			Transparency;
+};
+
+struct Phong
+{
+	CKFVec4			Specular;
+	float			Shininess;
+	float			Reflectivity;
+};
+
+struct UVSet
+{
+	string			Name;
+	vector<CKFVec2>	UVs;
+	vector<us>		UVIndeces;
 };
 
 #ifdef USING_DIRECTX
-struct VtxDX
+struct VertexOutNoSkin
 {
-	VERTEX_3D				vtx;
-	vector<BornRefarence>	vecBornRefarence;
+	CKFVec3	 Position;
+	CKFVec3	 Normal;
+	CKFColor Color;
+	CKFVec2	 UV;
 
-	bool operator==(const VtxDX& vValue) const;
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color), make_nvp("UV", UV));
+	}
 };
+
+struct VertexOutSkin
+{
+	CKFVec3					Position;
+	CKFVec3					Normal;
+	CKFColor				Color;
+	CKFVec2					UV;
+	vector<BoneReference>	BoneReferences;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color)
+			, make_nvp("UV", UV), make_nvp("BoneReferences", BoneReferences));
+	}
+};
+
+struct VertexDX
+{
+	VERTEX_3D				Vertex;
+	vector<BoneReference>	BoneReferences;
+
+	bool operator==(const VertexDX& vValue) const;
+	operator VertexOutNoSkin () const
+	{
+		VertexOutNoSkin result;
+		result.Position = Vertex.vPos;
+		result.Normal = Vertex.vNormal;
+		result.Color = CKFMath::sc_cWhite;
+		result.UV = Vertex.vUV;
+		return result;
+	}
+	operator VertexOutSkin () const
+	{
+		VertexOutSkin result;
+		result.Position = Vertex.vPos;
+		result.Normal = Vertex.vNormal;
+		result.Color = CKFMath::sc_cWhite;
+		result.UV = Vertex.vUV;
+		result.BoneReferences = BoneReferences;
+		return result;
+	}
+};
+
 #endif
 
 struct Mesh
 {
 	Mesh()
-		: nMaterialIndex(-1)
-		, m_bEnableCullFace(false)
-		, m_bEnableLight(false)
-		, m_bEnableFog(false)
+		: MaterialIndex(-1)
+		, EnableCullFace(false)
+		, EnableLight(false)
+		, EnableFog(false)
 		, Diffuse(CKFColor(1.0f))
 		, Ambient(CKFColor(1.0f))
 		, Specular(CKFColor(1.0f))
 		, Emissive(CKFColor(1.0f))
 		, Power(1.0f)
-		, m_renderPriority(RP_3D)
+		, MyRenderPriority(RenderPriority::RP_Default)
 #ifdef USING_DIRECTX
-		, m_nNumVtx(0)
-		, m_nNumIdx(0)
-		, m_nNumPolygon(0)
-		, m_pVtxBuffer(nullptr)
-		, m_pIdxBuffer(nullptr)
+		, VertexNumber(0)
+		, IndexNumber(0)
+		, PolygonNumber(0)
+		, VertexBuffer(nullptr)
+		, IndexBuffer(nullptr)
 #endif
-	{
-		vecPoint.clear();
-		vecNormal.clear();
-		vecUVSet.clear();
-		vecPoint.clear();
-		vecNormalIdx.clear();
-		strTexName.clear();
+	{}
 
-#ifdef USING_DIRECTX
-		m_vecVtx.clear();
-#endif
-	}
-
-	vector<ControlPoint>	vecPoint;
-	vector<CKFVec3>			vecNormal;
-	vector<UVSET>			vecUVSet;
-	vector<unsigned short>	vecPointIdx;
-	vector<unsigned short>	vecNormalIdx;
-	int						nMaterialIndex;	//Texture
-	string					strTexName;
+	vector<ControlPoint>	Points;
+	vector<CKFVec3>			Normals;
+	vector<UVSet>			UVSets;
+	vector<us>				PointIndeces;
+	vector<us>				NormalIndeces;
+	short					MaterialIndex;
+	string					DiffuseTextureName;
+	string					SpecularTextureName;
+	string					NormalTextureName;
 	CKFColor				Ambient;	// 環境光の反射率
 	CKFColor				Diffuse;	// 漫射光の反射率
 	CKFColor				Specular;	// 鏡面光の反射率
 	CKFColor				Emissive;	// 自発光
 	float					Power;		// ハイライトのシャープネス
-	bool					m_bEnableCullFace;
-	bool					m_bEnableLight;
-	bool					m_bEnableFog;
-	RENDER_PRIORITY			m_renderPriority;
+	bool					EnableCullFace;
+	bool					EnableLight;
+	bool					EnableFog;
+	RenderPriority			MyRenderPriority;
 
 #ifdef USING_DIRECTX
-	int						m_nNumVtx;
-	int						m_nNumIdx;
-	int						m_nNumPolygon;
-	vector<VtxDX>			m_vecVtx;
-	LPDIRECT3DVERTEXBUFFER9 m_pVtxBuffer;	// 頂点バッファへのポインタ
-	LPDIRECT3DINDEXBUFFER9	m_pIdxBuffer;	// インデックスへのポインタ
+	int						VertexNumber;
+	int						IndexNumber;
+	int						PolygonNumber;
+	vector<VertexDX>		Verteces;
+	LPDIRECT3DVERTEXBUFFER9 VertexBuffer;
+	LPDIRECT3DINDEXBUFFER9	IndexBuffer;
 #endif
 };
 
-struct COL_INFO
+struct ColliderInfo
 {//コライダー
-	CS::COL_TYPE	colType;
-	CKFVec3			vOffsetPos;
-	CKFVec3			vOffsetRot;
-	CKFVec3			vOffsetScale;
+	CS::COL_TYPE	Type;
+	CKFVec3			Position;
+	CKFVec3			Rotation;
+	CKFVec3			Scale;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Type", Type), make_nvp("Position", Position), make_nvp("Rotation", Rotation), make_nvp("Scale", Scale));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -137,56 +206,60 @@ class CMyNode
 
 public:
 	CMyNode()
-		: vTrans(CKFVec3(0.0f))
-		, vRot(CKFVec3(0.0f))
-		, vScale(CKFVec3(0.0f))
-		, materialID(1)
-	{
-		listChild.clear();
-		Name.clear();
-		vecAttributeName.clear();
-		vecTex.clear();
-		vecMesh.clear();
-		listCollider.clear();
-	}
+		: Translation(CKFVec3(0.0f))
+		, Rotation(CKFVec3(0.0f))
+		, Scale(CKFVec3(1.0f))
+		, ColliderMaterialID(1)
+	{}
 	~CMyNode() {}
 
-	list<CMyNode*>	listChild;
+	list<CMyNode*>	Children;
 	string			Name;
-	vector<string>	vecAttributeName;
+	vector<string>	AttributeNames;
 
-	//Offset
-	CKFVec3			vTrans;
-	CKFVec3			vRot;
-	CKFVec3			vScale;
-	CKFMtx44		local;
+	// Offset
+	CKFVec3			Translation;
+	CKFVec3			Rotation;
+	CKFVec3			Scale;
 
-	vector<Texture>	vecTex;
-	vector<Mesh>	vecMesh;
+	// Matrix
+	CKFMtx44		Local;
+	CKFMtx44		World;
+
+	vector<Texture>	Textures;
+	vector<Mesh>	Meshes;
 
 	//Collider
-	list<COL_INFO>	listCollider;
-	unsigned short	materialID;		//Collider Mat
+	list<ColliderInfo>	Colliders;
+	us					ColliderMaterialID;		//Collider Mat
 
 	void Release(void);
-	void RecursiveUpdate(const Frame& currentFrame);
-	void RecursiveDraw(const bool& bDrawNormal, const CKFMtx44& mtxParent);
-	void RecursiveRecalculateVtx(void);
+	void RecursiveUpdateMatrix(const CKFMtx44& parent);
+	void RecursiveUpdateSkin(const vector<Cluster>& clusters);
+	void RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider);
+	void RecursiveRecombineMeshes(void);
 	void RecursiveReverseTexV(void);
-	void RecalculateVtxByMatrix(const CKFMtx44& mtx);
-	void RecursiveRecalculateClusterID(const Frame& initFrame);
+	void RecalculateMeshesBy(const CKFMtx44& matrix);
+	void RecursiveMatchClusterID(const Frame& initFrame);
+	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
+	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 
 private:
-	void		analyzePos(FbxMesh* pMesh);
-	void		analyzeNormal(FbxMesh* pMesh);
-	void		analyzeUV(FbxMesh* pMesh);
-	void		analyzeTexture(FbxNode* pNode);
-	void		analyzeMaterial(FbxMesh* pMesh);
-	void		analyzeCluster(FbxMesh* pMesh);
-	//void		analyzeSkeleton(FbxSkeleton* pSkeleton);
+	void analyzePoint(FbxMesh* pMesh);
+	void analyzeNormal(FbxMesh* pMesh);
+	void analyzeUV(FbxMesh* pMesh);
+	void analyzeTexture(FbxNode* pNode);
+	void analyzeMaterial(FbxMesh* pMesh);
+	void analyzeCluster(FbxMesh* pMesh);
+	void saveMeshJson(const Mesh& mesh, const string& meshName);
+	void saveSkinMeshJson(const Mesh& mesh, const string& meshName);
+	void saveMaterialJson(const Mesh& mesh, const string& meshName);
+	void saveMeshBinary(const Mesh& mesh, const string& meshName);
+	void saveSkinMeshBinary(const Mesh& mesh, const string& meshName);
+	void saveMaterialBinary(const Mesh& mesh, const string& meshName);
 
 #ifdef USING_DIRECTX
 	static LPD3DXMESH s_pMeshSphere;
 	static LPD3DXMESH s_pMeshCube;
 #endif
-};*/
+};

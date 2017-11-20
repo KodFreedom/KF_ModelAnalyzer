@@ -6,6 +6,7 @@
 //--------------------------------------------------------------------------------
 #pragma once
 
+#define NOMINMAX
 //--------------------------------------------------------------------------------
 //  インクルードファイル
 //--------------------------------------------------------------------------------
@@ -20,7 +21,17 @@
 #include <algorithm>
 #include <sstream>
 #include <assert.h>
+#include <fstream>
+#include <iostream>
+#include <map>
 using namespace std;
+
+//Cereal
+#include <cereal/archives/JSON.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+using namespace cereal;
 
 //FBX
 #include <fbxsdk.h>
@@ -56,6 +67,8 @@ using namespace std;
 //--------------------------------------------------------------------------------
 //  定数定義
 //--------------------------------------------------------------------------------
+typedef unsigned short		us;
+typedef unsigned long		ul;
 #define SAFE_RELEASE(p)		if(p){ p->Release(); p=nullptr; }	//safe release mode
 #define SCREEN_WIDTH		(1280)								//ウインドウ幅
 #define SCREEN_HEIGHT		(720)								//ウインドウ高さ
@@ -109,6 +122,7 @@ public:
 
 	//Get関数
 	static CManager*		GetManager(void) { return m_pManager; }
+
 private:
 	//--------------------------------------------------------------------------------
 	//  関数定義

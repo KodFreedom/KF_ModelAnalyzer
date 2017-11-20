@@ -9,21 +9,43 @@
 //--------------------------------------------------------------------------------
 //  構造体定義
 //--------------------------------------------------------------------------------
-enum RENDER_PRIORITY
-{//レンダー優先度
-	RP_3D = 0,
-	RP_3D_ALPHATEST,
-	RP_3D_ZSORT,
-	RP_MAX
+#if defined(USING_DIRECTX)
+enum DrawType
+{
+	PointList = 1,
+	LineList = 2,
+	LineStrip = 3,
+	TriangleList = 4,
+	TriangleStrip = 5,
+	TriangleFan = 6,
+};
+#else
+enum DrawType
+{
+	PointList = 0,
+	LineList = 1,
+	LineStrip = 3,
+	TriangleList = 4,
+	TriangleStrip = 5,
+	TriangleFan = 6,
+};
+#endif
+
+enum RenderPriority
+{
+	RP_Default = 0,
+	RP_AlphaTest,
+	RP_ZSort,
+	RP_Max
 };
 
-enum RENDER_STATE
-{//レンダーステート
-	RS_LIGHTOFF_CULLFACEON_MUL = 0,	//ライトオフ、両面描画、乗算合成
-	RS_LIGHTOFF_CULLFACEOFF_MUL,	//ライトオフ、両面描画、乗算合成
-	RS_LIGHTON_CULLFACEON_MUL,		//ライトオン、片面描画、乗算合成
-	RS_LIGHTON_CULLFACEOFF_MUL,		//ライトオン、片面描画、乗算合成
-	RS_MAX
+enum RenderStateType
+{
+	RS_Default = 0,					// LightOn_CCW_Multi_Solid_FogOn
+	RS_NoLight_NoFog,				// LightOff_CCW_Multi_Solid_FogOff
+	RS_NoCullMode,					// LightOn_None_Multi_Solid_FogOn
+	RS_NoLight_NoFog_NoCullMode,	// LightOff_None_Multi_Solid_FogOff
+	RS_Max
 };
 
 //--------------------------------------------------------------------------------

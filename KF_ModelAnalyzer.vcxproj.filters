@@ -85,6 +85,9 @@
     <Filter Include="ヘッダー ファイル\FBX">
       <UniqueIdentifier>{031f33f2-2bbf-4df8-8359-153cf52077ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\FBX">
+      <UniqueIdentifier>{a35716b9-5562-424b-b301-fa9eae53dee3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KF_UtilityDX.cpp">
@@ -221,6 +224,12 @@
     </ClCompile>
     <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
       <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="node.cpp">
+      <Filter>ソース ファイル\FBX</Filter>
+    </ClCompile>
+    <ClCompile Include="animator.cpp">
+      <Filter>ソース ファイル\FBX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -402,6 +411,9 @@
       <Filter>ヘッダー ファイル\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="node.h">
+      <Filter>ヘッダー ファイル\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="animator.h">
       <Filter>ヘッダー ファイル\FBX</Filter>
     </ClInclude>
   </ItemGroup>
