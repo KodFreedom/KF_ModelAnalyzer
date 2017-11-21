@@ -212,7 +212,7 @@ void CModelAnalyzerBehaviorComponent::SaveModel(const OutType& type)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::releaseModel(void)
 {
-	if (!m_bSaved)
+	if (!m_bSaved && m_pRootNode)
 	{//Save確認
 		auto nID = MessageBox(NULL, "今のモデルセーブしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
 		if (nID == IDYES) 
@@ -313,7 +313,7 @@ void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 {
-	if (!m_bModelInfoWindow) { return; }
+	if (!m_bModelInfoWindow) return;
 
 	// Begin
 	if (!ImGui::Begin("Model Info Window", &m_bModelInfoWindow))
@@ -360,79 +360,53 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 		if (ImGui::CollapsingHeader("Info"))
 		{
 			//Type
-			for (int nCnt = 0; nCnt < (int)pNode->AttributeNames.size(); ++nCnt)
+			int size = (int)pNode->AttributeNames.size();
+			for (int nCnt = 0; nCnt < size; ++nCnt)
 			{
 				ImGui::Text("Type%d : %s", nCnt, pNode->AttributeNames[nCnt].c_str());
 			}
 
 			//Offset
-			pNode->Translation.m_fX = pNode->Local.m_af[3][0];
-			pNode->Translation.m_fY = pNode->Local.m_af[3][1];
-			pNode->Translation.m_fZ = pNode->Local.m_af[3][2];
-			if (ImGui::InputFloat3("Trans", &pNode->Translation.m_fX))
-			{
-				CKFMath::MtxIdentity(pNode->Local);
-				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
-				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
-				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
-				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
-				pNode->Local *= mtxRot;
-				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
-				pNode->Local *= mtxPos;
+			if (m_pAnimator && m_bPlayMotion
+				&& size > 0 && pNode->AttributeNames[0]._Equal("skeleton"))
+			{	// CLusterによる更新してるのでいじれない
+				auto& local = pNode->Local;
+				ImGui::Text("Local\n"
+					"%.4f %.4f %.4f %.4f\n"
+					"%.4f %.4f %.4f %.4f\n"
+					"%.4f %.4f %.4f %.4f\n"
+					"%.4f %.4f %.4f %.4f\n",
+					local.m_af[0][0], local.m_af[0][1], local.m_af[0][2], local.m_af[0][3],
+					local.m_af[1][0], local.m_af[1][1], local.m_af[1][2], local.m_af[1][3],
+					local.m_af[2][0], local.m_af[2][1], local.m_af[2][2], local.m_af[2][3],
+					local.m_af[3][0], local.m_af[3][1], local.m_af[3][2], local.m_af[3][3]);
 			}
-			if (ImGui::SliderFloat3("Rot", &pNode->Rotation.m_fX, 0.0f, KF_PI * 2.0f))
-			{
-				CKFMath::MtxIdentity(pNode->Local);
-				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
-				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
-				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
-				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
-				pNode->Local *= mtxRot;
-				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
-				pNode->Local *= mtxPos;
-			}
-			if (ImGui::InputFloat3("Scale", &pNode->Scale.m_fX))
-			{
-				CKFMath::MtxIdentity(pNode->Local);
-				pNode->Local.m_af[0][0] = pNode->Scale.m_fX;
-				pNode->Local.m_af[1][1] = pNode->Scale.m_fY;
-				pNode->Local.m_af[2][2] = pNode->Scale.m_fZ;
-				CKFMtx44 mtxRot;
-				CKFMath::MtxRotationYawPitchRoll(mtxRot, pNode->Rotation);
-				pNode->Local *= mtxRot;
-				CKFMtx44 mtxPos;
-				CKFMath::MtxTranslation(mtxPos, pNode->Translation);
-				pNode->Local *= mtxPos;
+			else
+			{				
+				if (ImGui::InputFloat3("Trans", &pNode->Translation.m_fX)) pNode->RecalculateLocal();
+				if (ImGui::DragFloat3("Rot", &pNode->Rotation.m_fX, 0.002f, 0.0f, KF_PI * 2.0f)) pNode->RecalculateLocal();
+				if (ImGui::InputFloat3("Scale", &pNode->Scale.m_fX)) pNode->RecalculateLocal();
 			}
 
 			//Mesh
-			if (ImGui::TreeNode("Mesh"))
+			if (!pNode->Meshes.empty() && ImGui::TreeNode("Mesh"))
 			{
 				for (int nCnt = 0; nCnt < (int)pNode->Meshes.size(); ++nCnt)
 				{
 					auto& mesh = pNode->Meshes[nCnt];
-					auto strMeshName = to_string(nCnt);
+					auto& strMeshName = to_string(nCnt);
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
 						//Info
 						ImGui::Text("NumPolygon : %d", mesh.PolygonNumber);
 						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.VertexNumber, mesh.IndexNumber);
 
-						// Light
-						ImGui::Checkbox("Enable Light", &mesh.EnableFog);
-
-						// CullFace
-						ImGui::Checkbox("Enable CullFace", &mesh.EnableCullFace);
-
-						// Texture
-						ImGui::Text("Texture : %s", mesh.DiffuseTextureName.c_str());
-						if (ImGui::Button("Change Diffuse Texture"))
+						// TransformMesh
+						if (ImGui::Button(mesh.IsLocal ? "Transform to World" : "Transform to Local"))
 						{
-							changeTexture(mesh);
+							if (mesh.IsLocal) pNode->TransformMeshToWorld(mesh);
+							else pNode->TransformMeshToLocal(mesh);
+							mesh.IsLocal ^= 1;
 						}
 
 						// Render Priority
@@ -441,6 +415,37 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 							, "3D_ALPHATEST"
 							, "3D_ZSORT" };
 						ImGui::ListBox("Render Priority\n(single select)", (int*)&mesh.MyRenderPriority, listbox_rp, 3, 3);
+
+						// Light
+						ImGui::Checkbox("Enable Light", &mesh.EnableLight);
+
+						// CullFace
+						ImGui::Checkbox("Enable CullFace", &mesh.EnableCullFace);
+
+						// Fog
+						ImGui::Checkbox("Enable Fog", &mesh.EnableFog);
+
+						// Material
+						ImGui::ColorEdit3("Diffuse", (float*)&mesh.Diffuse);
+						ImGui::ColorEdit3("Ambient", (float*)&mesh.Ambient);
+						ImGui::ColorEdit3("Specular", (float*)&mesh.Specular);
+						ImGui::ColorEdit3("Emissive", (float*)&mesh.Emissive);
+						ImGui::DragFloat("Power", &mesh.Power);
+						ImGui::Text("DiffuseTexture : %s", mesh.DiffuseTextureName.c_str());
+						if (ImGui::Button("Change Diffuse Texture"))
+						{
+							changeTexture(mesh.DiffuseTextureName);
+						}
+						ImGui::Text("SpecularTexture : %s", mesh.SpecularTextureName.c_str());
+						if (ImGui::Button("Change Specular Texture"))
+						{
+							changeTexture(mesh.SpecularTextureName);
+						}
+						ImGui::Text("NormalTexture : %s", mesh.NormalTextureName.c_str());
+						if (ImGui::Button("Change Normal Texture"))
+						{
+							changeTexture(mesh.NormalTextureName);
+						}
 						ImGui::TreePop();
 					}
 				}
@@ -458,7 +463,7 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Child"))
+		if (!pNode->Children.empty() && ImGui::CollapsingHeader("Child"))
 		{
 			//Child
 			for (auto pChild : pNode->Children)
@@ -606,8 +611,15 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 {
 	if (!m_bAnimatorWindow) return;
 
+	// Begin
+	if (!ImGui::Begin("Animation Window", &m_bAnimatorWindow))
+	{
+		ImGui::End();
+		return;
+	}
+
 	// Play
-	if (ImGui::Button("Play")) m_bPlayMotion ^= 1;
+	if (ImGui::Button(m_bPlayMotion ? "Pause" : "Play")) m_bPlayMotion ^= 1;
 	
 	// new
 	int nNumMotion = (int)m_pAnimator->Motions.size();
@@ -670,7 +682,7 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	}
 
 	// Delete Frame that out of range
-	if (ImGui::Button("Delete frames that out of range"))
+	if (ImGui::Button("Delete out of range frames"))
 	{
 		m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
 	}
@@ -680,6 +692,9 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	{
 		addAnimation();
 	}
+
+	// End
+	ImGui::End();
 }
 
 //--------------------------------------------------------------------------------
@@ -719,7 +734,7 @@ void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
 //--------------------------------------------------------------------------------
 // changeTexture
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::changeTexture(Mesh& mesh)
+void CModelAnalyzerBehaviorComponent::changeTexture(string& meshTexture)
 {
 	string strTex;
 	if (CMain::OpenTextureFile(strTex))
@@ -728,12 +743,12 @@ void CModelAnalyzerBehaviorComponent::changeTexture(Mesh& mesh)
 		CKFUtility::AnalyzeFilePath(strTex, strName, strType);
 		if (CKFUtility::CheckIsTexture(strType))
 		{
-			if (!mesh.DiffuseTextureName.empty())
+			if (!meshTexture.empty())
 			{
-				CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.DiffuseTextureName);
+				CMain::GetManager()->GetTextureManager()->DisuseTexture(meshTexture);
 			}
-			mesh.DiffuseTextureName = strName + '.' + strType;
-			CMain::GetManager()->GetTextureManager()->UseTexture(mesh.DiffuseTextureName);
+			meshTexture = strName + '.' + strType;
+			CMain::GetManager()->GetTextureManager()->UseTexture(meshTexture);
 		}
 	}
 }

@@ -55,7 +55,6 @@ private:
 	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
 	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
 	static void			analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator);
-	static void			analyzePose(FbxScene* lScene);
 	static void			findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton);
 	static void			matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node);
 	static FbxAMatrix	getGeometry(FbxNode* pNode);
