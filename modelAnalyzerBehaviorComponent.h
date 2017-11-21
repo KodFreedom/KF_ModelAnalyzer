@@ -40,6 +40,7 @@ public:
 	auto GetRootNode(void) { return m_pRootNode; }
 	void ChangeModel(const string& strFilePath);
 	void SaveModel(const OutType& type);
+
 	const bool& IsDrawSkeleton(void) { return m_bDrawSkeleton; }
 	const bool& IsDrawMesh(void) { return m_bDrawMesh; }
 	const bool& IsDrawCollider(void) { return m_bDrawCollider; }
@@ -59,7 +60,7 @@ private:
 	void		showNodeNowWindow(void);
 	void		showAnimatorWindow(void);
 	void		showCameraWindow(void);
-	void		changeTexture(Mesh& mesh);
+	void		changeTexture(string& meshTexture);
 	void		addAnimation(void);
 
 	//--------------------------------------------------------------------------------

@@ -162,8 +162,8 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 				}
 			}
 			pVtx[count].vPos = CKFMath::Vec3TransformCoord(vertexDX.Vertex.vPos, mtx);
+			pVtx[count].vNormal = CKFMath::Vec3TransformNormal(vertexDX.Vertex.vNormal, mtx);
 		}
-
 		mesh.VertexBuffer->Unlock();
 #endif
 	}
@@ -265,8 +265,13 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 			pDevice->SetFVF(FVF_VERTEX_3D);
 
 			// マテリアルの設定
-			//D3DMATERIAL9 mat = CMain::GetManager()->GetMaterialManager()->GetMaterial(m_usMatID);
-			//pDevice->SetMaterial(&mat);
+			D3DMATERIAL9 mat;
+			mat.Diffuse = mesh.Diffuse;
+			mat.Ambient = mesh.Ambient;
+			mat.Specular = mesh.Specular;
+			mat.Emissive = mesh.Emissive;
+			mat.Power = mesh.Power;
+			pDevice->SetMaterial(&mat);
 
 			//プリミティブ描画
 			pDevice->DrawIndexedPrimitive(
@@ -685,6 +690,47 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	for (auto& pChild : Children)
 	{
 		pChild->RecursiveSave(archive, fileName, haveAnimator);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecalculateLocal
+//--------------------------------------------------------------------------------
+void CMyNode::RecalculateLocal(void)
+{
+	CKFMath::MtxIdentity(Local);
+	Local.m_af[0][0] =Scale.m_fX;
+	Local.m_af[1][1] =Scale.m_fY;
+	Local.m_af[2][2] =Scale.m_fZ;
+	CKFMtx44 mtxRot;
+	CKFMath::MtxRotationYawPitchRoll(mtxRot, Rotation);
+	Local *= mtxRot;
+	CKFMtx44 mtxPos;
+	CKFMath::MtxTranslation(mtxPos, Translation);
+	Local *= mtxPos;
+}
+
+//--------------------------------------------------------------------------------
+//  RecalculateLocal
+//--------------------------------------------------------------------------------
+void CMyNode::TransformMeshToWorld(Mesh& mesh)
+{
+	for (auto& vertex : mesh.Verteces)
+	{
+		vertex.Vertex.vPos = CKFMath::Vec3TransformCoord(vertex.Vertex.vPos, InitWorldInverse);
+		vertex.Vertex.vNormal = CKFMath::Vec3TransformNormal(vertex.Vertex.vNormal, InitWorldInverse);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecalculateLocal
+//--------------------------------------------------------------------------------
+void CMyNode::TransformMeshToLocal(Mesh& mesh)
+{
+	for (auto& vertex : mesh.Verteces)
+	{
+		vertex.Vertex.vPos = CKFMath::Vec3TransformCoord(vertex.Vertex.vPos, InitWorld);
+		vertex.Vertex.vNormal = CKFMath::Vec3TransformNormal(vertex.Vertex.vNormal, InitWorld);
 	}
 }
 

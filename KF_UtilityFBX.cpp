@@ -464,15 +464,9 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	pMyNode->Scale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
 	pMyNode->Scale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
 	pMyNode->Scale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);
-	pMyNode->Local.m_af[0][0] = pMyNode->Scale.m_fX;
-	pMyNode->Local.m_af[1][1] = pMyNode->Scale.m_fY;
-	pMyNode->Local.m_af[2][2] = pMyNode->Scale.m_fZ;
-	CKFMtx44 mtxRot;
-	CKFMath::MtxRotationYawPitchRoll(mtxRot, pMyNode->Rotation);
-	pMyNode->Local *= mtxRot;
-	CKFMtx44 mtxPos;
-	CKFMath::MtxTranslation(mtxPos, pMyNode->Translation);
-	pMyNode->Local *= mtxPos;
+	pMyNode->Local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
+	pMyNode->InitWorld = CKFMtx44::FbxToMtx(pNode->EvaluateGlobalTransform());
+	pMyNode->InitWorldInverse = CKFMtx44::FbxToMtx(pNode->EvaluateGlobalTransform().Inverse());
 
 	// マテリアル情報の解析（マテリアルリスト化）                
 	pMyNode->analyzeTexture(pNode);
@@ -481,38 +475,15 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	{
 		auto type = pNode->GetNodeAttributeByIndex(nCnt)->GetAttributeType();
 		pMyNode->AttributeNames.push_back(getAttributeTypeName(type));
-
 		if (type == FbxNodeAttribute::eMesh)
-		{//Mesh情報
-			pMyNode->Meshes.push_back(Mesh());
-
-			// メッシュ情報の取得                 
-			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));
-
-			// 頂点座標解析                 
-			pMyNode->analyzePoint(pMesh);
-
-			// 法線解析                 
-			pMyNode->analyzeNormal(pMesh);
-
-			// UV解析                
-			pMyNode->analyzeUV(pMesh);
-
-			// マテリアル解析（参照情報の取得）                 
+		{	//Mesh情報
+			pMyNode->Meshes.push_back(Mesh());              
+			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));               
+			pMyNode->analyzePoint(pMesh);              
+			pMyNode->analyzeNormal(pMesh);              
+			pMyNode->analyzeUV(pMesh);               
 			pMyNode->analyzeMaterial(pMesh);
-
-			// ボーンにの重さ解析 
 			pMyNode->analyzeCluster(pMesh);
-		}
-		else if (type == FbxNodeAttribute::eSkeleton)
-		{//Bone
-			//auto pSkeleton = FbxCast<FbxSkeleton>(pNode->GetNodeAttributeByIndex(nCnt));
-			//pMyNode->analyzeSkeleton(pSkeleton);
-		}
-		else
-		{
-			// メッシュではないアトリビュート   
-			MessageBox(NULL, getAttributeTypeName(type).c_str(), "アトリビュート", MB_OK);
 		}
 	}
 
@@ -555,10 +526,6 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 	auto pAnimator = new CAnimator;
 	pAnimator->Motions.reserve(animationNumber);
 
-	// Animation Name
-	FbxArray<FbxString*> animationNames;
-	lScene->FillAnimStackNameArray(animationNames);
-
 	// Cluster Matrix
 	pAnimator->Clusters.resize(clusters.size());
 	int countCluster = 0;
@@ -572,6 +539,10 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 		pAnimator->Clusters[countCluster].BindPoseInverse = CKFMtx44::FbxToMtx(boneGlobalInitPosition.Inverse() * meshGlobalInitPosition);
 		++countCluster;
 	}
+
+	// Animation Name
+	FbxArray<FbxString*> animationNames;
+	lScene->FillAnimStackNameArray(animationNames);
 
 	//one frame time
 	FbxTime oneFrameTime;
@@ -599,12 +570,6 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 			{
 				BoneFrame boneFrame;
 				boneFrame.Name = pair.first;
-
-				// アニメーション行列の算出
-				auto skeletonGlobalCurrentTransform = pair.second->GetLink()->EvaluateGlobalTransform(currentTime);
-				FbxAMatrix lReferenceGlobalCurrentPosition;
-				auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * pAnimator->Clusters[countCluster].BindPoseInverse;
 				boneFrame.Matrix = CKFMtx44::FbxToMtx(pair.second->GetLink()->EvaluateLocalTransform(currentTime));
 				frame.BoneFrames.push_back(boneFrame);
 				++countCluster;
@@ -657,7 +622,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 		auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
 		auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
 		int frameNumber = (int)((endTime - startTime) / (oneFrameTime)).Get();
-		motion.Frames.reserve(frameNumber + 1);
+		motion.Frames.reserve(frameNumber);
 		for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
 		{
 			Frame frame;
@@ -676,12 +641,6 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 					}
 				}
 				frame.BoneFrames[clusterNo].Name = name;
-
-				// アニメーション行列の算出
-				//auto skeletonGlobalCurrentTransform = skeleton->EvaluateGlobalTransform(currentTime);
-				//FbxAMatrix lReferenceGlobalCurrentPosition;
-				//auto lClusterRelativeCurrentPositionInverse = lReferenceGlobalCurrentPosition.Inverse() * skeletonGlobalCurrentTransform;
-				//auto VertexTransformMatrix = lClusterRelativeCurrentPositionInverse * animator->Clusters[clusterNo].BindPoseInverse;
 				frame.BoneFrames[clusterNo].Matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
 			}
 			motion.Frames.push_back(frame);
@@ -691,30 +650,6 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 		animator->Motions.push_back(motion);
 	}
 	animator->Motions.shrink_to_fit();
-}
-
-//--------------------------------------------------------------------------------
-//  analyzePose
-//--------------------------------------------------------------------------------
-void CKFUtilityFBX::analyzePose(FbxScene* lScene)
-{
-	int nNumPose = lScene->GetPoseCount();
-	for (int nCnt = 0; nCnt < nNumPose; ++nCnt)
-	{
-		auto pPose = lScene->GetPose(nCnt);
-		int nNumCnt = pPose->GetCount();
-		list<string> listName;
-		list<FbxMatrix> listMtx;
-		for (int nCntNode = 0; nCntNode < nNumCnt; ++nCntNode)
-		{
-			string Name = pPose->GetNode(nCntNode)->GetName();
-			auto mtx = pPose->GetMatrix(nCntNode);
-			listName.push_back(Name);
-			listMtx.push_back(mtx);
-		}
-
-		int n = 0;
-	}
 }
 
 //--------------------------------------------------------------------------------
@@ -739,7 +674,7 @@ void CKFUtilityFBX::findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton)
 }
 
 //--------------------------------------------------------------------------------
-//  findSkeletons
+//  matchClusterWithSkeleton
 //--------------------------------------------------------------------------------
 void CKFUtilityFBX::matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node)
 {

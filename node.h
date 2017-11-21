@@ -139,6 +139,7 @@ struct Mesh
 		, EnableCullFace(false)
 		, EnableLight(false)
 		, EnableFog(false)
+		, IsLocal(true)
 		, Diffuse(CKFColor(1.0f))
 		, Ambient(CKFColor(1.0f))
 		, Specular(CKFColor(1.0f))
@@ -171,6 +172,7 @@ struct Mesh
 	bool					EnableCullFace;
 	bool					EnableLight;
 	bool					EnableFog;
+	bool					IsLocal;
 	RenderPriority			MyRenderPriority;
 
 #ifdef USING_DIRECTX
@@ -225,6 +227,8 @@ public:
 	// Matrix
 	CKFMtx44		Local;
 	CKFMtx44		World;
+	CKFMtx44		InitWorld;
+	CKFMtx44		InitWorldInverse;
 
 	vector<Texture>	Textures;
 	vector<Mesh>	Meshes;
@@ -243,6 +247,9 @@ public:
 	void RecursiveMatchClusterID(const Frame& initFrame);
 	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
+	void RecalculateLocal(void);
+	void TransformMeshToWorld(Mesh& mesh);
+	void TransformMeshToLocal(Mesh& mesh);
 
 private:
 	void analyzePoint(FbxMesh* pMesh);
