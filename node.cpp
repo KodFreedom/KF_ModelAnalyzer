@@ -67,9 +67,6 @@ bool VertexDX::operator==(const VertexDX& value) const
 //--------------------------------------------------------------------------------
 void CMyNode::Release(void)
 {
-	//Texture
-	Textures.clear();
-
 	//Mesh
 	for (auto& mesh : Meshes)
 	{
@@ -89,9 +86,6 @@ void CMyNode::Release(void)
 			UVSet.UVIndeces.clear();
 		}
 		mesh.UVSets.clear();
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.DiffuseTextureName);
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.NormalTextureName);
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(mesh.SpecularTextureName);
 
 #ifdef USING_DIRECTX
 		for (auto& vertex : mesh.Verteces)
@@ -155,10 +149,11 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 			auto& vertexDX = mesh.Verteces[count];
 			if (!vertexDX.BoneReferences.empty())
 			{
+				mesh.IsSkin = true;
 				ZeroMemory(&mtx, sizeof(CKFMtx44));
-				for (auto& bornRefarence : vertexDX.BoneReferences)
+				for (auto& boneReference : vertexDX.BoneReferences)
 				{
-					mtx += clusters[bornRefarence.Index].World * bornRefarence.Weight;
+					mtx += clusters[boneReference.Index].World * boneReference.Weight;
 				}
 			}
 			pVtx[count].vPos = CKFMath::Vec3TransformCoord(vertexDX.Vertex.vPos, mtx);
@@ -186,13 +181,13 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 		for (int count = 0; count < (int)mesh.Verteces.size(); ++count)
 		{
 			auto& vertexDX = mesh.Verteces[count];
-			for (auto& bornRefarence : vertexDX.BoneReferences)
+			for (auto& boneReference : vertexDX.BoneReferences)
 			{
 				for (int countBoneFrame = 0; countBoneFrame < (int)initFrame.BoneFrames.size(); ++countBoneFrame)
 				{
-					if (bornRefarence.Name == initFrame.BoneFrames[countBoneFrame].Name)
+					if (boneReference.Name == initFrame.BoneFrames[countBoneFrame].Name)
 					{
-						bornRefarence.Index = countBoneFrame;
+						boneReference.Index = countBoneFrame;
 						break;
 					}
 				}
@@ -210,7 +205,7 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 //--------------------------------------------------------------------------------
 //  RecursiveDraw
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider)
+void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider)
 {
 #ifdef USING_DIRECTX
 	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
@@ -241,14 +236,32 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 
 			renderState->SetRenderState();
 
-			//Texture
-			if (!mesh.DiffuseTextureName.empty())
+			// Material
+			if (!mesh.MaterialName.empty())
 			{
-				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(mesh.DiffuseTextureName);
+				auto& material = mapMaterial.at(mesh.MaterialName);
+				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(material.DiffuseTextureName);
 				pDevice->SetTexture(0, pTexture);
+
+				// マテリアルの設定
+				D3DMATERIAL9 mat;
+				mat.Diffuse = material.Diffuse;
+				mat.Ambient = material.Ambient;
+				mat.Specular = material.Specular;
+				mat.Emissive = material.Emissive;
+				mat.Power = material.Power;
+				pDevice->SetMaterial(&mat);
 			}
 
-			D3DXMATRIX mtx = World;
+			D3DXMATRIX mtx;
+			if (mesh.IsSkin)
+			{
+				D3DXMatrixIdentity(&mtx);
+			}
+			else
+			{
+				mtx = World;
+			}
 			pDevice->SetTransform(D3DTS_WORLD, &mtx);
 
 			// 頂点バッファをデータストリームに設定
@@ -264,14 +277,7 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 			// 頂点フォーマットの設定
 			pDevice->SetFVF(FVF_VERTEX_3D);
 
-			// マテリアルの設定
-			D3DMATERIAL9 mat;
-			mat.Diffuse = mesh.Diffuse;
-			mat.Ambient = mesh.Ambient;
-			mat.Specular = mesh.Specular;
-			mat.Emissive = mesh.Emissive;
-			mat.Power = mesh.Power;
-			pDevice->SetMaterial(&mat);
+		
 
 			//プリミティブ描画
 			pDevice->DrawIndexedPrimitive(
@@ -365,7 +371,7 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 	//Child
 	for (auto pNode : Children)
 	{
-		pNode->RecursiveDraw(drawSkeleton, drawMesh, drawCollider);
+		pNode->RecursiveDraw(mapMaterial, drawSkeleton, drawMesh, drawCollider);
 	}
 #else
 	glPushMatrix();
@@ -414,9 +420,9 @@ void CMyNode::RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, cons
 			for (auto& point : mesh.Points)
 			{
 				ZeroMemory(&mtx, sizeof(CKFMtx44));
-				for (auto& bornRefarence : point.BoneReferences)
+				for (auto& boneReference : point.BoneReferences)
 				{
-					mtx += mesh.vecMtx[bornRefarence.Index] * bornRefarence.Weight;
+					mtx += mesh.vecMtx[boneReference.Index] * boneReference.Weight;
 				}
 				CKFVec3 vPos = point.vPos;
 				CKFMath::Vec3TransformCoord(&vPos, mtx);
@@ -615,8 +621,9 @@ void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, 
 	archive(make_nvp("Name", Name));
 
 	//Offset
+	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
 	archive(make_nvp("Translation", Translation)
-		, make_nvp("Rotation", Rotation)
+		, make_nvp("Rotation", rotation)
 		, make_nvp("Scale", Scale));
 
 	//Collider
@@ -659,8 +666,9 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	archive.saveBinary(&Name, size);
 
 	//Offset
+	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
 	archive.saveBinary(&Translation, sizeof(CKFVec3));
-	archive.saveBinary(&Rotation, sizeof(CKFVec3));
+	archive.saveBinary(&rotation, sizeof(CKFQuaternion));
 	archive.saveBinary(&Scale, sizeof(CKFVec3));
 
 	//Collider
@@ -699,39 +707,14 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 void CMyNode::RecalculateLocal(void)
 {
 	CKFMath::MtxIdentity(Local);
-	Local.m_af[0][0] =Scale.m_fX;
-	Local.m_af[1][1] =Scale.m_fY;
-	Local.m_af[2][2] =Scale.m_fZ;
-	CKFMtx44 mtxRot;
-	CKFMath::MtxRotationYawPitchRoll(mtxRot, Rotation);
-	Local *= mtxRot;
+	Local.m_af[0][0] = Scale.m_fX;
+	Local.m_af[1][1] = Scale.m_fY;
+	Local.m_af[2][2] = Scale.m_fZ;
+	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
+	Local *= CKFMath::QuaternionToMtx(rotation);
 	CKFMtx44 mtxPos;
 	CKFMath::MtxTranslation(mtxPos, Translation);
 	Local *= mtxPos;
-}
-
-//--------------------------------------------------------------------------------
-//  RecalculateLocal
-//--------------------------------------------------------------------------------
-void CMyNode::TransformMeshToWorld(Mesh& mesh)
-{
-	for (auto& vertex : mesh.Verteces)
-	{
-		vertex.Vertex.vPos = CKFMath::Vec3TransformCoord(vertex.Vertex.vPos, InitWorldInverse);
-		vertex.Vertex.vNormal = CKFMath::Vec3TransformNormal(vertex.Vertex.vNormal, InitWorldInverse);
-	}
-}
-
-//--------------------------------------------------------------------------------
-//  RecalculateLocal
-//--------------------------------------------------------------------------------
-void CMyNode::TransformMeshToLocal(Mesh& mesh)
-{
-	for (auto& vertex : mesh.Verteces)
-	{
-		vertex.Vertex.vPos = CKFMath::Vec3TransformCoord(vertex.Vertex.vPos, InitWorld);
-		vertex.Vertex.vNormal = CKFMath::Vec3TransformNormal(vertex.Vertex.vNormal, InitWorld);
-	}
 }
 
 //--------------------------------------------------------------------------------
@@ -748,25 +731,25 @@ void CMyNode::analyzePoint(FbxMesh* pMesh)
 	auto nNumPoint = pMesh->GetControlPointsCount();
 
 	//頂点バッファの作成
-	auto& meshNow = Meshes.back();
-	meshNow.Points.resize(nNumPoint);
+	auto& currentMesh = Meshes.back();
+	currentMesh.Points.resize(nNumPoint);
 
 	//頂点情報取得
 	auto pFbxV4 = pMesh->GetControlPoints();
 	for (int count = 0; count < nNumPoint; ++count)
 	{
-		meshNow.Points[count].Position.m_fX = static_cast<float>(pFbxV4[count][0]);
-		meshNow.Points[count].Position.m_fY = static_cast<float>(pFbxV4[count][1]);
-		meshNow.Points[count].Position.m_fZ = static_cast<float>(pFbxV4[count][2]);
+		currentMesh.Points[count].Position.m_fX = static_cast<float>(pFbxV4[count][0]);
+		currentMesh.Points[count].Position.m_fY = static_cast<float>(pFbxV4[count][1]);
+		currentMesh.Points[count].Position.m_fZ = static_cast<float>(pFbxV4[count][2]);
 	}
 
 	//インデックスの取得
 	auto nNumIdx = pMesh->GetPolygonVertexCount();
-	meshNow.PointIndeces.resize(nNumIdx);
+	currentMesh.PointIndeces.resize(nNumIdx);
 	auto pIdx = pMesh->GetPolygonVertices();
 	for (int count = 0; count < nNumIdx; ++count)
 	{
-		meshNow.PointIndeces[count] = static_cast<unsigned int>(pIdx[count]);
+		currentMesh.PointIndeces[count] = static_cast<unsigned int>(pIdx[count]);
 	}
 }
 
@@ -784,14 +767,14 @@ void CMyNode::analyzeNormal(FbxMesh* pMesh)
 		if (!pElementNormal) { continue; }
 
 		//法線データの取得
-		auto& meshNow = Meshes.back();
+		auto& currentMesh = Meshes.back();
 		auto nNumNormal = pElementNormal->GetDirectArray().GetCount();
-		meshNow.Normals.resize(nNumNormal);
+		currentMesh.Normals.resize(nNumNormal);
 		for (int count = 0; count < nNumNormal; ++count)
 		{
-			meshNow.Normals[count].m_fX = (float)pElementNormal->GetDirectArray()[count][0];
-			meshNow.Normals[count].m_fY = (float)pElementNormal->GetDirectArray()[count][1];
-			meshNow.Normals[count].m_fZ = (float)pElementNormal->GetDirectArray()[count][2];
+			currentMesh.Normals[count].m_fX = (float)pElementNormal->GetDirectArray()[count][0];
+			currentMesh.Normals[count].m_fY = (float)pElementNormal->GetDirectArray()[count][1];
+			currentMesh.Normals[count].m_fZ = (float)pElementNormal->GetDirectArray()[count][2];
 		}
 
 		//マッピングモード、リファレンスモード取得
@@ -801,10 +784,10 @@ void CMyNode::analyzeNormal(FbxMesh* pMesh)
 		{//法線独自のインデックスを使用
 			if (referenceMode == FbxLayerElement::eDirect)
 			{// インデックス参照の必要なし
-				meshNow.NormalIndeces.resize(nNumNormal);
+				currentMesh.NormalIndeces.resize(nNumNormal);
 				for (int count = 0; count < nNumNormal; ++count)
 				{
-					meshNow.NormalIndeces[count] = count;
+					currentMesh.NormalIndeces[count] = count;
 				}
 			}
 			else if (referenceMode == FbxLayerElement::eIndexToDirect
@@ -814,12 +797,12 @@ void CMyNode::analyzeNormal(FbxMesh* pMesh)
 				int nNumNormalIdx = pElementNormal->GetIndexArray().GetCount();
 
 				// 法線インデックス格納用コンテナの領域予約
-				meshNow.NormalIndeces.resize(nNumNormalIdx);
+				currentMesh.NormalIndeces.resize(nNumNormalIdx);
 
 				// 法線インデックスの取得  
 				for (int count = 0; count < nNumNormalIdx; ++count)
 				{
-					meshNow.NormalIndeces[count] = pElementNormal->GetIndexArray()[count];
+					currentMesh.NormalIndeces[count] = pElementNormal->GetIndexArray()[count];
 				}
 			}
 		}
@@ -828,8 +811,8 @@ void CMyNode::analyzeNormal(FbxMesh* pMesh)
 		{//頂点バッファと同じインデックス
 			if (referenceMode == FbxLayerElement::eDirect)
 			{
-				meshNow.NormalIndeces.resize(meshNow.PointIndeces.size());
-				meshNow.NormalIndeces.assign(meshNow.PointIndeces.begin(), meshNow.PointIndeces.end());
+				currentMesh.NormalIndeces.resize(currentMesh.PointIndeces.size());
+				currentMesh.NormalIndeces.assign(currentMesh.PointIndeces.begin(), currentMesh.PointIndeces.end());
 			}
 		}
 		else
@@ -852,12 +835,12 @@ void CMyNode::analyzeUV(FbxMesh* pMesh)
 		MessageBox(NULL, "レイヤーを持っていないメッシュを確認", "analyzeUV", MB_OK);
 		return;
 	}
-	auto& meshNow = Meshes.back();
-	meshNow.UVSets.resize(nUVLayerCnt);
+	auto& currentMesh = Meshes.back();
+	currentMesh.UVSets.resize(nUVLayerCnt);
 
 	for (int count = 0; count < nUVLayerCnt; ++count)
 	{
-		auto& UVSet = meshNow.UVSets[count];
+		auto& UVSet = currentMesh.UVSets[count];
 
 		auto pElementUV = pMesh->GetLayer(count)->GetUVs();
 
@@ -932,91 +915,11 @@ void CMyNode::analyzeUV(FbxMesh* pMesh)
 }
 
 //--------------------------------------------------------------------------------
-//  analyzeTexture
-//--------------------------------------------------------------------------------
-void CMyNode::analyzeTexture(FbxNode* pNode)
-{
-	//マテリアル数の取得
-	int nMaterialCnt = pNode->GetMaterialCount();
-	Textures.reserve(nMaterialCnt);
-
-	for (int count = 0; count < nMaterialCnt; ++count)
-	{
-		auto pMaterial = pNode->GetMaterial(count);
-		if (!pMaterial) { continue; }
-
-		// ディフューズ情報の取得     
-		auto diffuseProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
-		int nLayeredTextureCnt = diffuseProperty.GetSrcObjectCount<FbxLayeredTexture>();
-
-		if (nLayeredTextureCnt == 0)
-		{
-			int nTextureCount = diffuseProperty.GetSrcObjectCount<FbxFileTexture>();
-
-			//各テクスチャについてテクスチャ情報取得
-			for (int countTex = 0; countTex < nTextureCount; ++countTex)
-			{//count番目のテクスチャオブジェクトの取得
-				auto pTexture = diffuseProperty.GetSrcObject<FbxFileTexture>(countTex);
-				if (!pTexture) { continue; }
-
-				//テクスチャファイル名
-				Texture texture;
-				string strPath = pTexture->GetFileName();
-				string strType;
-
-				CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
-				CKFUtility::CorrectTexType(strType);
-				texture.Name += '.' + strType;
-
-				//UVSet名
-				texture.UVSetName = pTexture->UVSet.Get().Buffer();
-
-				//とりあえず0番だけとる
-				Textures.push_back(texture);
-				break;
-			}
-		}
-		else
-		{
-			//各テクスチャについてテクスチャ情報取得
-			for (int countLayer = 0; countLayer < nLayeredTextureCnt; ++countLayer)
-			{//count番目のテクスチャオブジェクトの取得
-				auto pLayeredTexture = diffuseProperty.GetSrcObject<FbxLayeredTexture>(countLayer);
-				int nTextureCount = pLayeredTexture->GetSrcObjectCount<FbxFileTexture>();
-
-				//各テクスチャについてテクスチャ情報取得
-				for (int count = 0; count < nTextureCount; ++count)
-				{//count番目のテクスチャオブジェクトの取得
-					auto pTexture = pLayeredTexture->GetSrcObject<FbxFileTexture>(count);
-					if (!pTexture) { continue; }
-
-					//テクスチャファイル名
-					Texture texture;
-					string strPath = pTexture->GetFileName();
-					string strType;
-
-					CKFUtility::AnalyzeFilePath(strPath, texture.Name, strType);
-					CKFUtility::CorrectTexType(strType);
-					texture.Name += '.' + strType;
-
-					//UVSet名
-					texture.UVSetName = pTexture->UVSet.Get().Buffer();
-
-					//とりあえず0番だけとる
-					Textures.push_back(texture);
-					break;
-				}
-			}
-		}
-	}
-}
-
-//--------------------------------------------------------------------------------
 //  analyzeMaterial
 //--------------------------------------------------------------------------------
 void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 {
-	auto& meshNow = Meshes.back();
+	auto& currentMesh = Meshes.back();
 	int nNumLayer = pMesh->GetLayerCount();
 
 	for (int count = 0; count < nNumLayer; ++count)
@@ -1025,7 +928,10 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 		if (!pElementMaterial) { continue; }
 
 		int nNumMaterialIdx = pElementMaterial->GetIndexArray().GetCount();
-		if (nNumMaterialIdx == 0) { continue; }
+		if (nNumMaterialIdx == 0)
+		{
+			continue;
+		}
 
 		auto mappingMode = pElementMaterial->GetMappingMode();
 		auto referenceMode = pElementMaterial->GetReferenceMode();
@@ -1034,12 +940,8 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 		{
 			if (referenceMode == FbxLayerElement::eIndexToDirect)
 			{// メッシュ全部がこのマテリアルインデックス 
-				meshNow.MaterialIndex = pElementMaterial->GetIndexArray()[0];
-				if (meshNow.MaterialIndex < (int)Textures.size())
-				{
-					meshNow.DiffuseTextureName = Textures[meshNow.MaterialIndex].Name;
-					CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.DiffuseTextureName);
-				}
+				auto index = pElementMaterial->GetIndexArray()[0];
+				currentMesh.MaterialName = pMesh->GetNode()->GetMaterial(index)->GetName();
 			}
 			else
 			{
@@ -1052,12 +954,8 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 		}
 		else if (mappingMode == FbxLayerElement::eByPolygon)
 		{// マテリアル分割されているはずだから、一番はじめのだけでいい         
-			meshNow.MaterialIndex = pElementMaterial->GetIndexArray()[0];
-			if (meshNow.MaterialIndex < (int)Textures.size())
-			{
-				meshNow.DiffuseTextureName = Textures[meshNow.MaterialIndex].Name;
-				CMain::GetManager()->GetTextureManager()->UseTexture(meshNow.DiffuseTextureName);
-			}
+			auto index = pElementMaterial->GetIndexArray()[0];
+			currentMesh.MaterialName = pMesh->GetNode()->GetMaterial(index)->GetName();
 		}
 		else if (mappingMode == FbxLayerElement::eByEdge)
 		{
@@ -1075,7 +973,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 //--------------------------------------------------------------------------------
 void CMyNode::analyzeCluster(FbxMesh* pMesh)
 {
-	auto& meshNow = Meshes.back();
+	auto& currentMesh = Meshes.back();
 
 	// スキンの数を取得 
 	int nNumSkin = pMesh->GetDeformerCount(FbxDeformer::eSkin);
@@ -1100,7 +998,7 @@ void CMyNode::analyzeCluster(FbxMesh* pMesh)
 			auto pWeightArray = pCluster->GetControlPointWeights();
 			for (int count = 0; count < nNumPointIdx; ++count)
 			{
-				meshNow.Points[pPointIndexArray[count]].BoneReferences.push_back(
+				currentMesh.Points[pPointIndexArray[count]].BoneReferences.push_back(
 					BoneReference(countCluster, static_cast<float>(pWeightArray[count]), strClusterName));
 			}
 		}
@@ -1159,9 +1057,6 @@ void CMyNode::saveMeshJson(const Mesh& mesh, const string& meshName)
 	archive(make_nvp("Indeces", indeces));
 	indeces.clear();
 	file.close();
-
-	//Material
-	saveMaterialJson(mesh, meshName);
 }
 
 //--------------------------------------------------------------------------------
@@ -1215,30 +1110,6 @@ void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
 	mesh.IndexBuffer->Unlock();
 	archive(make_nvp("Indeces", indeces));
 	indeces.clear();
-
-	file.close();
-
-	//Material
-	saveMaterialJson(mesh, meshName);
-}
-
-//--------------------------------------------------------------------------------
-//  saveMaterialJson
-//--------------------------------------------------------------------------------
-void CMyNode::saveMaterialJson(const Mesh& mesh, const string& meshName)
-{
-	auto& filePath = "data/material/" + meshName + ".json";
-	ofstream file(filePath);
-	if (!file.is_open()) return;
-	JSONOutputArchive archive(file);
-	archive(make_nvp("DiffuseTextureName", mesh.DiffuseTextureName));
-	archive(make_nvp("SpecularTextureName", mesh.SpecularTextureName));
-	archive(make_nvp("NormalTextureName", mesh.NormalTextureName));
-	archive(make_nvp("Ambient", mesh.Ambient));
-	archive(make_nvp("Diffuse", mesh.Diffuse));
-	archive(make_nvp("Specular", mesh.Specular));
-	archive(make_nvp("Emissive", mesh.Emissive));
-	archive(make_nvp("Power", mesh.Power));
 	file.close();
 }
 
@@ -1286,11 +1157,7 @@ void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
 	archive.saveBinary(&pIdx[0], sizeof(WORD) * mesh.IndexNumber);
 	mesh.IndexBuffer->Unlock();
-	
 	file.close();
-
-	//Material
-	saveMaterialBinary(mesh, meshName);
 }
 
 //--------------------------------------------------------------------------------
@@ -1337,35 +1204,5 @@ void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
 	mesh.IndexBuffer->Lock(0, 0, (void**)&pIdx, 0);
 	archive.saveBinary(&pIdx[0], sizeof(WORD) * mesh.IndexNumber);
 	mesh.IndexBuffer->Unlock();
-
-	file.close();
-
-	//Material
-	saveMaterialBinary(mesh, meshName);
-}
-
-//--------------------------------------------------------------------------------
-//  saveMaterialBinary
-//--------------------------------------------------------------------------------
-void CMyNode::saveMaterialBinary(const Mesh& mesh, const string& meshName)
-{
-	auto& filePath = "data/material/" + meshName + ".material";
-	ofstream file(filePath);
-	if (!file.is_open()) return;
-	BinaryOutputArchive archive(file);
-	int size = (int)mesh.DiffuseTextureName.size();
-	archive.saveBinary(&size, sizeof(int));
-	archive.saveBinary(&mesh.DiffuseTextureName[0], size);
-	size = (int)mesh.SpecularTextureName.size();
-	archive.saveBinary(&size, sizeof(int));
-	archive.saveBinary(&mesh.SpecularTextureName[0], size);
-	size = (int)mesh.NormalTextureName.size();
-	archive.saveBinary(&size, sizeof(int));
-	archive.saveBinary(&mesh.NormalTextureName[0], size);
-	archive.saveBinary(&mesh.Ambient, sizeof(CKFColor));
-	archive.saveBinary(&mesh.Diffuse, sizeof(CKFColor));
-	archive.saveBinary(&mesh.Specular, sizeof(CKFColor));
-	archive.saveBinary(&mesh.Emissive, sizeof(CKFColor));
-	archive.saveBinary(&mesh.Power, sizeof(float));
 	file.close();
 }

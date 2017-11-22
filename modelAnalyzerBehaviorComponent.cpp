@@ -44,6 +44,7 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	, m_bModelInfoWindow(false)
 	, m_bAnimatorWindow(false)
 	, m_bCameraWindow(false)
+	, m_bMaterialWindow(false)
 	, m_pNodeNow(nullptr)
 	, m_vNodeNowCorrectTrans(CKFMath::sc_vZero)
 	, m_vNodeNowCorrectRot(CKFMath::sc_vZero)
@@ -63,6 +64,16 @@ bool CModelAnalyzerBehaviorComponent::Init(void)
 	m_strFileName.clear();
 	m_bSaved = false;
 	m_bReverseV = false;
+	m_bModelInfoWindow = false;
+	m_bAnimatorWindow = false;
+	m_bCameraWindow = false;
+	m_bMaterialWindow = false;
+	m_bPlayMotion = false;
+	m_nCntFrame = 0;
+	m_nNoMotion = 0;
+	m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
+	m_vNodeNowCorrectRot = CKFMath::sc_vZero;
+	m_vNodeNowCorrectScale = CKFMath::sc_vOne;
 	auto pTrans = m_pGameObj->GetTransformComponent();
 	pTrans->SetPosNext(CKFMath::sc_vZero);
 	pTrans->SetForwardNext(CKFMath::sc_vForward);
@@ -128,6 +139,9 @@ void CModelAnalyzerBehaviorComponent::LateUpdate(void)
 	// Animator
 	showAnimatorWindow();
 
+	// Material
+	showMaterialWindow();
+
 	// Camera
 	showCameraWindow();
 }
@@ -175,6 +189,11 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		}
 		m_pRootNode = myModel.pNode;
 		m_pAnimator = myModel.pAnimator;
+		m_mapMaterial = myModel.mapMaterial;
+		for (auto& pair : m_mapMaterial)
+		{
+			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.DiffuseTextureName);
+		}
 		m_pRootNode->RecursiveRecombineMeshes();
 		if (m_pAnimator)
 		{
@@ -223,6 +242,11 @@ void CModelAnalyzerBehaviorComponent::releaseModel(void)
 	}
 	SAFE_RELEASE(m_pRootNode);
 	SAFE_RELEASE(m_pAnimator);
+	for (auto& pair : m_mapMaterial)
+	{
+		CMain::GetManager()->GetTextureManager()->DisuseTexture(pair.second.DiffuseTextureName);
+	}
+	m_mapMaterial.clear();
 	Init();
 }
 
@@ -249,12 +273,21 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	pRenderer->SetBGColor(cBGColor);
 
 	// Model Window
-	if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
+	if (m_pRootNode)
+	{
+		if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
+	}
 	
 	// Animator Window
 	if (m_pAnimator)
 	{
 		if (ImGui::Button("Animator")) m_bAnimatorWindow ^= 1;
+	}
+
+	// Material Window
+	if (!m_mapMaterial.empty())
+	{
+		if (ImGui::Button("Material")) m_bMaterialWindow ^= 1;
 	}
 
 	// Camera Window
@@ -367,26 +400,9 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Offset
-			if (m_pAnimator && m_bPlayMotion
-				&& size > 0 && pNode->AttributeNames[0]._Equal("skeleton"))
-			{	// CLuster‚É‚æ‚éXV‚µ‚Ä‚é‚Ì‚Å‚¢‚¶‚ê‚È‚¢
-				auto& local = pNode->Local;
-				ImGui::Text("Local\n"
-					"%.4f %.4f %.4f %.4f\n"
-					"%.4f %.4f %.4f %.4f\n"
-					"%.4f %.4f %.4f %.4f\n"
-					"%.4f %.4f %.4f %.4f\n",
-					local.m_af[0][0], local.m_af[0][1], local.m_af[0][2], local.m_af[0][3],
-					local.m_af[1][0], local.m_af[1][1], local.m_af[1][2], local.m_af[1][3],
-					local.m_af[2][0], local.m_af[2][1], local.m_af[2][2], local.m_af[2][3],
-					local.m_af[3][0], local.m_af[3][1], local.m_af[3][2], local.m_af[3][3]);
-			}
-			else
-			{				
-				if (ImGui::InputFloat3("Trans", &pNode->Translation.m_fX)) pNode->RecalculateLocal();
-				if (ImGui::DragFloat3("Rot", &pNode->Rotation.m_fX, 0.002f, 0.0f, KF_PI * 2.0f)) pNode->RecalculateLocal();
-				if (ImGui::InputFloat3("Scale", &pNode->Scale.m_fX)) pNode->RecalculateLocal();
-			}
+			if (ImGui::InputFloat3("Transform", &pNode->Translation.m_fX)) pNode->RecalculateLocal();
+			if (ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, 0.002f, 0.0f, KF_PI * 2.0f)) pNode->RecalculateLocal();
+			if (ImGui::InputFloat3("Scaling", &pNode->Scale.m_fX)) pNode->RecalculateLocal();
 
 			//Mesh
 			if (!pNode->Meshes.empty() && ImGui::TreeNode("Mesh"))
@@ -400,14 +416,6 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 						//Info
 						ImGui::Text("NumPolygon : %d", mesh.PolygonNumber);
 						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.VertexNumber, mesh.IndexNumber);
-
-						// TransformMesh
-						if (ImGui::Button(mesh.IsLocal ? "Transform to World" : "Transform to Local"))
-						{
-							if (mesh.IsLocal) pNode->TransformMeshToWorld(mesh);
-							else pNode->TransformMeshToLocal(mesh);
-							mesh.IsLocal ^= 1;
-						}
 
 						// Render Priority
 						static const char* listbox_rp[] =
@@ -424,28 +432,6 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 
 						// Fog
 						ImGui::Checkbox("Enable Fog", &mesh.EnableFog);
-
-						// Material
-						ImGui::ColorEdit3("Diffuse", (float*)&mesh.Diffuse);
-						ImGui::ColorEdit3("Ambient", (float*)&mesh.Ambient);
-						ImGui::ColorEdit3("Specular", (float*)&mesh.Specular);
-						ImGui::ColorEdit3("Emissive", (float*)&mesh.Emissive);
-						ImGui::DragFloat("Power", &mesh.Power);
-						ImGui::Text("DiffuseTexture : %s", mesh.DiffuseTextureName.c_str());
-						if (ImGui::Button("Change Diffuse Texture"))
-						{
-							changeTexture(mesh.DiffuseTextureName);
-						}
-						ImGui::Text("SpecularTexture : %s", mesh.SpecularTextureName.c_str());
-						if (ImGui::Button("Change Specular Texture"))
-						{
-							changeTexture(mesh.SpecularTextureName);
-						}
-						ImGui::Text("NormalTexture : %s", mesh.NormalTextureName.c_str());
-						if (ImGui::Button("Change Normal Texture"))
-						{
-							changeTexture(mesh.NormalTextureName);
-						}
 						ImGui::TreePop();
 					}
 				}
@@ -609,7 +595,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 {
-	if (!m_bAnimatorWindow) return;
+	if (!m_bAnimatorWindow || m_pAnimator->Motions.empty()) return;
 
 	// Begin
 	if (!ImGui::Begin("Animation Window", &m_bAnimatorWindow))
@@ -691,6 +677,52 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	if (ImGui::Button("Add Animation"))
 	{
 		addAnimation();
+	}
+
+	// End
+	ImGui::End();
+}
+
+//--------------------------------------------------------------------------------
+// showMaterialWindow
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
+{
+	if (!m_bMaterialWindow) { return; }
+
+	// Begin
+	if (!ImGui::Begin("Material Window", &m_bMaterialWindow))
+	{
+		ImGui::End();
+		return;
+	}
+
+	for (auto& pair : m_mapMaterial)
+	{
+		if (ImGui::TreeNode(pair.first.c_str()))
+		{
+			ImGui::ColorEdit3("Diffuse", (float*)&pair.second.Diffuse);
+			ImGui::ColorEdit3("Ambient", (float*)&pair.second.Ambient);
+			ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
+			ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
+			ImGui::DragFloat("Power", &pair.second.Power);
+			ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
+			if (ImGui::Button("Change Diffuse Texture"))
+			{
+				changeTexture(pair.second.DiffuseTextureName);
+			}
+			ImGui::Text("SpecularTexture : %s", pair.second.SpecularTextureName.c_str());
+			if (ImGui::Button("Change Specular Texture"))
+			{
+				changeTexture(pair.second.SpecularTextureName);
+			}
+			ImGui::Text("NormalTexture : %s", pair.second.NormalTextureName.c_str());
+			if (ImGui::Button("Change Normal Texture"))
+			{
+				changeTexture(pair.second.NormalTextureName);
+			}
+			ImGui::TreePop();
+		}
 	}
 
 	// End

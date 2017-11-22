@@ -54,6 +54,7 @@
     <ClCompile Include="lightManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="manager.cpp" />
+    <ClCompile Include="material.cpp" />
     <ClCompile Include="materialManager.cpp" />
     <ClCompile Include="meshManager.cpp" />
     <ClCompile Include="mode.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="lightManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="manager.h" />
+    <ClInclude Include="material.h" />
     <ClInclude Include="materialManager.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="meshComponent.h" />
@@ -196,7 +198,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)\</OutDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
-    <IncludePath>$(DXSDK_DIR)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(DXSDK_DIR)include;$(ProjectDir)include;$(IncludePath)</IncludePath>
     <LibraryPath>$(DXSDK_DIR)lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -14,6 +14,7 @@
 #include "drawComponent.h"
 #include "node.h"
 #include "animator.h"
+#include "material.h"
 
 //--------------------------------------------------------------------------------
 //  —ñ‹“Œ^
@@ -30,8 +31,9 @@ enum OutType
 struct MyModel
 {
 	MyModel() : pNode(nullptr), pAnimator(nullptr) {}
-	CMyNode*	pNode;
-	CAnimator*	pAnimator;
+	CMyNode*						pNode;
+	CAnimator*						pAnimator;
+	unordered_map<string, Material>	mapMaterial;
 };
 
 //--------------------------------------------------------------------------------
@@ -53,7 +55,8 @@ private:
 	~CKFUtilityFBX() {}
 
 	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
-	static CAnimator*	analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene);
+	static void			analyzeMaterial(FbxScene* lScene, unordered_map<string, Material>& mapMaterial);
+	static CAnimator*	analyzeAnimator(FbxImporter* lImporter, FbxScene* lScene);
 	static void			analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator);
 	static void			findSkeletons(FbxNode* pNode, list<FbxNode*>& listSkeleton);
 	static void			matchClusterWithSkeleton(vector<Cluster>& clusters, CMyNode* node);

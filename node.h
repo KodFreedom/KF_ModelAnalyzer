@@ -12,6 +12,7 @@
 #include "main.h"
 #include "KF_CollisionSystem.h"
 #include "animator.h"
+#include "material.h"
 
 //--------------------------------------------------------------------------------
 //  前方宣言
@@ -41,28 +42,6 @@ struct ControlPoint
 	ControlPoint(const CKFVec3& position) : Position(position) {}
 	CKFVec3					Position;
 	vector<BoneReference>	BoneReferences;
-};
-
-struct Texture
-{
-	string	UVSetName;
-	string	Name;
-};
-
-struct Lambert
-{
-	CKFVec4			Ambient;
-	CKFVec4			Diffuse;
-	CKFVec4			Emissive;
-	CKFVec3			Bump;
-	float			Transparency;
-};
-
-struct Phong
-{
-	CKFVec4			Specular;
-	float			Shininess;
-	float			Reflectivity;
 };
 
 struct UVSet
@@ -135,16 +114,10 @@ struct VertexDX
 struct Mesh
 {
 	Mesh()
-		: MaterialIndex(-1)
-		, EnableCullFace(false)
+		: EnableCullFace(false)
 		, EnableLight(false)
 		, EnableFog(false)
-		, IsLocal(true)
-		, Diffuse(CKFColor(1.0f))
-		, Ambient(CKFColor(1.0f))
-		, Specular(CKFColor(1.0f))
-		, Emissive(CKFColor(1.0f))
-		, Power(1.0f)
+		, IsSkin(false)
 		, MyRenderPriority(RenderPriority::RP_Default)
 #ifdef USING_DIRECTX
 		, VertexNumber(0)
@@ -160,19 +133,11 @@ struct Mesh
 	vector<UVSet>			UVSets;
 	vector<us>				PointIndeces;
 	vector<us>				NormalIndeces;
-	short					MaterialIndex;
-	string					DiffuseTextureName;
-	string					SpecularTextureName;
-	string					NormalTextureName;
-	CKFColor				Ambient;	// 環境光の反射率
-	CKFColor				Diffuse;	// 漫射光の反射率
-	CKFColor				Specular;	// 鏡面光の反射率
-	CKFColor				Emissive;	// 自発光
-	float					Power;		// ハイライトのシャープネス
+	string					MaterialName;
 	bool					EnableCullFace;
 	bool					EnableLight;
 	bool					EnableFog;
-	bool					IsLocal;
+	bool					IsSkin;
 	RenderPriority			MyRenderPriority;
 
 #ifdef USING_DIRECTX
@@ -209,7 +174,7 @@ class CMyNode
 public:
 	CMyNode()
 		: Translation(CKFVec3(0.0f))
-		, Rotation(CKFVec3(0.0f))
+		, RotationOffset(CKFVec3(0.0f))
 		, Scale(CKFVec3(1.0f))
 		, ColliderMaterialID(1)
 	{}
@@ -221,16 +186,14 @@ public:
 
 	// Offset
 	CKFVec3			Translation;
-	CKFVec3			Rotation;
+	CKFVec3			RotationOffset;
+	CKFQuaternion	Rotation;
 	CKFVec3			Scale;
 
 	// Matrix
 	CKFMtx44		Local;
 	CKFMtx44		World;
-	CKFMtx44		InitWorld;
-	CKFMtx44		InitWorldInverse;
 
-	vector<Texture>	Textures;
 	vector<Mesh>	Meshes;
 
 	//Collider
@@ -240,7 +203,7 @@ public:
 	void Release(void);
 	void RecursiveUpdateMatrix(const CKFMtx44& parent);
 	void RecursiveUpdateSkin(const vector<Cluster>& clusters);
-	void RecursiveDraw(const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider);
+	void RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider);
 	void RecursiveRecombineMeshes(void);
 	void RecursiveReverseTexV(void);
 	void RecalculateMeshesBy(const CKFMtx44& matrix);
@@ -248,22 +211,17 @@ public:
 	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecalculateLocal(void);
-	void TransformMeshToWorld(Mesh& mesh);
-	void TransformMeshToLocal(Mesh& mesh);
 
 private:
 	void analyzePoint(FbxMesh* pMesh);
 	void analyzeNormal(FbxMesh* pMesh);
 	void analyzeUV(FbxMesh* pMesh);
-	void analyzeTexture(FbxNode* pNode);
 	void analyzeMaterial(FbxMesh* pMesh);
 	void analyzeCluster(FbxMesh* pMesh);
 	void saveMeshJson(const Mesh& mesh, const string& meshName);
 	void saveSkinMeshJson(const Mesh& mesh, const string& meshName);
-	void saveMaterialJson(const Mesh& mesh, const string& meshName);
 	void saveMeshBinary(const Mesh& mesh, const string& meshName);
 	void saveSkinMeshBinary(const Mesh& mesh, const string& meshName);
-	void saveMaterialBinary(const Mesh& mesh, const string& meshName);
 
 #ifdef USING_DIRECTX
 	static LPD3DXMESH s_pMeshSphere;
