@@ -11,6 +11,8 @@
 //--------------------------------------------------------------------------------
 #include "behaviorComponent.h"
 #include "KF_UtilityFBX.h"
+#include "material.h"
+
 //--------------------------------------------------------------------------------
 //  ëOï˚êÈåæ
 //--------------------------------------------------------------------------------
@@ -44,6 +46,7 @@ public:
 	const bool& IsDrawSkeleton(void) { return m_bDrawSkeleton; }
 	const bool& IsDrawMesh(void) { return m_bDrawMesh; }
 	const bool& IsDrawCollider(void) { return m_bDrawCollider; }
+	const auto& GetMaterials(void) { return m_mapMaterial; }
 
 private:
 	//--------------------------------------------------------------------------------
@@ -60,25 +63,28 @@ private:
 	void		showNodeNowWindow(void);
 	void		showAnimatorWindow(void);
 	void		showCameraWindow(void);
+	void		showMaterialWindow(void);
 	void		changeTexture(string& meshTexture);
 	void		addAnimation(void);
 
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
 	//--------------------------------------------------------------------------------
-	bool		m_bDrawSkeleton;
-	bool		m_bDrawMesh;
-	bool		m_bDrawCollider;
-	bool		m_bReverseV;
-	bool		m_bSaved;
-	string		m_strFileName;
-	CMyNode*	m_pRootNode;
-	CAnimator*	m_pAnimator;
+	bool		     m_bDrawSkeleton;
+	bool		     m_bDrawMesh;
+	bool		     m_bDrawCollider;
+	bool		     m_bReverseV;
+	bool		     m_bSaved;
+	string		     m_strFileName;
+	CMyNode*	     m_pRootNode;
+	CAnimator*	     m_pAnimator;
+	unordered_map<string, Material>	m_mapMaterial;
 
 	//ImGui
 	bool		m_bModelInfoWindow;
 	bool		m_bAnimatorWindow;
 	bool		m_bCameraWindow;
+	bool		m_bMaterialWindow;
 	CMyNode*	m_pNodeNow;
 	CKFVec3		m_vNodeNowCorrectTrans;
 	CKFVec3		m_vNodeNowCorrectRot;

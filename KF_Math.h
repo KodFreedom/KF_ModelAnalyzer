@@ -207,6 +207,12 @@ public:
 	void operator/=(const float& fValue);
 	CKFQuaternion operator*(const CKFQuaternion& qValue) const;
 	void operator*=(const CKFQuaternion& qValue);
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("X", m_fX), make_nvp("Y", m_fY), make_nvp("Z", m_fZ), make_nvp("W", m_fW));
+	}
 };
 
 //--------------------------------------------------------------------------------
@@ -331,7 +337,8 @@ public:
 	static void				MtxRotationYawPitchRoll(CKFMtx44& mtxRot, const CKFVec3& vRot);
 	static void				MtxTranslation(CKFMtx44& mtxTrans, const CKFVec3& vPos);
 	static CKFMtx44			MtxTranspose(const CKFMtx44& mtx);
-	
+	static void				MtxToTransRotScale(const CKFMtx44& mtx, CKFVec3& vTrans, CKFQuaternion& qRot, CKFVec3& vScale);
+
 #ifdef USING_DIRECTX
 	static CKFMtx44			ChangeDXMtxToMtx44(const D3DXMATRIX& mtx);
 #endif

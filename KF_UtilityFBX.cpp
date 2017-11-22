@@ -60,13 +60,17 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 	// マテリアルごとにメッシュ分離
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
-	//Node
+	// Node
 	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode());
 
-	// Animation
-	myModel.pAnimator = analyzeAnimation(lImporter, lScene);
+	// Material
+	analyzeMaterial(lScene, myModel.mapMaterial);
+
+	// Animator
+	myModel.pAnimator = analyzeAnimator(lImporter, lScene);
 	if (myModel.pAnimator)
 	{
+		analyzeAnimation(lImporter, lScene, myModel.pAnimator);
 		matchClusterWithSkeleton(myModel.pAnimator->Clusters, myModel.pNode);
 	}
 
@@ -394,8 +398,13 @@ bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const Out
 		if (!file.is_open()) return false;
 		JSONOutputArchive archive(file);
 		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
-		if (model.pAnimator)model.pAnimator->SaveAsJson(fileName);
 		file.close();
+
+		//Animator
+		if (model.pAnimator)model.pAnimator->SaveAsJson(fileName);
+
+		//Material
+		Material::SaveAsJson(model.mapMaterial);
 	}
 	else if (type == Binary)
 	{
@@ -416,11 +425,14 @@ bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const Out
 		if (!file.is_open()) return false;
 		BinaryOutputArchive archive(file);
 		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);
-		if (model.pAnimator)model.pAnimator->SaveAsBinary(fileName);
 		file.close();
-	}
-	//Animator
 
+		//Animator
+		if (model.pAnimator)model.pAnimator->SaveAsBinary(fileName);
+
+		//Material
+		Material::SaveAsBinary(model.mapMaterial);
+	}
 	return true;
 }
 
@@ -454,22 +466,8 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	if (!pNode) { return NULL; }
 	auto pMyNode = new CMyNode;
 	pMyNode->Name = pNode->GetName();
-	pMyNode->Translation.m_fX = static_cast<float>(pNode->LclTranslation.Get()[0]);
-	pMyNode->Translation.m_fY = static_cast<float>(pNode->LclTranslation.Get()[1]);
-	pMyNode->Translation.m_fZ = static_cast<float>(pNode->LclTranslation.Get()[2]);
-	pMyNode->Rotation.m_fX = static_cast<float>(pNode->LclRotation.Get()[0]);
-	pMyNode->Rotation.m_fY = static_cast<float>(pNode->LclRotation.Get()[1]);
-	pMyNode->Rotation.m_fZ = static_cast<float>(pNode->LclRotation.Get()[2]);
-	pMyNode->Rotation /= 180.0f * KF_PI; //Degree to Radian
-	pMyNode->Scale.m_fX = static_cast<float>(pNode->LclScaling.Get()[0]);
-	pMyNode->Scale.m_fY = static_cast<float>(pNode->LclScaling.Get()[1]);
-	pMyNode->Scale.m_fZ = static_cast<float>(pNode->LclScaling.Get()[2]);
 	pMyNode->Local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
-	pMyNode->InitWorld = CKFMtx44::FbxToMtx(pNode->EvaluateGlobalTransform());
-	pMyNode->InitWorldInverse = CKFMtx44::FbxToMtx(pNode->EvaluateGlobalTransform().Inverse());
-
-	// マテリアル情報の解析（マテリアルリスト化）                
-	pMyNode->analyzeTexture(pNode);
+	CKFMath::MtxToTransRotScale(pMyNode->Local, pMyNode->Translation, pMyNode->Rotation, pMyNode->Scale);
 
 	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
 	{
@@ -496,14 +494,142 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 }
 
 //--------------------------------------------------------------------------------
-//  analyzeAnimation
+//  analyzeMaterial
 //--------------------------------------------------------------------------------
-CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene)
+void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Material>& mapMaterial)
 {
-	// Anim数
-	auto animationNumber = lImporter->GetAnimStackCount();
-	if (!animationNumber) { return nullptr; }
+	// シーンのマテリアルの数を取得する。
+	int materialCount = lScene->GetMaterialCount();
 
+	for (int count = 0; count < materialCount; ++count)
+	{
+		Material material;
+		string materialName;
+
+		// マテリアルを取得する。
+		auto pMaterial = lScene->GetMaterial(count);
+
+		// マテリアルの名前を取得する。
+		// マテリアルの名前は、メッシュノードとの関連付けに使用する。
+		materialName = pMaterial->GetName();
+
+		// クラスIDを取得し、マテリアルを、ランバートマテリアル、又はフォンマテリアルにキャストする。
+		auto& classId = pMaterial->GetClassId();
+		if (classId.Is(FbxSurfaceLambert::ClassId))
+		{
+			FbxSurfaceLambert* pLambert = (FbxSurfaceLambert*)pMaterial;
+			material.Ambient.m_fR = pLambert->Ambient.Get()[0];
+			material.Ambient.m_fG = pLambert->Ambient.Get()[1];
+			material.Ambient.m_fB = pLambert->Ambient.Get()[2];
+			material.Diffuse.m_fR = pLambert->Diffuse.Get()[0];
+			material.Diffuse.m_fG = pLambert->Diffuse.Get()[1];
+			material.Diffuse.m_fB = pLambert->Diffuse.Get()[2];
+			material.Emissive.m_fR = pLambert->Emissive.Get()[0];
+			material.Emissive.m_fG = pLambert->Emissive.Get()[1];
+			material.Emissive.m_fB = pLambert->Emissive.Get()[2];
+		}
+		else if (classId.Is(FbxSurfacePhong::ClassId))
+		{
+			FbxSurfacePhong* pPhong = (FbxSurfacePhong*)pMaterial;
+			material.Ambient.m_fR = pPhong->Ambient.Get()[0];
+			material.Ambient.m_fG = pPhong->Ambient.Get()[1];
+			material.Ambient.m_fB = pPhong->Ambient.Get()[2];
+			material.Diffuse.m_fR = pPhong->Diffuse.Get()[0];
+			material.Diffuse.m_fG = pPhong->Diffuse.Get()[1];
+			material.Diffuse.m_fB = pPhong->Diffuse.Get()[2];
+			material.Emissive.m_fR = pPhong->Emissive.Get()[0];
+			material.Emissive.m_fG = pPhong->Emissive.Get()[1];
+			material.Emissive.m_fB = pPhong->Emissive.Get()[2];
+			material.Specular.m_fR = pPhong->Specular.Get()[0];
+			material.Specular.m_fG = pPhong->Specular.Get()[1];
+			material.Specular.m_fB = pPhong->Specular.Get()[2];
+			material.Power = pPhong->Shininess.Get();
+		}
+
+		// マテリアルの、ディフューズのプロパティを取得する。
+		auto& property = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+
+		// テクスチャファイル数を取得する。
+		int fileTextureCount = property.GetSrcObjectCount<FbxFileTexture>();
+
+		if (fileTextureCount > 0)
+		{
+			for (int count = 0; count < fileTextureCount; ++count)
+			{
+				// テクスチャファイルを取得する。
+				auto pFileTexture = lScene->GetSrcObject<FbxFileTexture>(count);
+				auto fbxType = pFileTexture->GetTextureType();
+				auto fbxUse = pFileTexture->GetTextureUse();
+
+				// ファイルテクスチャ名を取得する。
+				string path = pFileTexture->GetFileName();
+				string name;
+				string type;
+				CKFUtility::AnalyzeFilePath(path, name, type);
+				CKFUtility::CorrectTexType(type);
+				name += '.' + type;
+				material.DiffuseTextureName = name;
+				//break;
+			}
+		}
+		else
+		{
+			// マテリアルのインプリメンテーションを取得する。
+			auto pImplementation = GetImplementation(pMaterial, FBXSDK_IMPLEMENTATION_CGFX);
+
+			// インプリメンテーションのルートテーブルを取得する。
+			auto pRootTable = pImplementation->GetRootTable();
+
+			// ルートテーブルのエントリー数を取得する
+			size_t entryCount = pRootTable->GetEntryCount();
+
+			for (size_t count = 0; count < entryCount; ++count)
+			{
+				// ルートテーブルのエントリーを取得する。
+				auto& entry = pRootTable->GetEntry(count);
+
+				// エントリー名を取得する。
+				string entryName = entry.GetSource();
+
+				// エントリー名から、プロパティを取得する。
+				property = pMaterial->RootProperty.FindHierarchical(entryName.c_str());
+
+				// ファイルテクスチャ数を取得する。
+				fileTextureCount = property.GetSrcObjectCount<FbxFileTexture>();
+
+				for (int countTexture = 0; countTexture < fileTextureCount; ++countTexture)
+				{
+					// ファイルテクスチャを取得する。
+					auto pFileTexture = property.GetSrcObject<FbxFileTexture>(countTexture);
+					auto fbxType = pFileTexture->GetTextureType();
+					auto fbxUse = pFileTexture->GetTextureUse();
+
+					// ファイルテクスチャ名を取得する。
+					string path = pFileTexture->GetFileName();
+					string name;
+					string type;
+					CKFUtility::AnalyzeFilePath(path, name, type);
+					CKFUtility::CorrectTexType(type);
+					name += '.' + type;
+
+					if (entryName == "Maya|DiffuseTexture")
+					{
+						material.DiffuseTextureName = name;
+					}
+					//break;
+				}
+			}
+		}
+
+		mapMaterial.emplace(materialName, material);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  analyzeAnimator
+//--------------------------------------------------------------------------------
+CAnimator* CKFUtilityFBX::analyzeAnimator(FbxImporter* lImporter, FbxScene* lScene)
+{
 	// Cluster
 	int clusterNumber = lScene->GetMemberCount<FbxCluster>();
 	map<string, FbxCluster*> clusters;
@@ -520,11 +646,10 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 	if (clusters.empty())
 	{
 		MessageBox(NULL, "clusterが見つからない！！", "analyzeAnimation", MB_OK | MB_ICONWARNING);
-		return nullptr; 
+		return nullptr;
 	}
 
 	auto pAnimator = new CAnimator;
-	pAnimator->Motions.reserve(animationNumber);
 
 	// Cluster Matrix
 	pAnimator->Clusters.resize(clusters.size());
@@ -539,48 +664,7 @@ CAnimator* CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lSc
 		pAnimator->Clusters[countCluster].BindPoseInverse = CKFMtx44::FbxToMtx(boneGlobalInitPosition.Inverse() * meshGlobalInitPosition);
 		++countCluster;
 	}
-
-	// Animation Name
-	FbxArray<FbxString*> animationNames;
-	lScene->FillAnimStackNameArray(animationNames);
-
-	//one frame time
-	FbxTime oneFrameTime;
-	oneFrameTime.SetTime(0, 0, 0, 1, 0, 0, FbxTime::eFrames60);
-
-	for (int nCnt = 0; nCnt < animationNumber; ++nCnt)
-	{
-		Motion motion;
-		motion.Name = animationNames[nCnt]->Buffer();
-
-		//Anime情報
-		auto pTakeInfo = lScene->GetTakeInfo(animationNames[nCnt]->Buffer());
-	
-		//アニメーション開始終了時間
-		auto startTime = pTakeInfo->mLocalTimeSpan.GetStart();
-		auto endTime = pTakeInfo->mLocalTimeSpan.GetStop();
-		int frameNumber = (int)((endTime - startTime) / (oneFrameTime)).Get();
-		motion.Frames.reserve(frameNumber + 1);
-		for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
-		{
-			Frame frame;
-			frame.BoneFrames.reserve(clusters.size());
-			countCluster = 0;
-			for (auto pair : clusters)
-			{
-				BoneFrame boneFrame;
-				boneFrame.Name = pair.first;
-				boneFrame.Matrix = CKFMtx44::FbxToMtx(pair.second->GetLink()->EvaluateLocalTransform(currentTime));
-				frame.BoneFrames.push_back(boneFrame);
-				++countCluster;
-			}
-			motion.Frames.push_back(frame);
-		}
-		motion.Frames.shrink_to_fit();
-		motion.EndFrame = motion.Frames.size() - 1;
-		pAnimator->Motions.push_back(motion);
-	}
-	pAnimator->Motions.shrink_to_fit();
+	clusters.clear();
 	return pAnimator;
 }
 

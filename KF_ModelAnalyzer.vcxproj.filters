@@ -231,6 +231,9 @@
     <ClCompile Include="animator.cpp">
       <Filter>ソース ファイル\FBX</Filter>
     </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>ソース ファイル\FBX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KF_Math.h">
@@ -414,6 +417,9 @@
       <Filter>ヘッダー ファイル\FBX</Filter>
     </ClInclude>
     <ClInclude Include="animator.h">
+      <Filter>ヘッダー ファイル\FBX</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
       <Filter>ヘッダー ファイル\FBX</Filter>
     </ClInclude>
   </ItemGroup>

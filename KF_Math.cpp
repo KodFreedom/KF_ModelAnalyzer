@@ -1418,6 +1418,44 @@ CKFQuaternion CKFMath::MtxToQuaternion(const CKFMtx44& mtxRot)
 }
 
 //--------------------------------------------------------------------------------
+//	MtxToTransRotScale
+//	ïΩçsà⁄ìÆçsóÒÇÃçÏê¨
+//--------------------------------------------------------------------------------
+void CKFMath::MtxToTransRotScale(const CKFMtx44& mtx, CKFVec3& vTrans, CKFQuaternion& qRot, CKFVec3& vScale)
+{
+	vTrans.m_fX = mtx.m_af[3][0];
+	vTrans.m_fY = mtx.m_af[3][1];
+	vTrans.m_fZ = mtx.m_af[3][2];
+	CKFVec3 vRight, vUp, vForward;
+	vRight.m_fX = mtx.m_af[0][0];
+	vRight.m_fY = mtx.m_af[0][1];
+	vRight.m_fZ = mtx.m_af[0][2];
+	vUp.m_fX = mtx.m_af[1][0];
+	vUp.m_fY = mtx.m_af[1][1];
+	vUp.m_fZ = mtx.m_af[1][2];
+	vForward.m_fX = mtx.m_af[2][0];
+	vForward.m_fY = mtx.m_af[2][1];
+	vForward.m_fZ = mtx.m_af[2][2];
+	vScale.m_fX = CKFMath::VecMagnitude(vRight);
+	vScale.m_fY = CKFMath::VecMagnitude(vUp);
+	vScale.m_fZ = CKFMath::VecMagnitude(vForward);
+	vRight /= vScale.m_fX;
+	vUp /= vScale.m_fY;
+	vForward /= vScale.m_fZ;
+	CKFMtx44 mtxRotation;
+	mtxRotation.m_af[0][0] = vRight.m_fX;
+	mtxRotation.m_af[0][1] = vRight.m_fY;
+	mtxRotation.m_af[0][2] = vRight.m_fZ;
+	mtxRotation.m_af[1][0] = vUp.m_fX;
+	mtxRotation.m_af[1][1] = vUp.m_fY;
+	mtxRotation.m_af[1][2] = vUp.m_fZ;
+	mtxRotation.m_af[2][0] = vForward.m_fX;
+	mtxRotation.m_af[2][1] = vForward.m_fY;
+	mtxRotation.m_af[2][2] = vForward.m_fZ;
+	qRot = CKFMath::MtxToQuaternion(mtxRotation);
+}
+
+//--------------------------------------------------------------------------------
 //  QuaternionToMtx
 //	
 //--------------------------------------------------------------------------------
