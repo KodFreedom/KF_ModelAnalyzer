@@ -513,8 +513,8 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 				ImGui::ListBox("Collider Type\n(single select)", (int*)&itr->Type, listbox_items, 3, 3);
 				
 				//Offset
-				ImGui::InputFloat3("Trans", &itr->Position.m_fX);
-				ImGui::SliderFloat3("Rot", &itr->Rotation.m_fX, 0.0f, KF_PI * 2.0f);
+				ImGui::InputFloat3("Translation", &itr->Position.m_fX);
+				ImGui::DragFloat3("Rotation", &itr->Rotation.m_fX, m_fRotSpeed, 0.0f, KF_PI * 2.0f);
 				ImGui::InputFloat3("Scale", &itr->Scale.m_fX);
 
 				if (itr->Type == CS::COL_SPHERE)
