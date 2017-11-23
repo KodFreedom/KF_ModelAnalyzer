@@ -20,6 +20,8 @@
 #include "rendererDX.h"
 #include "mode.h"
 #include "camera.h"
+#include "inputManager.h"
+#include "inputDX.h"
 
 //--------------------------------------------------------------------------------
 //  ƒNƒ‰ƒX
@@ -52,6 +54,7 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	, m_bPlayMotion(false)
 	, m_nCntFrame(0)
 	, m_nNoMotion(0)
+	, m_fRotSpeed(0.005f)
 {
 	m_strFileName.clear();
 }
@@ -112,7 +115,7 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 
 	m_pRootNode->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
 
-	if (m_pAnimator && m_bPlayMotion)
+	if (m_pAnimator)
 	{
 		m_pAnimator->UpdateClusterWorld();
 		m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
@@ -214,6 +217,7 @@ void CModelAnalyzerBehaviorComponent::SaveModel(const OutType& type)
 	MyModel model;
 	model.pAnimator = m_pAnimator;
 	model.pNode = m_pRootNode;
+	model.mapMaterial = m_mapMaterial;
 	if (CKFUtilityFBX::Save(model, m_strFileName, type))
 	{
 		m_bSaved = true;
@@ -276,17 +280,14 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	if (m_pRootNode)
 	{
 		if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
-	}
-	
-	// Animator Window
-	if (m_pAnimator)
-	{
-		if (ImGui::Button("Animator")) m_bAnimatorWindow ^= 1;
-	}
 
-	// Material Window
-	if (!m_mapMaterial.empty())
-	{
+		// Animator Window
+		if (m_pAnimator)
+		{
+			if (ImGui::Button("Animator")) m_bAnimatorWindow ^= 1;
+		}
+
+		// Material Window
 		if (ImGui::Button("Material")) m_bMaterialWindow ^= 1;
 	}
 
@@ -365,6 +366,9 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 		m_strFileName = buffer;
 	}
 
+	// RotSpeed
+	ImGui::InputFloat("RotationSpeed", &m_fRotSpeed);
+
 	// Reverse Tex V
 	if (ImGui::Checkbox("Reverse Texture V", &m_bReverseV))
 	{
@@ -400,9 +404,9 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Offset
-			if (ImGui::InputFloat3("Transform", &pNode->Translation.m_fX)) pNode->RecalculateLocal();
-			if (ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, 0.002f, 0.0f, KF_PI * 2.0f)) pNode->RecalculateLocal();
-			if (ImGui::InputFloat3("Scaling", &pNode->Scale.m_fX)) pNode->RecalculateLocal();
+			ImGui::InputFloat3("Transform", &pNode->Translation.m_fX);
+			ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, m_fRotSpeed, 0.0f, KF_PI * 2.0f);
+			ImGui::InputFloat3("Scaling", &pNode->Scale.m_fX);
 
 			//Mesh
 			if (!pNode->Meshes.empty() && ImGui::TreeNode("Mesh"))
@@ -416,6 +420,14 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 						//Info
 						ImGui::Text("NumPolygon : %d", mesh.PolygonNumber);
 						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.VertexNumber, mesh.IndexNumber);
+
+						//Material
+						char buffer[256] = {};
+						strcpy_s(buffer, mesh.MaterialName.c_str());
+						if (ImGui::InputText("MaterialName", buffer, 256))
+						{
+							mesh.MaterialName = buffer;
+						}
 
 						// Render Priority
 						static const char* listbox_rp[] =
@@ -501,8 +513,8 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 				ImGui::ListBox("Collider Type\n(single select)", (int*)&itr->Type, listbox_items, 3, 3);
 				
 				//Offset
-				ImGui::InputFloat3("Trans", &itr->Position.m_fX);
-				ImGui::SliderFloat3("Rot", &itr->Rotation.m_fX, 0.0f, KF_PI * 2.0f);
+				ImGui::InputFloat3("Translation", &itr->Position.m_fX);
+				ImGui::DragFloat3("Rotation", &itr->Rotation.m_fX, m_fRotSpeed, 0.0f, KF_PI * 2.0f);
 				ImGui::InputFloat3("Scale", &itr->Scale.m_fX);
 
 				if (itr->Type == CS::COL_SPHERE)
@@ -639,13 +651,15 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 
 	// Animation Current
 	auto& current = m_pAnimator->Motions[m_nNoMotion];
-	ImGui::Text("CurrentAnimation : %s", current.Name.c_str());
 	char buffer[256] = {};
 	strcpy_s(buffer, current.Name.c_str());
-	if (ImGui::InputText("EditName", buffer, 256))
+	if (ImGui::InputText("CurrentAnimationName", buffer, 256))
 	{
 		current.Name = buffer;
 	}
+
+	// Current Frame
+	ImGui::Text("Current Frame : %d", m_nCntFrame);
 
 	// Start Frame
 	int startFrame = current.StartFrame;
@@ -697,31 +711,87 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 		return;
 	}
 
-	for (auto& pair : m_mapMaterial)
+	if (ImGui::CollapsingHeader("Materials"))
 	{
-		if (ImGui::TreeNode(pair.first.c_str()))
+		for (auto& pair : m_mapMaterial)
 		{
-			ImGui::ColorEdit3("Diffuse", (float*)&pair.second.Diffuse);
-			ImGui::ColorEdit3("Ambient", (float*)&pair.second.Ambient);
-			ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
-			ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
-			ImGui::DragFloat("Power", &pair.second.Power);
-			ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
-			if (ImGui::Button("Change Diffuse Texture"))
+			if (ImGui::TreeNode(pair.first.c_str()))
 			{
-				changeTexture(pair.second.DiffuseTextureName);
+				ImGui::ColorEdit3("Diffuse", (float*)&pair.second.Diffuse);
+				ImGui::ColorEdit3("Ambient", (float*)&pair.second.Ambient);
+				ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
+				ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
+				ImGui::DragFloat("Power", &pair.second.Power);
+				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
+				if (ImGui::Button("Change Diffuse Texture"))
+				{
+					changeTexture(pair.second.DiffuseTextureName);
+				}
+				ImGui::Text("SpecularTexture : %s", pair.second.SpecularTextureName.c_str());
+				if (ImGui::Button("Change Specular Texture"))
+				{
+					changeTexture(pair.second.SpecularTextureName);
+				}
+				ImGui::Text("NormalTexture : %s", pair.second.NormalTextureName.c_str());
+				if (ImGui::Button("Change Normal Texture"))
+				{
+					changeTexture(pair.second.NormalTextureName);
+				}
+				ImGui::TreePop();
 			}
-			ImGui::Text("SpecularTexture : %s", pair.second.SpecularTextureName.c_str());
-			if (ImGui::Button("Change Specular Texture"))
+		}
+	}
+	
+	// Add Material
+	if (ImGui::CollapsingHeader("Add Material"))
+	{
+		static string name;
+		static Material material;
+
+		char buffer[256] = {};
+		strcpy_s(buffer, name.c_str());
+		if (ImGui::InputText("EditName", buffer, 256))
+		{
+			name = buffer;
+		}
+
+		ImGui::ColorEdit3("Diffuse", (float*)&material.Diffuse);
+		ImGui::ColorEdit3("Ambient", (float*)&material.Ambient);
+		ImGui::ColorEdit3("Specular", (float*)&material.Specular);
+		ImGui::ColorEdit3("Emissive", (float*)&material.Emissive);
+		ImGui::DragFloat("Power", &material.Power);
+		ImGui::Text("DiffuseTexture : %s", material.DiffuseTextureName.c_str());
+		if (ImGui::Button("Change Diffuse Texture"))
+		{
+			changeTexture(material.DiffuseTextureName);
+		}
+		ImGui::Text("SpecularTexture : %s", material.SpecularTextureName.c_str());
+		if (ImGui::Button("Change Specular Texture"))
+		{
+			changeTexture(material.SpecularTextureName);
+		}
+		ImGui::Text("NormalTexture : %s", material.NormalTextureName.c_str());
+		if (ImGui::Button("Change Normal Texture"))
+		{
+			changeTexture(material.NormalTextureName);
+		}
+
+		if (ImGui::Button("Add to Materials"))
+		{
+			m_mapMaterial.emplace(name, material);
+			if (material.DiffuseTextureName.empty())
 			{
-				changeTexture(pair.second.SpecularTextureName);
+				CMain::GetManager()->GetTextureManager()->UseTexture(material.DiffuseTextureName);
 			}
-			ImGui::Text("NormalTexture : %s", pair.second.NormalTextureName.c_str());
-			if (ImGui::Button("Change Normal Texture"))
-			{
-				changeTexture(pair.second.NormalTextureName);
-			}
-			ImGui::TreePop();
+			name.clear();
+			material.DiffuseTextureName.clear();
+			material.NormalTextureName.clear();
+			material.SpecularTextureName.clear();
+			material.Diffuse = CKFColor(1.0f);
+			material.Ambient = CKFColor(0.2f, 0.2f, 0.2f, 1.0f);
+			material.Specular = CKFColor(0.0f, 0.0f, 0.0f, 1.0f);
+			material.Emissive = CKFColor(0.0f, 0.0f, 0.0f, 1.0f);
+			material.Power = 1.0f;
 		}
 	}
 

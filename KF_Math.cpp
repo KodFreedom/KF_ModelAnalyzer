@@ -1273,6 +1273,23 @@ CKFMtx44 CKFMath::MtxTranspose(const CKFMtx44& mtx)
 }
 
 //--------------------------------------------------------------------------------
+//	MtxTransform
+//	çsóÒÇÃTransform
+//--------------------------------------------------------------------------------
+CKFMtx44 CKFMath::MtxTransform(const CKFVec3& translation, const CKFQuaternion& rotation, const CKFVec3& scale)
+{
+	CKFMtx44 result;
+	result.m_af[0][0] = scale.m_fX;
+	result.m_af[1][1] = scale.m_fY;
+	result.m_af[2][2] = scale.m_fZ;
+	result *= CKFMath::QuaternionToMtx(rotation);
+	CKFMtx44 mtxTrans;
+	CKFMath::MtxTranslation(mtxTrans, translation);
+	result *= mtxTrans;
+	return result;
+}
+
+//--------------------------------------------------------------------------------
 //  Quaternion
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------

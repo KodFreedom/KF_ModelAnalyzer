@@ -81,6 +81,7 @@ private:
 	unordered_map<string, Material>	m_mapMaterial;
 
 	//ImGui
+	float		m_fRotSpeed;
 	bool		m_bModelInfoWindow;
 	bool		m_bAnimatorWindow;
 	bool		m_bCameraWindow;

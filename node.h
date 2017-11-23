@@ -191,7 +191,6 @@ public:
 	CKFVec3			Scale;
 
 	// Matrix
-	CKFMtx44		Local;
 	CKFMtx44		World;
 
 	vector<Mesh>	Meshes;
@@ -210,7 +209,6 @@ public:
 	void RecursiveMatchClusterID(const Frame& initFrame);
 	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
-	void RecalculateLocal(void);
 
 private:
 	void analyzePoint(FbxMesh* pMesh);

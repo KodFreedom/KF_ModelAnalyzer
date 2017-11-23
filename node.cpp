@@ -121,7 +121,15 @@ void CMyNode::Release(void)
 //--------------------------------------------------------------------------------
 void CMyNode::RecursiveUpdateMatrix(const CKFMtx44& parent)
 {
-	World = Local;
+	CKFMath::MtxIdentity(World);
+	World.m_af[0][0] = Scale.m_fX;
+	World.m_af[1][1] = Scale.m_fY;
+	World.m_af[2][2] = Scale.m_fZ;
+	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
+	World *= CKFMath::QuaternionToMtx(rotation);
+	CKFMtx44 mtxPos;
+	CKFMath::MtxTranslation(mtxPos, Translation);
+	World *= mtxPos;
 	World *= parent;
 	for (auto pChild : Children)
 	{
@@ -237,7 +245,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 			renderState->SetRenderState();
 
 			// Material
-			if (!mesh.MaterialName.empty())
+			if (mapMaterial.find(mesh.MaterialName) != mapMaterial.end())
 			{
 				auto& material = mapMaterial.at(mesh.MaterialName);
 				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(material.DiffuseTextureName);
@@ -702,22 +710,6 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 }
 
 //--------------------------------------------------------------------------------
-//  RecalculateLocal
-//--------------------------------------------------------------------------------
-void CMyNode::RecalculateLocal(void)
-{
-	CKFMath::MtxIdentity(Local);
-	Local.m_af[0][0] = Scale.m_fX;
-	Local.m_af[1][1] = Scale.m_fY;
-	Local.m_af[2][2] = Scale.m_fZ;
-	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
-	Local *= CKFMath::QuaternionToMtx(rotation);
-	CKFMtx44 mtxPos;
-	CKFMath::MtxTranslation(mtxPos, Translation);
-	Local *= mtxPos;
-}
-
-//--------------------------------------------------------------------------------
 //
 //  Private
 //
@@ -894,23 +886,6 @@ void CMyNode::analyzeUV(FbxMesh* pMesh)
 		{
 			MessageBox(NULL, "マッピングモード非対応", "analyzeUV", MB_OK);
 		}
-
-		//else if (mappingMode == FbxLayerElement::eByControlPoint)
-		//{
-		//	if (referenceMode == FbxLayerElement::eDirect)
-		//	{
-		//		part.nNumVT = pElementUV->GetDirectArray().GetCount();
-		//		//int countIdx = pElementUV->GetIndexArray().GetCount();
-		//		part.UVs.resize(part.nNumVT);
-		//		for (int count = 0; count < part.nNumVT; count++)
-		//		{
-		//			int nIdx = pElementUV->GetIndexArray().GetAt(count);
-		//			part.UVs[count].m_fX = (float)pElementUV->GetDirectArray()[nIdx][0];
-		//			part.UVs[count].m_fY = (float)pElementUV->GetDirectArray()[nIdx][1];
-		//			part.vecIdx[count].nVt = count;
-		//		}
-		//	}
-		//}
 	}
 }
 
@@ -1015,6 +990,9 @@ void CMyNode::saveMeshJson(const Mesh& mesh, const string& meshName)
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
 
+	//Material
+	archive(make_nvp("MaterialName", mesh.MaterialName));
+
 	//Render Priority
 	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
 
@@ -1068,6 +1046,9 @@ void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
+
+	//Material
+	archive(make_nvp("MaterialName", mesh.MaterialName));
 
 	//Render Priority
 	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
@@ -1123,6 +1104,11 @@ void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 
+	//Material
+	int nameSize = (int)mesh.MaterialName.size();
+	archive.saveBinary(&nameSize, sizeof(int));
+	archive.saveBinary(&mesh.MaterialName[0], nameSize);
+
 	//Render Priority
 	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));
 
@@ -1169,6 +1155,11 @@ void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
+
+	//Material
+	int nameSize = (int)mesh.MaterialName.size();
+	archive.saveBinary(&nameSize, sizeof(int));
+	archive.saveBinary(&mesh.MaterialName[0], nameSize);
 
 	//Render Priority
 	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));

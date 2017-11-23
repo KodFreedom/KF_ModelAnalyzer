@@ -1,6 +1,7 @@
 {
+    "MaterialName": "test",
     "RenderPriority": 0,
-    "RenderStateType": 3,
+    "RenderStateType": 0,
     "DrawType": 4,
     "VertexNumber": 98,
     "IndexNumber": 240,
