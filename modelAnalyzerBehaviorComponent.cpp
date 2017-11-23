@@ -650,41 +650,78 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	arr = nullptr;
 
 	// Animation Current
-	auto& current = m_pAnimator->Motions[m_nNoMotion];
-	char buffer[256] = {};
-	strcpy_s(buffer, current.Name.c_str());
-	if (ImGui::InputText("CurrentAnimationName", buffer, 256))
+	if (ImGui::CollapsingHeader("CurrentAnimation"))
 	{
-		current.Name = buffer;
-	}
-
-	// Current Frame
-	ImGui::Text("Current Frame : %d", m_nCntFrame);
-
-	// Start Frame
-	int startFrame = current.StartFrame;
-	if (ImGui::InputInt("StartFrame", &startFrame))
-	{
-		if (startFrame <= current.EndFrame)
+		auto& current = m_pAnimator->Motions[m_nNoMotion];
+		char buffer[256] = {};
+		strcpy_s(buffer, current.Name.c_str());
+		if (ImGui::InputText("Name", buffer, 256))
 		{
-			current.StartFrame = startFrame;
+			current.Name = buffer;
 		}
-	}
 
-	// End Frame
-	int endFrame = current.EndFrame;
-	if (ImGui::InputInt("EndFrame", &endFrame))
-	{
-		if (endFrame >= current.StartFrame)
+		// Current Frame
+		ImGui::Text("Current Frame : %d", m_nCntFrame);
+
+		// Start Frame
+		int startFrame = current.StartFrame;
+		if (ImGui::InputInt("StartFrame", &startFrame))
 		{
-			current.EndFrame = endFrame;
+			if (startFrame <= current.EndFrame)
+			{
+				current.StartFrame = startFrame;
+			}
 		}
-	}
 
-	// Delete Frame that out of range
-	if (ImGui::Button("Delete out of range frames"))
-	{
-		m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
+		// End Frame
+		int endFrame = current.EndFrame;
+		if (ImGui::InputInt("EndFrame", &endFrame))
+		{
+			if (endFrame >= current.StartFrame)
+			{
+				current.EndFrame = endFrame;
+			}
+		}
+
+		// Delete Frame that out of range
+		if (ImGui::Button("Delete out of range frames"))
+		{
+			m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
+		}
+
+		// StateMachine
+		if (ImGui::CollapsingHeader("Edit StateMachine"))
+		{
+			ImGui::Checkbox("IsLoop", &current.IsLoop);
+
+			for (auto iterator = current.Translations.begin(); iterator != current.Translations.end())
+			{
+				if (!ImGui::TreeNode("Translation"))
+				{
+					char nameBuffer[256] = {};
+					strcpy_s(nameBuffer, iterator->NextMotion.c_str());
+					if (ImGui::InputText("NextAnimationName", nameBuffer, 256))
+					{
+						iterator->NextMotion = nameBuffer;
+					}
+
+					// Delete
+					if (ImGui::Button("Delete Animation"))
+					{
+						iterator = current.Translations.erase(iterator);
+					}
+					else
+					{
+						++iterator;
+					}
+					ImGui::TreePop();
+				}
+			}
+
+			// Todo : Add Translation
+		}
+
+		// Todo : Delete Animation
 	}
 
 	// AddAnimation

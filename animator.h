@@ -17,6 +17,23 @@
 class CMyNode;
 
 //--------------------------------------------------------------------------------
+//  óÒãìå^íËã`
+//--------------------------------------------------------------------------------
+enum eParameterType
+{
+	eBool,
+	eFloat
+};
+
+enum eFloatOperator
+{
+	fEqual,
+	fNotEqual,
+	fGreater,
+	fLess,
+};
+
+//--------------------------------------------------------------------------------
 //  ç\ë¢ëÃíËã`
 //--------------------------------------------------------------------------------
 struct BoneFrame
@@ -48,6 +65,22 @@ struct Frame
 	}
 };
 
+struct Condition
+{
+	Condition() : ParameterType(eBool), BoolValue(true), FloatOperator(fEqual), FloatValue(0.0f) {}
+	eParameterType	ParameterType;
+	string			ParameterName;
+	bool			BoolValue;
+	eFloatOperator	FloatOperator;
+	float			FloatValue;
+};
+
+struct StateTranslation
+{
+	string				NextMotion;
+	list<Condition>		Conditions;
+};
+
 struct Motion
 {
 	Motion() : StartFrame(0), EndFrame(0), IsLoop(true)
@@ -55,11 +88,12 @@ struct Motion
 		Name.clear();
 		Frames.clear();
 	}
-	string			Name;
-	vector<Frame>	Frames;
-	int				StartFrame;
-	int				EndFrame;
-	bool			IsLoop;
+	string					Name;
+	vector<Frame>			Frames;
+	int						StartFrame;
+	int						EndFrame;
+	bool					IsLoop;
+	list<StateTranslation>	Translations;
 
 	template <class Archive>
 	void serialize(Archive & ar)
