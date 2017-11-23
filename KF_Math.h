@@ -338,6 +338,7 @@ public:
 	static void				MtxTranslation(CKFMtx44& mtxTrans, const CKFVec3& vPos);
 	static CKFMtx44			MtxTranspose(const CKFMtx44& mtx);
 	static void				MtxToTransRotScale(const CKFMtx44& mtx, CKFVec3& vTrans, CKFQuaternion& qRot, CKFVec3& vScale);
+	static CKFMtx44			MtxTransform(const CKFVec3& translation, const CKFQuaternion& rotation, const CKFVec3& scale);
 
 #ifdef USING_DIRECTX
 	static CKFMtx44			ChangeDXMtxToMtx44(const D3DXMATRIX& mtx);

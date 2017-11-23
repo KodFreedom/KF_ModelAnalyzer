@@ -466,8 +466,8 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 	if (!pNode) { return NULL; }
 	auto pMyNode = new CMyNode;
 	pMyNode->Name = pNode->GetName();
-	pMyNode->Local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
-	CKFMath::MtxToTransRotScale(pMyNode->Local, pMyNode->Translation, pMyNode->Rotation, pMyNode->Scale);
+	auto& local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
+	CKFMath::MtxToTransRotScale(local, pMyNode->Translation, pMyNode->Rotation, pMyNode->Scale);
 
 	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
 	{
@@ -518,32 +518,32 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 		if (classId.Is(FbxSurfaceLambert::ClassId))
 		{
 			FbxSurfaceLambert* pLambert = (FbxSurfaceLambert*)pMaterial;
-			material.Ambient.m_fR = pLambert->Ambient.Get()[0];
-			material.Ambient.m_fG = pLambert->Ambient.Get()[1];
-			material.Ambient.m_fB = pLambert->Ambient.Get()[2];
-			material.Diffuse.m_fR = pLambert->Diffuse.Get()[0];
-			material.Diffuse.m_fG = pLambert->Diffuse.Get()[1];
-			material.Diffuse.m_fB = pLambert->Diffuse.Get()[2];
-			material.Emissive.m_fR = pLambert->Emissive.Get()[0];
-			material.Emissive.m_fG = pLambert->Emissive.Get()[1];
-			material.Emissive.m_fB = pLambert->Emissive.Get()[2];
+			material.Ambient.m_fR = (float)pLambert->Ambient.Get()[0];
+			material.Ambient.m_fG = (float)pLambert->Ambient.Get()[1];
+			material.Ambient.m_fB = (float)pLambert->Ambient.Get()[2];
+			material.Diffuse.m_fR = (float)pLambert->Diffuse.Get()[0];
+			material.Diffuse.m_fG = (float)pLambert->Diffuse.Get()[1];
+			material.Diffuse.m_fB = (float)pLambert->Diffuse.Get()[2];
+			material.Emissive.m_fR = (float)pLambert->Emissive.Get()[0];
+			material.Emissive.m_fG = (float)pLambert->Emissive.Get()[1];
+			material.Emissive.m_fB = (float)pLambert->Emissive.Get()[2];
 		}
 		else if (classId.Is(FbxSurfacePhong::ClassId))
 		{
 			FbxSurfacePhong* pPhong = (FbxSurfacePhong*)pMaterial;
-			material.Ambient.m_fR = pPhong->Ambient.Get()[0];
-			material.Ambient.m_fG = pPhong->Ambient.Get()[1];
-			material.Ambient.m_fB = pPhong->Ambient.Get()[2];
-			material.Diffuse.m_fR = pPhong->Diffuse.Get()[0];
-			material.Diffuse.m_fG = pPhong->Diffuse.Get()[1];
-			material.Diffuse.m_fB = pPhong->Diffuse.Get()[2];
-			material.Emissive.m_fR = pPhong->Emissive.Get()[0];
-			material.Emissive.m_fG = pPhong->Emissive.Get()[1];
-			material.Emissive.m_fB = pPhong->Emissive.Get()[2];
-			material.Specular.m_fR = pPhong->Specular.Get()[0];
-			material.Specular.m_fG = pPhong->Specular.Get()[1];
-			material.Specular.m_fB = pPhong->Specular.Get()[2];
-			material.Power = pPhong->Shininess.Get();
+			material.Ambient.m_fR = (float)pPhong->Ambient.Get()[0];
+			material.Ambient.m_fG = (float)pPhong->Ambient.Get()[1];
+			material.Ambient.m_fB = (float)pPhong->Ambient.Get()[2];
+			material.Diffuse.m_fR = (float)pPhong->Diffuse.Get()[0];
+			material.Diffuse.m_fG = (float)pPhong->Diffuse.Get()[1];
+			material.Diffuse.m_fB = (float)pPhong->Diffuse.Get()[2];
+			material.Emissive.m_fR = (float)pPhong->Emissive.Get()[0];
+			material.Emissive.m_fG = (float)pPhong->Emissive.Get()[1];
+			material.Emissive.m_fB = (float)pPhong->Emissive.Get()[2];
+			material.Specular.m_fR = (float)pPhong->Specular.Get()[0];
+			material.Specular.m_fG = (float)pPhong->Specular.Get()[1];
+			material.Specular.m_fB = (float)pPhong->Specular.Get()[2];
+			material.Power = (float)pPhong->Shininess.Get();
 		}
 
 		// マテリアルの、ディフューズのプロパティを取得する。
@@ -576,9 +576,11 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 		{
 			// マテリアルのインプリメンテーションを取得する。
 			auto pImplementation = GetImplementation(pMaterial, FBXSDK_IMPLEMENTATION_CGFX);
+			if (!pImplementation) return;
 
 			// インプリメンテーションのルートテーブルを取得する。
 			auto pRootTable = pImplementation->GetRootTable();
+			if (!pRootTable) return;
 
 			// ルートテーブルのエントリー数を取得する
 			size_t entryCount = pRootTable->GetEntryCount();
@@ -725,7 +727,11 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 					}
 				}
 				frame.BoneFrames[clusterNo].Name = name;
-				frame.BoneFrames[clusterNo].Matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
+				auto& matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
+				CKFMath::MtxToTransRotScale(matrix, 
+					frame.BoneFrames[clusterNo].Translation, 
+					frame.BoneFrames[clusterNo].Rotation,
+					frame.BoneFrames[clusterNo].Scale);
 			}
 			motion.Frames.push_back(frame);
 		}

@@ -21,13 +21,17 @@ class CMyNode;
 //--------------------------------------------------------------------------------
 struct BoneFrame
 {
-	string		Name;
-	CKFMtx44	Matrix;
+	string			Name;
+	CKFVec3			Translation;
+	CKFQuaternion	Rotation;
+	CKFVec3			Scale;
 
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Matrix", Matrix));
+		ar(make_nvp("Translation", Translation)
+			, make_nvp("Rotation", Rotation)
+			, make_nvp("Scale", Scale));
 	}
 };
 

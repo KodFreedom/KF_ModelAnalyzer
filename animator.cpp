@@ -22,7 +22,9 @@ void CAnimator::UpdateBones(const Frame& current)
 {
 	for (int count = 0; count < (int)Clusters.size(); ++count)
 	{
-		Clusters[count].Node->Local = current.BoneFrames[count].Matrix;
+		Clusters[count].Node->Translation = current.BoneFrames[count].Translation;
+		Clusters[count].Node->Rotation = current.BoneFrames[count].Rotation;
+		Clusters[count].Node->Scale = current.BoneFrames[count].Scale;
 	}
 }
 
@@ -154,7 +156,9 @@ void CAnimator::saveAsBinary(const Motion& motion)
 		archive.saveBinary(&boneFrameNumber, sizeof(int));
 		for (auto& boneFrame : frame.BoneFrames)
 		{
-			archive.saveBinary(&boneFrame.Matrix, sizeof(CKFMtx44));
+			archive.saveBinary(&boneFrame.Translation, sizeof(CKFVec3));
+			archive.saveBinary(&boneFrame.Rotation, sizeof(CKFQuaternion));
+			archive.saveBinary(&boneFrame.Scale, sizeof(CKFVec3));
 		}
 	}
 	file.close();
