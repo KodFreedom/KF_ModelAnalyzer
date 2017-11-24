@@ -569,7 +569,7 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 				CKFUtility::CorrectTexType(type);
 				name += '.' + type;
 				material.DiffuseTextureName = name;
-				//break;
+				break;
 			}
 		}
 		else

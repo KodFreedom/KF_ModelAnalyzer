@@ -24,9 +24,6 @@
 #include "inputDX.h"
 
 //--------------------------------------------------------------------------------
-//  クラス
-//--------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------
 //
 //  Public
 //
@@ -263,7 +260,7 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	auto cBGColor = pRenderer->GetBGColor();
 
 	// Begin
-	if (!ImGui::Begin("Model Analyzer Main Window"))
+	if (!ImGui::Begin("MainWindow"))
 	{
 		ImGui::End();
 		return;
@@ -273,31 +270,42 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	// BG Color
-	ImGui::ColorEdit3("BG Color", (float*)&cBGColor);
+	ImGui::ColorEdit3("Background color", (float*)&cBGColor);
 	pRenderer->SetBGColor(cBGColor);
 
 	// Model Window
 	if (m_pRootNode)
 	{
-		if (ImGui::Button("Model Info")) m_bModelInfoWindow ^= 1;
+		if (ImGui::Button(m_bModelInfoWindow ? 
+			"Close model window" :
+			"Open model window")) m_bModelInfoWindow ^= 1;
 
 		// Animator Window
 		if (m_pAnimator)
 		{
-			if (ImGui::Button("Animator")) m_bAnimatorWindow ^= 1;
+			if (ImGui::Button(m_bAnimatorWindow ?
+				"Close animator window" :
+				"Open animator window")) m_bAnimatorWindow ^= 1;
 		}
 
 		// Material Window
-		if (ImGui::Button("Material")) m_bMaterialWindow ^= 1;
+		if (ImGui::Button(m_bMaterialWindow ?
+			"Close material window" :
+			"Open material window")) m_bMaterialWindow ^= 1;
 	}
 
 	// Camera Window
-	if (ImGui::Button("Camera")) m_bCameraWindow ^= 1;
+	if (ImGui::Button(m_bCameraWindow ?
+		"Close camera window" :
+		"Open camera window")) m_bCameraWindow ^= 1;
 
 	// DrawFlag
-	if (ImGui::Button("Draw Skeleton")) m_bDrawSkeleton ^= 1;
-	if (ImGui::Button("Draw Mesh")) m_bDrawMesh ^= 1;
-	if (ImGui::Button("Draw Collider")) m_bDrawCollider ^= 1;
+	if (ImGui::Button(m_bDrawSkeleton ? 
+		"Disdraw skeleton" : "Draw skeleton")) m_bDrawSkeleton ^= 1;
+	if (ImGui::Button(m_bDrawMesh ?
+		"Disdraw mesh" : "Draw mesh")) m_bDrawMesh ^= 1;
+	if (ImGui::Button(m_bDrawCollider ?
+		"Disdraw collider" : "Draw collider")) m_bDrawCollider ^= 1;
 
 	// End
 	ImGui::End();
@@ -324,7 +332,7 @@ void CModelAnalyzerBehaviorComponent::showMainMenuBar(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 {
-	if (ImGui::MenuItem("Open Model File")) 
+	if (ImGui::MenuItem("Open model file")) 
 	{
 		string strFileName;
 		if (CMain::OpenModelFile(strFileName))
@@ -332,11 +340,11 @@ void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 			ChangeModel(strFileName);
 		}
 	}
-	if (ImGui::MenuItem("Save As Json")) 
+	if (ImGui::MenuItem("Save as Json")) 
 	{
 		SaveModel(Json);
 	}
-	if (ImGui::MenuItem("Save As Binary"))
+	if (ImGui::MenuItem("Save as Binary"))
 	{
 		SaveModel(Binary);
 	}
@@ -350,18 +358,16 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 	if (!m_bModelInfoWindow) return;
 
 	// Begin
-	if (!ImGui::Begin("Model Info Window", &m_bModelInfoWindow))
+	if (!ImGui::Begin("ModelInfoWindow", &m_bModelInfoWindow))
 	{
 		ImGui::End();
 		return;
 	}
 
 	// Model Name
-	string strBuf = "Model Name : " + m_strFileName;
-	ImGui::Text(strBuf.c_str());
-	char buffer[256] = {};
+	char buffer[bufferSize] = {};
 	strcpy_s(buffer, m_strFileName.c_str());
-	if (ImGui::InputText("EditName", buffer, 256))
+	if (ImGui::InputText("Name", buffer, bufferSize))
 	{
 		m_strFileName = buffer;
 	}
@@ -370,7 +376,7 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 	ImGui::InputFloat("RotationSpeed", &m_fRotSpeed);
 
 	// Reverse Tex V
-	if (ImGui::Checkbox("Reverse Texture V", &m_bReverseV))
+	if (ImGui::Checkbox("Reverse TextureV", &m_bReverseV))
 	{
 		if (m_pRootNode) { m_pRootNode->RecursiveReverseTexV(); }
 	}
@@ -418,13 +424,13 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
 						//Info
-						ImGui::Text("NumPolygon : %d", mesh.PolygonNumber);
-						ImGui::Text("NumVtx : %d  NumIdx : %d", mesh.VertexNumber, mesh.IndexNumber);
+						ImGui::Text("PolygonNumber : %d", mesh.PolygonNumber);
+						ImGui::Text("VertexNumber : %d  IndexNumber : %d", mesh.VertexNumber, mesh.IndexNumber);
 
 						//Material
-						char buffer[256] = {};
+						char buffer[bufferSize] = {};
 						strcpy_s(buffer, mesh.MaterialName.c_str());
-						if (ImGui::InputText("MaterialName", buffer, 256))
+						if (ImGui::InputText("MaterialName", buffer, bufferSize))
 						{
 							mesh.MaterialName = buffer;
 						}
@@ -451,7 +457,11 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Collider
-			ImGui::Text("Collider : %d", (int)pNode->Colliders.size());
+			if (!pNode->Colliders.empty() && ImGui::TreeNode("Collider"))
+			{
+				ImGui::Text("Collider : %d", (int)pNode->Colliders.size());
+				ImGui::TreePop();
+			}
 
 			//Edit
 			if (!m_pNodeNow && ImGui::Button("Edit Node"))
@@ -552,7 +562,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 	}
 
 	// Fix Vtx
-	if (ImGui::CollapsingHeader("Fix Vtx"))
+	if (ImGui::CollapsingHeader("Fix Verteces"))
 	{
 		//Offset
 		ImGui::InputFloat3("Fixed Trans", &m_vNodeNowCorrectTrans.m_fX);
@@ -560,7 +570,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 		ImGui::InputFloat3("Fixed Scale", &m_vNodeNowCorrectScale.m_fX);
 
 		// Recalculate By Mtx
-		if (ImGui::Button("Fix Vertex"))
+		if (ImGui::Button("Fix Verteces"))
 		{
 			CKFMtx44 mtxThis;
 
@@ -650,82 +660,10 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 	arr = nullptr;
 
 	// Animation Current
-	if (ImGui::CollapsingHeader("CurrentAnimation"))
-	{
-		auto& current = m_pAnimator->Motions[m_nNoMotion];
-		char buffer[256] = {};
-		strcpy_s(buffer, current.Name.c_str());
-		if (ImGui::InputText("Name", buffer, 256))
-		{
-			current.Name = buffer;
-		}
-
-		// Current Frame
-		ImGui::Text("Current Frame : %d", m_nCntFrame);
-
-		// Start Frame
-		int startFrame = current.StartFrame;
-		if (ImGui::InputInt("StartFrame", &startFrame))
-		{
-			if (startFrame <= current.EndFrame)
-			{
-				current.StartFrame = startFrame;
-			}
-		}
-
-		// End Frame
-		int endFrame = current.EndFrame;
-		if (ImGui::InputInt("EndFrame", &endFrame))
-		{
-			if (endFrame >= current.StartFrame)
-			{
-				current.EndFrame = endFrame;
-			}
-		}
-
-		// Delete Frame that out of range
-		if (ImGui::Button("Delete out of range frames"))
-		{
-			m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
-		}
-
-		// StateMachine
-		if (ImGui::CollapsingHeader("Edit StateMachine"))
-		{
-			ImGui::Checkbox("IsLoop", &current.IsLoop);
-
-			for (auto iterator = current.Translations.begin(); iterator != current.Translations.end())
-			{
-				if (!ImGui::TreeNode("Translation"))
-				{
-					char nameBuffer[256] = {};
-					strcpy_s(nameBuffer, iterator->NextMotion.c_str());
-					if (ImGui::InputText("NextAnimationName", nameBuffer, 256))
-					{
-						iterator->NextMotion = nameBuffer;
-					}
-
-					// Delete
-					if (ImGui::Button("Delete Animation"))
-					{
-						iterator = current.Translations.erase(iterator);
-					}
-					else
-					{
-						++iterator;
-					}
-					ImGui::TreePop();
-				}
-			}
-
-			// Todo : Add Translation
-		}
-
-		// Todo : Delete Animation
-	}
+	showCurrentAnimationWindow();
 
 	// AddAnimation
-	if (ImGui::Button("Add Animation"))
+	if (ImGui::Button("Add animation"))
 	{
 		addAnimation();
 	}
@@ -758,7 +696,7 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 				ImGui::ColorEdit3("Ambient", (float*)&pair.second.Ambient);
 				ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
 				ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
-				ImGui::DragFloat("Power", &pair.second.Power);
+				ImGui::InputFloat("Power", &pair.second.Power);
 				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
 				if (ImGui::Button("Change Diffuse Texture"))
 				{
@@ -785,9 +723,9 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 		static string name;
 		static Material material;
 
-		char buffer[256] = {};
+		char buffer[bufferSize] = {};
 		strcpy_s(buffer, name.c_str());
-		if (ImGui::InputText("EditName", buffer, 256))
+		if (ImGui::InputText("EditName", buffer, bufferSize))
 		{
 			name = buffer;
 		}
@@ -868,6 +806,191 @@ void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
 
 	// End
 	ImGui::End();
+}
+
+//--------------------------------------------------------------------------------
+// showCurrentAnimationWindow
+//--------------------------------------------------------------------------------
+void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
+{
+	if (ImGui::CollapsingHeader("CurrentAnimation"))
+	{
+		auto& current = m_pAnimator->Motions[m_nNoMotion];
+		
+		// 名前
+		char buffer[bufferSize] = {};
+		strcpy_s(buffer, current.Name.c_str());
+		if (ImGui::InputText("Name", buffer, bufferSize))
+		{
+			current.Name = buffer;
+		}
+
+		// 今のフレーム
+		ImGui::Text("Current Frame : %d", m_nCntFrame);
+
+		// フレーム編集
+		if (ImGui::TreeNode("Edit Frame"))
+		{
+			// Start Frame
+			int startFrame = current.StartFrame;
+			if (ImGui::InputInt("StartFrame", &startFrame))
+			{
+				if (startFrame <= current.EndFrame)
+				{
+					current.StartFrame = startFrame;
+				}
+			}
+
+			// End Frame
+			int endFrame = current.EndFrame;
+			if (ImGui::InputInt("EndFrame", &endFrame))
+			{
+				if (endFrame >= current.StartFrame)
+				{
+					current.EndFrame = endFrame;
+				}
+			}
+
+			// Delete Frame that out of range
+			if (ImGui::Button("Delete out of range frames"))
+			{
+				m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
+			}
+
+			ImGui::TreePop();
+		}
+
+		// モーション切り替え設定
+		if (ImGui::TreeNode("StateTransision"))
+		{
+			ImGui::Checkbox("IsLoop", &current.IsLoop);
+
+			for (auto iterator = current.Transisions.begin(); iterator != current.Transisions.end();)
+			{
+				bool isDeleteTransision = false;
+				if (ImGui::TreeNode("Transision"))
+				{
+					// 次のモーション名
+					char nameBuffer[bufferSize] = {};
+					strcpy_s(nameBuffer, iterator->NextMotion.c_str());
+					if (ImGui::InputText("NextAnimationName", nameBuffer, bufferSize))
+					{
+						iterator->NextMotion = nameBuffer;
+					}
+
+					// 条件
+					for (auto itrCondition = iterator->Conditions.begin(); itrCondition != iterator->Conditions.end();)
+					{
+						bool isDeleteCondition = false;
+						if (ImGui::TreeNode("Condition"))
+						{
+							// 条件変数の型
+							const char* listboxType[] =
+							{
+								"bool",
+								"float",
+							};
+							ImGui::ListBox("ParameterType\n(single select)", (int*)&itrCondition->ParameterType, listboxType, 2, 2);
+
+							// 条件変数名
+							char parameterNameBuffer[bufferSize] = {};
+							strcpy_s(parameterNameBuffer, itrCondition->ParameterName.c_str());
+							if (ImGui::InputText("ParameterName", parameterNameBuffer, bufferSize))
+							{
+								itrCondition->ParameterName = parameterNameBuffer;
+							}
+
+							// オペレーター
+							if (itrCondition->ParameterType == eParameterType::eFloat)
+							{
+								const char* listboxOperator[] =
+								{
+									"equal",
+									"notEqual",
+									"greater",
+									"less"
+								};
+								ImGui::ListBox("Operator\n(single select)", (int*)&itrCondition->ParameterType, listboxOperator, 4, 4);
+							}
+
+							// 値
+							switch (itrCondition->ParameterType)
+							{
+							case eParameterType::eBool:
+							{
+								const char* listboxValue[] =
+								{
+									"isFalse",
+									"isTrue",
+								};
+								ImGui::ListBox("Value\n(single select)", (int*)&itrCondition->BoolValue, listboxValue, 2, 2);
+								break;
+							}
+							case eParameterType::eFloat:
+							{
+								ImGui::InputFloat("Value", &itrCondition->FloatValue);
+								break;
+							}
+							}
+
+							// 条件の削除
+							if (ImGui::Button("Delete Condition"))
+							{
+								isDeleteCondition = true;
+							}
+							ImGui::TreePop();
+						}
+
+						// Count iterator
+						if (isDeleteCondition)
+						{
+							itrCondition = iterator->Conditions.erase(itrCondition);
+						}
+						else
+						{
+							++itrCondition;
+						}
+					}
+
+					// 条件の追加
+					if (ImGui::Button("Add Condition"))
+					{
+						iterator->Conditions.push_back(Condition());
+					}
+
+					// 切り替えの削除
+					if (ImGui::Button("Delete transision"))
+					{
+						isDeleteTransision = true;
+					}
+					ImGui::TreePop();
+				}
+
+				// Count iterator
+				if (isDeleteTransision)
+				{
+					iterator = current.Transisions.erase(iterator);
+				}
+				else
+				{
+					++iterator;
+				}
+			}
+
+			// 切り替えの追加
+			if (ImGui::Button("Add transision"))
+			{
+				current.Transisions.push_back(StateTransision());
+			}
+			ImGui::TreePop();
+		}
+
+		// Todo : Delete Animation
+		//if (ImGui::Button("Delete animation"))
+		//{
+		//
+		//}
+	}
 }
 
 //--------------------------------------------------------------------------------

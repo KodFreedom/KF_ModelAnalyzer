@@ -75,7 +75,7 @@ struct Condition
 	float			FloatValue;
 };
 
-struct StateTranslation
+struct StateTransision
 {
 	string				NextMotion;
 	list<Condition>		Conditions;
@@ -93,7 +93,7 @@ struct Motion
 	int						StartFrame;
 	int						EndFrame;
 	bool					IsLoop;
-	list<StateTranslation>	Translations;
+	list<StateTransision>	Transisions;
 
 	template <class Archive>
 	void serialize(Archive & ar)

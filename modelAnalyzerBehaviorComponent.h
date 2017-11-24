@@ -50,6 +50,11 @@ public:
 
 private:
 	//--------------------------------------------------------------------------------
+	//  íËêîíËã`
+	//--------------------------------------------------------------------------------
+	static const int bufferSize = 64;
+
+	//--------------------------------------------------------------------------------
 	//  ä÷êîíËã`
 	//--------------------------------------------------------------------------------
 	void		releaseModel(void);
@@ -64,6 +69,7 @@ private:
 	void		showAnimatorWindow(void);
 	void		showCameraWindow(void);
 	void		showMaterialWindow(void);
+	void		showCurrentAnimationWindow(void);
 	void		changeTexture(string& meshTexture);
 	void		addAnimation(void);
 

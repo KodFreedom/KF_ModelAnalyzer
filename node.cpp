@@ -285,8 +285,6 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 			// 頂点フォーマットの設定
 			pDevice->SetFVF(FVF_VERTEX_3D);
 
-		
-
 			//プリミティブ描画
 			pDevice->DrawIndexedPrimitive(
 				D3DPT_TRIANGLELIST,
