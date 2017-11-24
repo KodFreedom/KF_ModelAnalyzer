@@ -33,27 +33,27 @@
 //--------------------------------------------------------------------------------
 CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* const pGameObj)
 	: CBehaviorComponent(pGameObj)
-	, m_bDrawSkeleton(true)
-	, m_bDrawMesh(true)
-	, m_bDrawCollider(true)
-	, m_bReverseV(false)
-	, m_bSaved(false)
-	, m_pRootNode(nullptr)
-	, m_pAnimator(nullptr)
-	, m_bModelInfoWindow(false)
-	, m_bAnimatorWindow(false)
-	, m_bCameraWindow(false)
-	, m_bMaterialWindow(false)
-	, m_pNodeNow(nullptr)
-	, m_vNodeNowCorrectTrans(CKFMath::sc_vZero)
-	, m_vNodeNowCorrectRot(CKFMath::sc_vZero)
-	, m_vNodeNowCorrectScale(CKFMath::sc_vOne)
-	, m_bPlayMotion(false)
-	, m_nCntFrame(0)
-	, m_nNoMotion(0)
-	, m_fRotSpeed(0.005f)
+	, is_render_skeletons_(true)
+	, is_render_meshes_(true)
+	, is_render_colliders_(true)
+	, is_reserve_texcoordv_(false)
+	, is_saved_(false)
+	, root_node_(nullptr)
+	, animator_(nullptr)
+	, is_display_model_window_(false)
+	, is_display_animator_window_(false)
+	, is_display_camera_window_(false)
+	, is_display_material_window_(false)
+	, current_node_(nullptr)
+	, current_node_correct_translation_(CKFMath::sc_vZero)
+	, current_node_correct_rotation_(CKFMath::sc_vZero)
+	, current_node_correct_scale_(CKFMath::sc_vOne)
+	, is_playing_motion_(false)
+	, current_frame_(0)
+	, motion_no_(0)
+	, rotation_speed_(0.005f)
 {
-	m_strFileName.clear();
+	file_name_.clear();
 }
 
 //--------------------------------------------------------------------------------
@@ -61,19 +61,19 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 //--------------------------------------------------------------------------------
 bool CModelAnalyzerBehaviorComponent::Init(void)
 {
-	m_strFileName.clear();
-	m_bSaved = false;
-	m_bReverseV = false;
-	m_bModelInfoWindow = false;
-	m_bAnimatorWindow = false;
-	m_bCameraWindow = false;
-	m_bMaterialWindow = false;
-	m_bPlayMotion = false;
-	m_nCntFrame = 0;
-	m_nNoMotion = 0;
-	m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
-	m_vNodeNowCorrectRot = CKFMath::sc_vZero;
-	m_vNodeNowCorrectScale = CKFMath::sc_vOne;
+	file_name_.clear();
+	is_saved_ = false;
+	is_reserve_texcoordv_ = false;
+	is_display_model_window_ = false;
+	is_display_animator_window_ = false;
+	is_display_camera_window_ = false;
+	is_display_material_window_ = false;
+	is_playing_motion_ = false;
+	current_frame_ = 0;
+	motion_no_ = 0;
+	current_node_correct_translation_ = CKFMath::sc_vZero;
+	current_node_correct_rotation_ = CKFMath::sc_vZero;
+	current_node_correct_scale_ = CKFMath::sc_vOne;
 	auto pTrans = m_pGameObj->GetTransformComponent();
 	pTrans->SetPosNext(CKFMath::sc_vZero);
 	pTrans->SetForwardNext(CKFMath::sc_vForward);
@@ -92,7 +92,7 @@ bool CModelAnalyzerBehaviorComponent::Init(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::Uninit(void)
 {
-	releaseModel();
+	ReleaseModel();
 }
 
 //--------------------------------------------------------------------------------
@@ -100,22 +100,22 @@ void CModelAnalyzerBehaviorComponent::Uninit(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::Update(void)
 {
-	if (!m_pRootNode) return;
+	if (!root_node_) return;
 
-	if (m_pAnimator && m_bPlayMotion)
+	if (animator_ && is_playing_motion_)
 	{
-		auto& motion = m_pAnimator->Motions[m_nNoMotion];
-		auto& avatar = motion.Frames[m_nCntFrame];
-		m_pAnimator->UpdateBones(avatar);
-		m_nCntFrame = (m_nCntFrame - motion.StartFrame + 1) % (motion.EndFrame - motion.StartFrame) + motion.StartFrame;
+		auto& motion = animator_->Motions[motion_no_];
+		auto& avatar = motion.Frames[current_frame_];
+		animator_->UpdateBones(avatar);
+		current_frame_ = (current_frame_ - motion.StartFrame + 1) % (motion.EndFrame - motion.StartFrame) + motion.StartFrame;
 	}
 
-	m_pRootNode->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
+	root_node_->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
 
-	if (m_pAnimator)
+	if (animator_)
 	{
-		m_pAnimator->UpdateClusterWorld();
-		m_pRootNode->RecursiveUpdateSkin(m_pAnimator->Clusters);
+		animator_->UpdateClusterWorld();
+		root_node_->RecursiveUpdateSkin(animator_->Clusters);
 	}
 }
 
@@ -125,25 +125,25 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 void CModelAnalyzerBehaviorComponent::LateUpdate(void)
 {
 	// Menu
-	showMainMenuBar();
+	ShowMainMenuBar();
 
 	// Main Window
-	showMainWindow();
+	ShowMainWindow();
 
 	// Model Info Window
-	showModelInfoWindow();
+	ShowModelInfoWindow();
 
 	// Edit Node Now
-	showNodeNowWindow();
+	ShowNodeNowWindow();
 
 	// Animator
-	showAnimatorWindow();
+	ShowAnimatorWindow();
 
 	// Material
-	showMaterialWindow();
+	ShowMaterialWindow();
 
 	// Camera
-	showCameraWindow();
+	ShowCameraWindow();
 }
 
 //--------------------------------------------------------------------------------
@@ -160,24 +160,24 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		|| strType._Equal("OBJ")
 		|| strType._Equal("txt"))
 	{
-		if (m_pRootNode)
+		if (root_node_)
 		{
 			auto nID = MessageBox(NULL, "モデルを切り替えますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
 			if (nID == IDNO) { return; }
 
 			//前のモデルの削除
-			releaseModel();
+			ReleaseModel();
 		}
 
 		//ImGui Flag
-		m_bModelInfoWindow = false;
-		m_bAnimatorWindow = false;
-		m_bCameraWindow = false;
-		m_nCntFrame = 0;
-		m_nNoMotion = 0;
+		is_display_model_window_ = false;
+		is_display_animator_window_ = false;
+		is_display_camera_window_ = false;
+		current_frame_ = 0;
+		motion_no_ = 0;
 
 		//LoadModel
-		m_strFileName = strName;
+		file_name_ = strName;
 		MyModel myModel;
 		if (strType._Equal("txt"))
 		{
@@ -187,17 +187,17 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		{
 			myModel = CKFUtilityFBX::Load(strFilePath);
 		}
-		m_pRootNode = myModel.pNode;
-		m_pAnimator = myModel.pAnimator;
-		m_mapMaterial = myModel.mapMaterial;
-		for (auto& pair : m_mapMaterial)
+		root_node_ = myModel.pNode;
+		animator_ = myModel.pAnimator;
+		materials_ = myModel.mapMaterial;
+		for (auto& pair : materials_)
 		{
 			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.DiffuseTextureName);
 		}
-		m_pRootNode->RecursiveRecombineMeshes();
-		if (m_pAnimator)
+		root_node_->RecursiveRecombineMeshes();
+		if (animator_)
 		{
-			m_pRootNode->RecursiveMatchClusterID(myModel.pAnimator->Motions[0].Frames[0]);
+			root_node_->RecursiveMatchClusterID(myModel.pAnimator->Motions[0].Frames[0]);
 		}
 	}
 	else
@@ -212,12 +212,12 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 void CModelAnalyzerBehaviorComponent::SaveModel(const OutType& type)
 {
 	MyModel model;
-	model.pAnimator = m_pAnimator;
-	model.pNode = m_pRootNode;
-	model.mapMaterial = m_mapMaterial;
-	if (CKFUtilityFBX::Save(model, m_strFileName, type))
+	model.pAnimator = animator_;
+	model.pNode = root_node_;
+	model.mapMaterial = materials_;
+	if (CKFUtilityFBX::Save(model, file_name_, type))
 	{
-		m_bSaved = true;
+		is_saved_ = true;
 		MessageBox(NULL, "セーブしました。", "SaveModel", MB_OK);
 	}
 }
@@ -228,11 +228,11 @@ void CModelAnalyzerBehaviorComponent::SaveModel(const OutType& type)
 //
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
-// releaseModel
+// ReleaseModel
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::releaseModel(void)
+void CModelAnalyzerBehaviorComponent::ReleaseModel(void)
 {
-	if (!m_bSaved && m_pRootNode)
+	if (!is_saved_ && root_node_)
 	{//Save確認
 		auto nID = MessageBox(NULL, "今のモデルセーブしますか？", "確認", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
 		if (nID == IDYES) 
@@ -241,20 +241,20 @@ void CModelAnalyzerBehaviorComponent::releaseModel(void)
 			SaveModel(nID == IDYES ? Json : Binary);
 		}
 	}
-	SAFE_RELEASE(m_pRootNode);
-	SAFE_RELEASE(m_pAnimator);
-	for (auto& pair : m_mapMaterial)
+	SAFE_RELEASE(root_node_);
+	SAFE_RELEASE(animator_);
+	for (auto& pair : materials_)
 	{
 		CMain::GetManager()->GetTextureManager()->DisuseTexture(pair.second.DiffuseTextureName);
 	}
-	m_mapMaterial.clear();
+	materials_.clear();
 	Init();
 }
 
 //--------------------------------------------------------------------------------
 // mainWindow
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showMainWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowMainWindow(void)
 {
 	auto pRenderer = CMain::GetManager()->GetRenderer();
 	auto cBGColor = pRenderer->GetBGColor();
@@ -274,53 +274,53 @@ void CModelAnalyzerBehaviorComponent::showMainWindow(void)
 	pRenderer->SetBGColor(cBGColor);
 
 	// Model Window
-	if (m_pRootNode)
+	if (root_node_)
 	{
-		if (ImGui::Button(m_bModelInfoWindow ? 
+		if (ImGui::Button(is_display_model_window_ ? 
 			"Close model window" :
-			"Open model window")) m_bModelInfoWindow ^= 1;
+			"Open model window")) is_display_model_window_ ^= 1;
 
 		// Animator Window
-		if (m_pAnimator)
+		if (animator_)
 		{
-			if (ImGui::Button(m_bAnimatorWindow ?
+			if (ImGui::Button(is_display_animator_window_ ?
 				"Close animator window" :
-				"Open animator window")) m_bAnimatorWindow ^= 1;
+				"Open animator window")) is_display_animator_window_ ^= 1;
 		}
 
 		// Material Window
-		if (ImGui::Button(m_bMaterialWindow ?
+		if (ImGui::Button(is_display_material_window_ ?
 			"Close material window" :
-			"Open material window")) m_bMaterialWindow ^= 1;
+			"Open material window")) is_display_material_window_ ^= 1;
 	}
 
 	// Camera Window
-	if (ImGui::Button(m_bCameraWindow ?
+	if (ImGui::Button(is_display_camera_window_ ?
 		"Close camera window" :
-		"Open camera window")) m_bCameraWindow ^= 1;
+		"Open camera window")) is_display_camera_window_ ^= 1;
 
 	// DrawFlag
-	if (ImGui::Button(m_bDrawSkeleton ? 
-		"Disdraw skeleton" : "Draw skeleton")) m_bDrawSkeleton ^= 1;
-	if (ImGui::Button(m_bDrawMesh ?
-		"Disdraw mesh" : "Draw mesh")) m_bDrawMesh ^= 1;
-	if (ImGui::Button(m_bDrawCollider ?
-		"Disdraw collider" : "Draw collider")) m_bDrawCollider ^= 1;
+	if (ImGui::Button(is_render_skeletons_ ? 
+		"Disdraw skeleton" : "Draw skeleton")) is_render_skeletons_ ^= 1;
+	if (ImGui::Button(is_render_meshes_ ?
+		"Disdraw mesh" : "Draw mesh")) is_render_meshes_ ^= 1;
+	if (ImGui::Button(is_render_colliders_ ?
+		"Disdraw collider" : "Draw collider")) is_render_colliders_ ^= 1;
 
 	// End
 	ImGui::End();
 }
 
 //--------------------------------------------------------------------------------
-// showMainWindowMenuBar
+// ShowMainWindowMenuBar
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showMainMenuBar(void)
+void CModelAnalyzerBehaviorComponent::ShowMainMenuBar(void)
 {
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			showMainMenuFile();
+			ShowMainMenuFile();
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -328,9 +328,9 @@ void CModelAnalyzerBehaviorComponent::showMainMenuBar(void)
 }
 
 //--------------------------------------------------------------------------------
-// showMainWindowFileMenu
+// ShowMainWindowFileMenu
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
+void CModelAnalyzerBehaviorComponent::ShowMainMenuFile(void)
 {
 	if (ImGui::MenuItem("Open model file")) 
 	{
@@ -353,38 +353,38 @@ void CModelAnalyzerBehaviorComponent::showMainMenuFile(void)
 //--------------------------------------------------------------------------------
 // modelInfoWindow
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowModelInfoWindow(void)
 {
-	if (!m_bModelInfoWindow) return;
+	if (!is_display_model_window_) return;
 
 	// Begin
-	if (!ImGui::Begin("ModelInfoWindow", &m_bModelInfoWindow))
+	if (!ImGui::Begin("ModelInfoWindow", &is_display_model_window_))
 	{
 		ImGui::End();
 		return;
 	}
 
 	// Model Name
-	char buffer[bufferSize] = {};
-	strcpy_s(buffer, m_strFileName.c_str());
-	if (ImGui::InputText("Name", buffer, bufferSize))
+	char buffer[kBufferSize] = {};
+	strcpy_s(buffer, file_name_.c_str());
+	if (ImGui::InputText("Name", buffer, kBufferSize))
 	{
-		m_strFileName = buffer;
+		file_name_ = buffer;
 	}
 
 	// RotSpeed
-	ImGui::InputFloat("RotationSpeed", &m_fRotSpeed);
+	ImGui::InputFloat("RotationSpeed", &rotation_speed_);
 
 	// Reverse Tex V
-	if (ImGui::Checkbox("Reverse TextureV", &m_bReverseV))
+	if (ImGui::Checkbox("Reverse TextureV", &is_reserve_texcoordv_))
 	{
-		if (m_pRootNode) { m_pRootNode->RecursiveReverseTexV(); }
+		if (root_node_) { root_node_->RecursiveReverseTexV(); }
 	}
 
 	// Node Info
 	if (ImGui::CollapsingHeader("Node Info"))
 	{
-		showNodeInfo(m_pRootNode);
+		ShowNodeInfo(root_node_);
 	}
 
 	// End
@@ -392,9 +392,9 @@ void CModelAnalyzerBehaviorComponent::showModelInfoWindow(void)
 }
 
 //--------------------------------------------------------------------------------
-// showNodeInfo
+// ShowNodeInfo
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
+void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 {
 	if (!pNode) return;
 
@@ -404,23 +404,23 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 		{
 			//Type
 			int size = (int)pNode->AttributeNames.size();
-			for (int nCnt = 0; nCnt < size; ++nCnt)
+			for (int count = 0; count < size; ++count)
 			{
-				ImGui::Text("Type%d : %s", nCnt, pNode->AttributeNames[nCnt].c_str());
+				ImGui::Text("Type%d : %s", count, pNode->AttributeNames[count].c_str());
 			}
 
 			//Offset
 			ImGui::InputFloat3("Transform", &pNode->Translation.m_fX);
-			ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, m_fRotSpeed, 0.0f, KF_PI * 2.0f);
+			ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, rotation_speed_, 0.0f, KF_PI * 2.0f);
 			ImGui::InputFloat3("Scaling", &pNode->Scale.m_fX);
 
 			//Mesh
 			if (!pNode->Meshes.empty() && ImGui::TreeNode("Mesh"))
 			{
-				for (int nCnt = 0; nCnt < (int)pNode->Meshes.size(); ++nCnt)
+				for (int count = 0; count < (int)pNode->Meshes.size(); ++count)
 				{
-					auto& mesh = pNode->Meshes[nCnt];
-					auto& strMeshName = to_string(nCnt);
+					auto& mesh = pNode->Meshes[count];
+					auto& strMeshName = to_string(count);
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
 						//Info
@@ -428,9 +428,9 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 						ImGui::Text("VertexNumber : %d  IndexNumber : %d", mesh.VertexNumber, mesh.IndexNumber);
 
 						//Material
-						char buffer[bufferSize] = {};
+						char buffer[kBufferSize] = {};
 						strcpy_s(buffer, mesh.MaterialName.c_str());
-						if (ImGui::InputText("MaterialName", buffer, bufferSize))
+						if (ImGui::InputText("MaterialName", buffer, kBufferSize))
 						{
 							mesh.MaterialName = buffer;
 						}
@@ -464,10 +464,10 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			}
 
 			//Edit
-			if (!m_pNodeNow && ImGui::Button("Edit Node"))
+			if (!current_node_ && ImGui::Button("Edit Node"))
 			{
-				m_pNodeNow = pNode;
-				m_pNodeNow->ColliderMaterialID = 2;
+				current_node_ = pNode;
+				current_node_->ColliderMaterialID = 2;
 			}
 		}
 
@@ -476,7 +476,7 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 			//Child
 			for (auto pChild : pNode->Children)
 			{
-				showNodeInfo(pChild);
+				ShowNodeInfo(pChild);
 			}
 		}
 
@@ -485,11 +485,11 @@ void CModelAnalyzerBehaviorComponent::showNodeInfo(CMyNode* pNode)
 }
 
 //--------------------------------------------------------------------------------
-// showNodeInfo
+// ShowNodeInfo
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 {
-	if (!m_pNodeNow) { return; }
+	if (!current_node_) { return; }
 	bool bNodeNow = true;
 
 	// Begin
@@ -500,7 +500,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 	}
 
 	// Model Name
-	string strBuf = "Node Name : " + m_pNodeNow->Name;
+	string strBuf = "Node Name : " + current_node_->Name;
 	ImGui::Text(strBuf.c_str());
 
 	// Collider
@@ -511,12 +511,12 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 		{ "Sphere"
 			, "AABB"
 			, "OBB" };
-		int nCnt = 0;
-		for (auto itr = m_pNodeNow->Colliders.begin(); itr != m_pNodeNow->Colliders.end();)
+		int count = 0;
+		for (auto itr = current_node_->Colliders.begin(); itr != current_node_->Colliders.end();)
 		{
 			bool bDelete = false;
 			char aBuf[128];
-			wsprintf(aBuf, "Collider%d", nCnt);
+			wsprintf(aBuf, "Collider%d", count);
 			if (ImGui::TreeNode(aBuf))
 			{
 				//Type
@@ -524,7 +524,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 				
 				//Offset
 				ImGui::InputFloat3("Translation", &itr->Position.m_fX);
-				ImGui::DragFloat3("Rotation", &itr->Rotation.m_fX, m_fRotSpeed, 0.0f, KF_PI * 2.0f);
+				ImGui::DragFloat3("Rotation", &itr->Rotation.m_fX, rotation_speed_, 0.0f, KF_PI * 2.0f);
 				ImGui::InputFloat3("Scale", &itr->Scale.m_fX);
 
 				if (itr->Type == CS::COL_SPHERE)
@@ -540,12 +540,12 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 
 			if(bDelete)
 			{
-				itr = m_pNodeNow->Colliders.erase(itr);
+				itr = current_node_->Colliders.erase(itr);
 			}
 			else
 			{
 				++itr;
-				++nCnt;
+				++count;
 			}
 		}
 
@@ -557,7 +557,7 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 			col.Position = CKFMath::sc_vZero;
 			col.Rotation = CKFMath::sc_vZero;
 			col.Scale = CKFMath::sc_vOne;
-			m_pNodeNow->Colliders.push_back(col);
+			current_node_->Colliders.push_back(col);
 		}
 	}
 
@@ -565,9 +565,9 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 	if (ImGui::CollapsingHeader("Fix Verteces"))
 	{
 		//Offset
-		ImGui::InputFloat3("Fixed Trans", &m_vNodeNowCorrectTrans.m_fX);
-		ImGui::InputFloat3("Fixed Rot", &m_vNodeNowCorrectRot.m_fX);
-		ImGui::InputFloat3("Fixed Scale", &m_vNodeNowCorrectScale.m_fX);
+		ImGui::InputFloat3("Fixed Trans", &current_node_correct_translation_.m_fX);
+		ImGui::InputFloat3("Fixed Rot", &current_node_correct_rotation_.m_fX);
+		ImGui::InputFloat3("Fixed Scale", &current_node_correct_scale_.m_fX);
 
 		// Recalculate By Mtx
 		if (ImGui::Button("Fix Verteces"))
@@ -575,27 +575,27 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 			CKFMtx44 mtxThis;
 
 			//拡縮
-			mtxThis.m_af[0][0] = m_vNodeNowCorrectScale.m_fX;
-			mtxThis.m_af[1][1] = m_vNodeNowCorrectScale.m_fY;
-			mtxThis.m_af[2][2] = m_vNodeNowCorrectScale.m_fZ;
+			mtxThis.m_af[0][0] = current_node_correct_scale_.m_fX;
+			mtxThis.m_af[1][1] = current_node_correct_scale_.m_fY;
+			mtxThis.m_af[2][2] = current_node_correct_scale_.m_fZ;
 
 			//回転
 			CKFMtx44 mtxRot;
-			CKFMath::MtxRotationYawPitchRoll(mtxRot, m_vNodeNowCorrectRot);
+			CKFMath::MtxRotationYawPitchRoll(mtxRot, current_node_correct_rotation_);
 			mtxThis *= mtxRot;
 
 			//平行移動
 			CKFMtx44 mtxPos;
-			CKFMath::MtxTranslation(mtxPos, m_vNodeNowCorrectTrans);
+			CKFMath::MtxTranslation(mtxPos, current_node_correct_translation_);
 			mtxThis *= mtxPos;
 
 			//Recalculate
-			m_pNodeNow->RecalculateMeshesBy(mtxThis);
+			current_node_->RecalculateMeshesBy(mtxThis);
 
 			//Reset
-			m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
-			m_vNodeNowCorrectRot = CKFMath::sc_vZero;
-			m_vNodeNowCorrectScale = CKFMath::sc_vOne;
+			current_node_correct_translation_ = CKFMath::sc_vZero;
+			current_node_correct_rotation_ = CKFMath::sc_vZero;
+			current_node_correct_scale_ = CKFMath::sc_vOne;
 		}
 	}
 
@@ -604,68 +604,68 @@ void CModelAnalyzerBehaviorComponent::showNodeNowWindow(void)
 
 	if (!bNodeNow) 
 	{
-		m_pNodeNow->ColliderMaterialID = 1;
-		m_pNodeNow = nullptr;
-		m_vNodeNowCorrectTrans = CKFMath::sc_vZero;
-		m_vNodeNowCorrectRot = CKFMath::sc_vZero;
-		m_vNodeNowCorrectScale = CKFMath::sc_vOne;
+		current_node_->ColliderMaterialID = 1;
+		current_node_ = nullptr;
+		current_node_correct_translation_ = CKFMath::sc_vZero;
+		current_node_correct_rotation_ = CKFMath::sc_vZero;
+		current_node_correct_scale_ = CKFMath::sc_vOne;
 	}
 }
 
 //--------------------------------------------------------------------------------
-// showAnimatorWindow
+// ShowAnimatorWindow
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 {
-	if (!m_bAnimatorWindow || m_pAnimator->Motions.empty()) return;
+	if (!is_display_animator_window_ || animator_->Motions.empty()) return;
 
 	// Begin
-	if (!ImGui::Begin("Animation Window", &m_bAnimatorWindow))
+	if (!ImGui::Begin("Animation Window", &is_display_animator_window_))
 	{
 		ImGui::End();
 		return;
 	}
 
 	// Play
-	if (ImGui::Button(m_bPlayMotion ? "Pause" : "Play")) m_bPlayMotion ^= 1;
+	if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
 	
 	// new
-	int nNumMotion = (int)m_pAnimator->Motions.size();
+	int nNumMotion = (int)animator_->Motions.size();
 	char **arr = new char*[nNumMotion];
-	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
+	for (int count = 0; count < nNumMotion; ++count)
 	{
-		auto& strName = m_pAnimator->Motions[nCnt].Name;
+		auto& strName = animator_->Motions[count].Name;
 		int nNumChar = (int)strName.size();
-		arr[nCnt] = new char[nNumChar + 1];
-		for (int nCntChar = 0; nCntChar < nNumChar; ++nCntChar)
+		arr[count] = new char[nNumChar + 1];
+		for (int countChar = 0; countChar < nNumChar; ++countChar)
 		{
-			arr[nCnt][nCntChar] = strName[nCntChar];
+			arr[count][countChar] = strName[countChar];
 		}
-		arr[nCnt][nNumChar] = '\0';
+		arr[count][nNumChar] = '\0';
 	}
 
-	//Type
-	if (ImGui::ListBox("Select Motion\n(single select)", (int*)&m_nNoMotion, arr, nNumMotion, nNumMotion))
+	// Type
+	if (ImGui::ListBox("Select Motion\n(single select)", (int*)&motion_no_, arr, nNumMotion, nNumMotion))
 	{
-		m_nCntFrame = 0;
+		current_frame_ = 0;
 	}
 
 	//delete
-	for (int nCnt = 0; nCnt < nNumMotion; ++nCnt)
+	for (int count = 0; count < nNumMotion; ++count)
 	{
-		delete[] arr[nCnt];
-		arr[nCnt] = nullptr;
+		delete[] arr[count];
+		arr[count] = nullptr;
 	}
 	delete[] arr;
 	arr = nullptr;
 
 	// Animation Current
-	showCurrentAnimationWindow();
+	ShowCurrentAnimationWindow();
 
 	// AddAnimation
 	if (ImGui::Button("Add animation"))
 	{
-		addAnimation();
+		AddAnimation();
 	}
 
 	// End
@@ -673,22 +673,23 @@ void CModelAnalyzerBehaviorComponent::showAnimatorWindow(void)
 }
 
 //--------------------------------------------------------------------------------
-// showMaterialWindow
+// マテリアルのウインドウ表示
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 {
-	if (!m_bMaterialWindow) { return; }
+	if (!is_display_material_window_) return;
 
 	// Begin
-	if (!ImGui::Begin("Material Window", &m_bMaterialWindow))
+	if (!ImGui::Begin("Material Window", &is_display_material_window_))
 	{
 		ImGui::End();
 		return;
 	}
 
+	// マテリアルの編集
 	if (ImGui::CollapsingHeader("Materials"))
 	{
-		for (auto& pair : m_mapMaterial)
+		for (auto& pair : materials_)
 		{
 			if (ImGui::TreeNode(pair.first.c_str()))
 			{
@@ -700,32 +701,32 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
 				if (ImGui::Button("Change Diffuse Texture"))
 				{
-					changeTexture(pair.second.DiffuseTextureName);
+					ChangeTexture(pair.second.DiffuseTextureName);
 				}
 				ImGui::Text("SpecularTexture : %s", pair.second.SpecularTextureName.c_str());
 				if (ImGui::Button("Change Specular Texture"))
 				{
-					changeTexture(pair.second.SpecularTextureName);
+					ChangeTexture(pair.second.SpecularTextureName);
 				}
 				ImGui::Text("NormalTexture : %s", pair.second.NormalTextureName.c_str());
 				if (ImGui::Button("Change Normal Texture"))
 				{
-					changeTexture(pair.second.NormalTextureName);
+					ChangeTexture(pair.second.NormalTextureName);
 				}
 				ImGui::TreePop();
 			}
 		}
 	}
 	
-	// Add Material
+	// マテリアルの追加
 	if (ImGui::CollapsingHeader("Add Material"))
 	{
 		static string name;
 		static Material material;
 
-		char buffer[bufferSize] = {};
+		char buffer[kBufferSize] = {};
 		strcpy_s(buffer, name.c_str());
-		if (ImGui::InputText("EditName", buffer, bufferSize))
+		if (ImGui::InputText("EditName", buffer, kBufferSize))
 		{
 			name = buffer;
 		}
@@ -738,22 +739,22 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 		ImGui::Text("DiffuseTexture : %s", material.DiffuseTextureName.c_str());
 		if (ImGui::Button("Change Diffuse Texture"))
 		{
-			changeTexture(material.DiffuseTextureName);
+			ChangeTexture(material.DiffuseTextureName);
 		}
 		ImGui::Text("SpecularTexture : %s", material.SpecularTextureName.c_str());
 		if (ImGui::Button("Change Specular Texture"))
 		{
-			changeTexture(material.SpecularTextureName);
+			ChangeTexture(material.SpecularTextureName);
 		}
 		ImGui::Text("NormalTexture : %s", material.NormalTextureName.c_str());
 		if (ImGui::Button("Change Normal Texture"))
 		{
-			changeTexture(material.NormalTextureName);
+			ChangeTexture(material.NormalTextureName);
 		}
 
 		if (ImGui::Button("Add to Materials"))
 		{
-			m_mapMaterial.emplace(name, material);
+			materials_.emplace(name, material);
 			if (material.DiffuseTextureName.empty())
 			{
 				CMain::GetManager()->GetTextureManager()->UseTexture(material.DiffuseTextureName);
@@ -775,14 +776,14 @@ void CModelAnalyzerBehaviorComponent::showMaterialWindow(void)
 }
 
 //--------------------------------------------------------------------------------
-// showCameraWindow
+// ShowCameraWindow
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowCameraWindow(void)
 {
-	if (!m_bCameraWindow) { return; }
+	if (!is_display_camera_window_) { return; }
 
 	// Begin
-	if (!ImGui::Begin("Camera Window", &m_bCameraWindow))
+	if (!ImGui::Begin("Camera Window", &is_display_camera_window_))
 	{
 		ImGui::End();
 		return;
@@ -809,24 +810,24 @@ void CModelAnalyzerBehaviorComponent::showCameraWindow(void)
 }
 
 //--------------------------------------------------------------------------------
-// showCurrentAnimationWindow
+// ShowCurrentAnimationWindow
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
+void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 {
 	if (ImGui::CollapsingHeader("CurrentAnimation"))
 	{
-		auto& current = m_pAnimator->Motions[m_nNoMotion];
+		auto& current = animator_->Motions[motion_no_];
 		
 		// 名前
-		char buffer[bufferSize] = {};
+		char buffer[kBufferSize] = {};
 		strcpy_s(buffer, current.Name.c_str());
-		if (ImGui::InputText("Name", buffer, bufferSize))
+		if (ImGui::InputText("Name", buffer, kBufferSize))
 		{
 			current.Name = buffer;
 		}
 
 		// 今のフレーム
-		ImGui::Text("Current Frame : %d", m_nCntFrame);
+		ImGui::Text("Current Frame : %d", current_frame_);
 
 		// フレーム編集
 		if (ImGui::TreeNode("Edit Frame"))
@@ -854,7 +855,7 @@ void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
 			// Delete Frame that out of range
 			if (ImGui::Button("Delete out of range frames"))
 			{
-				m_pAnimator->DeleteOutOfRangeFrames(m_nNoMotion);
+				animator_->DeleteOutOfRangeFrames(motion_no_);
 			}
 
 			ImGui::TreePop();
@@ -871,9 +872,9 @@ void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
 				if (ImGui::TreeNode("Transision"))
 				{
 					// 次のモーション名
-					char nameBuffer[bufferSize] = {};
+					char nameBuffer[kBufferSize] = {};
 					strcpy_s(nameBuffer, iterator->NextMotion.c_str());
-					if (ImGui::InputText("NextAnimationName", nameBuffer, bufferSize))
+					if (ImGui::InputText("NextAnimationName", nameBuffer, kBufferSize))
 					{
 						iterator->NextMotion = nameBuffer;
 					}
@@ -893,9 +894,9 @@ void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
 							ImGui::ListBox("ParameterType\n(single select)", (int*)&itrCondition->ParameterType, listboxType, 2, 2);
 
 							// 条件変数名
-							char parameterNameBuffer[bufferSize] = {};
+							char parameterNameBuffer[kBufferSize] = {};
 							strcpy_s(parameterNameBuffer, itrCondition->ParameterName.c_str());
-							if (ImGui::InputText("ParameterName", parameterNameBuffer, bufferSize))
+							if (ImGui::InputText("ParameterName", parameterNameBuffer, kBufferSize))
 							{
 								itrCondition->ParameterName = parameterNameBuffer;
 							}
@@ -994,9 +995,9 @@ void CModelAnalyzerBehaviorComponent::showCurrentAnimationWindow(void)
 }
 
 //--------------------------------------------------------------------------------
-// changeTexture
+// ChangeTexture
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::changeTexture(string& meshTexture)
+void CModelAnalyzerBehaviorComponent::ChangeTexture(string& meshTexture)
 {
 	string strTex;
 	if (CMain::OpenTextureFile(strTex))
@@ -1016,9 +1017,9 @@ void CModelAnalyzerBehaviorComponent::changeTexture(string& meshTexture)
 }
 
 //--------------------------------------------------------------------------------
-// addAnimation
+// AddAnimation
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::addAnimation(void)
+void CModelAnalyzerBehaviorComponent::AddAnimation(void)
 {
 	string strFileName;
 	if (CMain::OpenTextureFile(strFileName))
@@ -1027,7 +1028,7 @@ void CModelAnalyzerBehaviorComponent::addAnimation(void)
 		CKFUtility::AnalyzeFilePath(strFileName, strName, strType);
 		if (strType._Equal("fbx") || strType._Equal("FBX"))
 		{
-			CKFUtilityFBX::LoadAnimation(strFileName, m_pAnimator);
+			CKFUtilityFBX::LoadAnimation(strFileName, animator_);
 		}
 	}
 }

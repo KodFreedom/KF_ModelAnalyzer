@@ -39,66 +39,66 @@ public:
 	void OnTrigger(CColliderComponent& colliderThis, CColliderComponent& collider) override {}
 	void OnCollision(CCollisionInfo& collisionInfo) override {}
 
-	auto GetRootNode(void) { return m_pRootNode; }
-	void ChangeModel(const string& strFilePath);
+	auto GetRootNode(void) const { return root_node_; }
+	void ChangeModel(const string& file_path);
 	void SaveModel(const OutType& type);
 
-	const bool& IsDrawSkeleton(void) { return m_bDrawSkeleton; }
-	const bool& IsDrawMesh(void) { return m_bDrawMesh; }
-	const bool& IsDrawCollider(void) { return m_bDrawCollider; }
-	const auto& GetMaterials(void) { return m_mapMaterial; }
+	const bool& IsRenderSkeletons(void) const { return is_render_skeletons_; }
+	const bool& IsRenderMeshes(void) const { return is_render_meshes_; }
+	const bool& IsRenderColliders(void) const { return is_render_colliders_; }
+	const auto& GetMaterials(void) const { return materials_; }
 
 private:
 	//--------------------------------------------------------------------------------
 	//  íËêîíËã`
 	//--------------------------------------------------------------------------------
-	static const int bufferSize = 64;
+	static constexpr int kBufferSize = 64;
 
 	//--------------------------------------------------------------------------------
 	//  ä÷êîíËã`
 	//--------------------------------------------------------------------------------
-	void		releaseModel(void);
+	void		ReleaseModel(void);
 
 	//ImGui
-	void		showMainMenuBar(void);
-	void		showMainMenuFile(void);
-	void		showMainWindow(void);
-	void		showModelInfoWindow(void);
-	void		showNodeInfo(CMyNode* pNode);
-	void		showNodeNowWindow(void);
-	void		showAnimatorWindow(void);
-	void		showCameraWindow(void);
-	void		showMaterialWindow(void);
-	void		showCurrentAnimationWindow(void);
-	void		changeTexture(string& meshTexture);
-	void		addAnimation(void);
+	void		ShowMainMenuBar(void);
+	void		ShowMainMenuFile(void);
+	void		ShowMainWindow(void);
+	void		ShowModelInfoWindow(void);
+	void		ShowNodeInfo(CMyNode* pNode);
+	void		ShowNodeNowWindow(void);
+	void		ShowAnimatorWindow(void);
+	void		ShowCameraWindow(void);
+	void		ShowMaterialWindow(void);
+	void		ShowCurrentAnimationWindow(void);
+	void		ChangeTexture(string& meshTexture);
+	void		AddAnimation(void);
 
 	//--------------------------------------------------------------------------------
 	//  ïœêîíËã`
 	//--------------------------------------------------------------------------------
-	bool		     m_bDrawSkeleton;
-	bool		     m_bDrawMesh;
-	bool		     m_bDrawCollider;
-	bool		     m_bReverseV;
-	bool		     m_bSaved;
-	string		     m_strFileName;
-	CMyNode*	     m_pRootNode;
-	CAnimator*	     m_pAnimator;
-	unordered_map<string, Material>	m_mapMaterial;
+	bool		     is_render_skeletons_;
+	bool		     is_render_meshes_;
+	bool		     is_render_colliders_;
+	bool		     is_reserve_texcoordv_;
+	bool		     is_saved_;
+	string		     file_name_;
+	CMyNode*	     root_node_;
+	CAnimator*	     animator_;
+	unordered_map<string, Material>	materials_;
 
 	//ImGui
-	float		m_fRotSpeed;
-	bool		m_bModelInfoWindow;
-	bool		m_bAnimatorWindow;
-	bool		m_bCameraWindow;
-	bool		m_bMaterialWindow;
-	CMyNode*	m_pNodeNow;
-	CKFVec3		m_vNodeNowCorrectTrans;
-	CKFVec3		m_vNodeNowCorrectRot;
-	CKFVec3		m_vNodeNowCorrectScale;
+	float		rotation_speed_;
+	bool		is_display_model_window_;
+	bool		is_display_animator_window_;
+	bool		is_display_camera_window_;
+	bool		is_display_material_window_;
+	CMyNode*	current_node_;
+	CKFVec3		current_node_correct_translation_;
+	CKFVec3		current_node_correct_rotation_;
+	CKFVec3		current_node_correct_scale_;
 
 	//Animator
-	bool		m_bPlayMotion;
-	int			m_nCntFrame;
-	int			m_nNoMotion;
+	bool		is_playing_motion_;
+	int			current_frame_;
+	int			motion_no_;
 };
