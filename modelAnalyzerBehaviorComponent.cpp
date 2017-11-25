@@ -23,6 +23,32 @@
 #include "inputManager.h"
 #include "inputDX.h"
 
+namespace ImGui
+{
+	static auto vector_getter = [](void* vec, int idx, const char** out_text)
+	{
+		auto& vector = *static_cast<std::vector<std::string>*>(vec);
+		if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+		*out_text = vector.at(idx).c_str();
+		return true;
+	};
+
+	bool Combo(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return Combo(label, currIndex, vector_getter,
+			static_cast<void*>(&values), values.size());
+	}
+
+	bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return ListBox(label, currIndex, vector_getter,
+			static_cast<void*>(&values), values.size());
+	}
+
+}
+
 //--------------------------------------------------------------------------------
 //
 //  Public
@@ -629,35 +655,18 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 	// Play
 	if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
 	
-	// new
-	int nNumMotion = (int)animator_->Motions.size();
-	char **arr = new char*[nNumMotion];
-	for (int count = 0; count < nNumMotion; ++count)
-	{
-		auto& strName = animator_->Motions[count].Name;
-		int nNumChar = (int)strName.size();
-		arr[count] = new char[nNumChar + 1];
-		for (int countChar = 0; countChar < nNumChar; ++countChar)
-		{
-			arr[count][countChar] = strName[countChar];
-		}
-		arr[count][nNumChar] = '\0';
-	}
-
 	// Type
-	if (ImGui::ListBox("Select Motion\n(single select)", (int*)&motion_no_, arr, nNumMotion, nNumMotion))
+	vector<string> labels;
+	labels.reserve(animator_->Motions.size());
+	for (auto& motion : animator_->Motions)
+	{
+		labels.push_back(motion.Name);
+	}
+	if (ImGui::Combo("Select Motion", (int*)&motion_no_, labels))
 	{
 		current_frame_ = 0;
 	}
-
-	//delete
-	for (int count = 0; count < nNumMotion; ++count)
-	{
-		delete[] arr[count];
-		arr[count] = nullptr;
-	}
-	delete[] arr;
-	arr = nullptr;
+	labels.clear();
 
 	// Animation Current
 	ShowCurrentAnimationWindow();
@@ -862,36 +871,57 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 		}
 
 		// モーション切り替え設定
-		if (ImGui::TreeNode("StateTransision"))
+		if (ImGui::TreeNode("StateTransition"))
 		{
 			ImGui::Checkbox("IsLoop", &current.IsLoop);
 
-			for (auto iterator = current.Transisions.begin(); iterator != current.Transisions.end();)
+			ImGui::Checkbox("Change when is over\nNotice : Unavailable when the IsLoop flag is true", &current.ChangeWhenOver);
+
+			if (!current.IsLoop && current.ChangeWhenOver)
 			{
-				bool isDeleteTransision = false;
-				if (ImGui::TreeNode("Transision"))
+				ImGui::SliderInt("The frame we think its' over", &current.ChangeWhenOverExitFrame, current.StartFrame, current.EndFrame);
+				ImGui::InputInt("The blend frame number", &current.ChangeWhenOverBlendFrame);
+				char nameBuffer[kBufferSize] = {};
+				strcpy_s(nameBuffer, current.ChangeWhenOverNextMotion.c_str());
+				if (ImGui::InputText("Next animation name", nameBuffer, kBufferSize))
+				{
+					current.ChangeWhenOverNextMotion = nameBuffer;
+				}
+			}
+
+			int countTransition = 0;
+			for (auto iterator = current.Transitions.begin(); iterator != current.Transitions.end();)
+			{
+				bool isDeleteTransition = false;
+				string& treeName = "Transition" + std::to_string(countTransition);
+				if (ImGui::TreeNode(treeName.c_str()))
 				{
 					// 次のモーション名
 					char nameBuffer[kBufferSize] = {};
 					strcpy_s(nameBuffer, iterator->NextMotion.c_str());
-					if (ImGui::InputText("NextAnimationName", nameBuffer, kBufferSize))
+					if (ImGui::InputText("Next animation name", nameBuffer, kBufferSize))
 					{
 						iterator->NextMotion = nameBuffer;
 					}
 
+					// Blend frame
+					ImGui::InputInt("The blend frame number", &iterator->BlendFrame);
+
 					// 条件
+					int countCondition = 0;
 					for (auto itrCondition = iterator->Conditions.begin(); itrCondition != iterator->Conditions.end();)
 					{
 						bool isDeleteCondition = false;
-						if (ImGui::TreeNode("Condition"))
+						string& conditionTreeName = "Condition" + std::to_string(countCondition);
+						if (ImGui::TreeNode(conditionTreeName.c_str()))
 						{
 							// 条件変数の型
-							const char* listboxType[] =
+							static const char* typeLabels[] =
 							{
 								"bool",
 								"float",
 							};
-							ImGui::ListBox("ParameterType\n(single select)", (int*)&itrCondition->ParameterType, listboxType, 2, 2);
+							ImGui::Combo("ParameterType", (int*)&itrCondition->ParameterType, typeLabels, 2);
 
 							// 条件変数名
 							char parameterNameBuffer[kBufferSize] = {};
@@ -904,14 +934,14 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 							// オペレーター
 							if (itrCondition->ParameterType == eParameterType::eFloat)
 							{
-								const char* listboxOperator[] =
+								static const char* operatorLabels[] =
 								{
 									"equal",
 									"notEqual",
 									"greater",
 									"less"
 								};
-								ImGui::ListBox("Operator\n(single select)", (int*)&itrCondition->ParameterType, listboxOperator, 4, 4);
+								ImGui::Combo("Operator", (int*)&itrCondition->FloatOperator, operatorLabels, 4);
 							}
 
 							// 値
@@ -919,12 +949,12 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 							{
 							case eParameterType::eBool:
 							{
-								const char* listboxValue[] =
+								static const char* valueLabels[] =
 								{
 									"isFalse",
 									"isTrue",
 								};
-								ImGui::ListBox("Value\n(single select)", (int*)&itrCondition->BoolValue, listboxValue, 2, 2);
+								ImGui::Combo("Value", (int*)&itrCondition->BoolValue, valueLabels, 2);
 								break;
 							}
 							case eParameterType::eFloat:
@@ -949,6 +979,7 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 						}
 						else
 						{
+							++countCondition;
 							++itrCondition;
 						}
 					}
@@ -960,29 +991,37 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 					}
 
 					// 切り替えの削除
-					if (ImGui::Button("Delete transision"))
+					if (ImGui::Button("Delete Transition"))
 					{
-						isDeleteTransision = true;
+						isDeleteTransition = true;
 					}
 					ImGui::TreePop();
 				}
 
 				// Count iterator
-				if (isDeleteTransision)
+				if (isDeleteTransition)
 				{
-					iterator = current.Transisions.erase(iterator);
+					iterator = current.Transitions.erase(iterator);
 				}
 				else
 				{
+					++countTransition;
 					++iterator;
 				}
 			}
 
 			// 切り替えの追加
-			if (ImGui::Button("Add transision"))
+			if (ImGui::Button("Add Transition"))
 			{
-				current.Transisions.push_back(StateTransision());
+				current.Transitions.push_back(StateTransition());
 			}
+
+			// Save Transition
+			if (ImGui::Button("Save Transitions"))
+			{
+				animator_->SaveMotionTransitions(motion_no_);
+			}
+
 			ImGui::TreePop();
 		}
 

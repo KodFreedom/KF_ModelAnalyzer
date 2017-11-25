@@ -75,15 +75,19 @@ struct Condition
 	float			FloatValue;
 };
 
-struct StateTransision
+struct StateTransition
 {
+	StateTransition() : BlendFrame(10) {}
 	string				NextMotion;
+	int					BlendFrame;
 	list<Condition>		Conditions;
 };
 
 struct Motion
 {
-	Motion() : StartFrame(0), EndFrame(0), IsLoop(true)
+	Motion() : StartFrame(0), EndFrame(0)
+		, ChangeWhenOverExitFrame(0), ChangeWhenOverBlendFrame(10)
+		, IsLoop(true), ChangeWhenOver(true)
 	{
 		Name.clear();
 		Frames.clear();
@@ -92,8 +96,12 @@ struct Motion
 	vector<Frame>			Frames;
 	int						StartFrame;
 	int						EndFrame;
+	int						ChangeWhenOverExitFrame;
+	int						ChangeWhenOverBlendFrame;
+	string					ChangeWhenOverNextMotion;
 	bool					IsLoop;
-	list<StateTransision>	Transisions;
+	bool					ChangeWhenOver;
+	list<StateTransition>	Transitions;
 
 	template <class Archive>
 	void serialize(Archive & ar)
@@ -148,8 +156,27 @@ public:
 	void DeleteOutOfRangeFrames(const int motionNo);
 	void SaveAsJson(const string& fileName);
 	void SaveAsBinary(const string& fileName);
+	void SaveMotionTransitions(const int motionNo);
 
 private:
 	void saveAsJson(const Motion& motion);
 	void saveAsBinary(const Motion& motion);
+	void saveMotionTransitionsHead(const int motionNo);
+	void saveMotionTransitionsCpp(const int motionNo);
+	string OperatorToString(const eFloatOperator& value)
+	{
+		switch (value)
+		{
+		case eFloatOperator::fEqual:
+			return " == ";
+		case eFloatOperator::fNotEqual:
+			return " != ";
+		case eFloatOperator::fGreater:
+			return " > ";
+		case eFloatOperator::fLess:
+			return " < ";
+		default:
+			return " == ";
+		}
+	}
 };

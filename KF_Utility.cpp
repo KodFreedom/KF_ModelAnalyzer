@@ -62,7 +62,7 @@ int CKFUtility::GetStrToken(string& str, const string& strToken, string& strBuf)
 		strBuf += c;
 	}
 
-	return -1;
+	return strBuf.length();
 }
 
 //--------------------------------------------------------------------------------
@@ -134,6 +134,29 @@ string CKFUtility::GetFileName(const string& strFilePath)
 	GetStrToken(strCpy, "\\/", strName);
 	reverse(strName.begin(), strName.end());
 	return strName;
+}
+
+//--------------------------------------------------------------------------------
+//	関数名：GetStrCount
+//  関数説明：アクション（移動、跳ぶ、攻撃）
+//	引数：	vDirection：移動方向
+//			bJump：跳ぶフラグ
+//	戻り値：なし
+//--------------------------------------------------------------------------------
+string CKFUtility::ParameterNameToMethodName(const string& parameterName)
+{
+	string copy = parameterName;
+	string buffer;
+	string result;
+	while (GetStrToken(copy, "_\0", buffer) > 0)
+	{
+		if ((buffer[0] >= 'a') && (buffer[0] <= 'z'))
+		{
+			buffer[0] = buffer[0] - 32;
+		}
+		result += buffer;
+	}
+	return result;
 }
 
 //--------------------------------------------------------------------------------
