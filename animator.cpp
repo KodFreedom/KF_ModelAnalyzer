@@ -121,6 +121,15 @@ void CAnimator::SaveAsBinary(const string& fileName)
 }
 
 //--------------------------------------------------------------------------------
+//  SaveMotionTransitions
+//--------------------------------------------------------------------------------
+void CAnimator::SaveMotionTransitions(const int motionNo)
+{
+	saveMotionTransitionsHead(motionNo);
+	saveMotionTransitionsCpp(motionNo);
+}
+
+//--------------------------------------------------------------------------------
 //
 //  Private
 //
@@ -162,4 +171,157 @@ void CAnimator::saveAsBinary(const Motion& motion)
 		}
 	}
 	file.close();
+}
+
+//--------------------------------------------------------------------------------
+//  saveMotionTransitionsHead
+//--------------------------------------------------------------------------------
+void CAnimator::saveMotionTransitionsHead(const int motionNo)
+{
+	auto& motion = Motions[motionNo];
+	auto& filePath = "data/motionState/" + motion.Name + "_motion_state.h";
+	ifstream checkFile(filePath);
+	if (checkFile.is_open())
+	{
+		checkFile.close();
+		auto nID = MessageBox(NULL, "上書きしますかしますか？", filePath.c_str(), MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+		if (nID == IDNO)
+		{
+			return;
+		}
+	}
+	ofstream file(filePath);
+
+	auto& className = CKFUtility::ParameterNameToMethodName(motion.Name) + "MotionState";
+	file << "//--------------------------------------------------------------------------------\n";
+	file << "//  " + motion.Name + "_motion_state.h\n";
+	file << "//  this is a motion state class which is auto-created by KF_ModelAnalyzer\n";
+	file << "//--------------------------------------------------------------------------------\n";
+	file << "#pragma once\n";
+	file << "#include \"motion_state.h\"\n\n";
+	file << "class " + className + " : public NormalMotionState\n";
+	file << "{\n";
+	file << "public:\n";
+	file << "\t" + className + "(const int start_frame) : NormalMotionState(\"" + motion.Name + "\", start_frame) {}\n";
+	file << "\t~" + className + "() {}\n\n";
+	file << "private:\n";
+	file << "\tvoid ChangeMotion(Animator& animator) override;\n";
+	if (!motion.IsLoop && motion.ChangeWhenOver)
+	{
+		file << "\tconst int frame_to_exit_ = " + std::to_string(motion.ChangeWhenOverExitFrame) + ";\n";
+	}
+	file << "};";
+	file.close();
+	MessageBox(NULL, "セーブしました。", filePath.c_str(), MB_OK);
+}
+
+//--------------------------------------------------------------------------------
+//  saveMotionTransitionsCpp
+//--------------------------------------------------------------------------------
+void CAnimator::saveMotionTransitionsCpp(const int motionNo)
+{
+	auto& motion = Motions[motionNo];
+	auto& filePath = "data/motionState/" + motion.Name + "_motion_state.cpp";
+	ifstream checkFile(filePath);
+	if (checkFile.is_open())
+	{
+		checkFile.close();
+		auto nID = MessageBox(NULL, "上書きしますかしますか？", filePath.c_str(), MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2);
+		if (nID == IDNO)
+		{
+			return;
+		}
+	}
+	ofstream file(filePath);
+
+	file << "//--------------------------------------------------------------------------------\n";
+	file << "//  " + motion.Name + "_motion_state.cpp\n";
+	file << "//  this is a motion state class which is auto-created by KF_ModelAnalyzer\n";
+	file << "//--------------------------------------------------------------------------------\n";
+
+	// Include
+	file << "#include \"" + motion.Name + "_motion_state.h" + "\"\n";
+	file << "#include \"animator.h\"\n";
+	if (!motion.IsLoop && motion.ChangeWhenOver)
+	{
+		file << "#include \"" + motion.ChangeWhenOverNextMotion + "_motion_state.h" + "\"\n";
+	}
+	for (auto& transition : motion.Transitions)
+	{
+		if (transition.Conditions.empty()) continue;
+		file << "#include \"" + transition.NextMotion + "_motion_state.h" + "\"\n";
+	}
+
+	auto& className = CKFUtility::ParameterNameToMethodName(motion.Name) + "MotionState";
+	file << "void " + className + "::ChangeMotion(Animator& animator)\n";
+	file << "{\n";
+
+	// Change when over
+	if (!motion.IsLoop)
+	{
+		if (motion.ChangeWhenOver)
+		{
+			auto& nextClassName = CKFUtility::ParameterNameToMethodName(motion.ChangeWhenOverNextMotion) + "MotionState";
+			file << "\tif (current_motion_frame_counter_ >= frame_to_exit_)\n";
+			file << "\t{\n";
+			file << "\t\tcurrent_motion_frame_counter_ = frame_to_exit_ - 1;\n";
+			file << "\t\tanimator.Change(new BlendMotionState(current_motion_name_, "
+				"new " + nextClassName + "(0), "
+				+ "current_motion_frame_counter_, "
+				+ std::to_string(motion.ChangeWhenOverBlendFrame) + ");\n";
+			file << "\t\treturn;\n";
+			file << "\t}\n";
+		}
+		else
+		{
+			file << "\tif (current_motion_frame_counter_ >= frameNumber)\n";
+			file << "\t{\n";
+			file << "\t\t--current_motion_frame_counter_;\n";
+			file << "\t}\n";
+		}
+	}
+	
+	// Transition
+	for (auto& transition : motion.Transitions)
+	{
+		if (transition.Conditions.empty()) continue;
+
+		file << "\tif(";
+		// Conditions
+		for (auto iterator = transition.Conditions.begin();;)
+		{
+			file << "animator.Get" + CKFUtility::ParameterNameToMethodName(iterator->ParameterName) + "()";
+			switch (iterator->ParameterType)
+			{
+			case eParameterType::eBool:
+			{
+				file << " == ";
+				file << (iterator->BoolValue ? "true" : "false");
+				break;
+			}
+			case eParameterType::eFloat:
+			{
+				file << OperatorToString(iterator->FloatOperator);
+				file << std::to_string(iterator->FloatValue) + "f";
+				break;
+			}
+			}
+
+			if (++iterator == transition.Conditions.end()) break;
+			file << "\n\t|| ";
+		}
+		file << ")\n";
+		file << "\t{\n";
+
+		auto& nextClassName = CKFUtility::ParameterNameToMethodName(transition.NextMotion) + "MotionState";
+		file << "\t\tanimator.Change(new BlendMotionState(current_motion_name_, "
+			"new " + nextClassName + "(0), "
+			+ "current_motion_frame_counter_, "
+			+ std::to_string(transition.BlendFrame) + ");\n";
+		file << "\t\treturn;\n";
+		file << "\t}\n";
+	}
+	file << "}";
+	file.close();
+	MessageBox(NULL, "セーブしました。", filePath.c_str(), MB_OK);
 }

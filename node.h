@@ -116,7 +116,7 @@ struct Mesh
 	Mesh()
 		: EnableCullFace(false)
 		, EnableLight(false)
-		, EnableFog(false)
+		, EnableFog(true)
 		, IsSkin(false)
 		, MyRenderPriority(RenderPriority::RP_Default)
 #ifdef USING_DIRECTX

@@ -59,6 +59,7 @@ public:
 	static int		GetStrCount(FILE* pFp, const string& strToken, const string& strComp);
 	static int		GetStrCount(string& str, const string& strToken, const string& strComp);
 	static string	GetFileName(const string& strFilePath);
+	static string	ParameterNameToMethodName(const string& parameterName);
 	static void		AnalyzeFilePath(const string& strTexPath, string& strName, string& strType);
 	static void		CorrectTexType(string& strTexType);
 	static bool		CheckIsTexture(const string& strTexType);

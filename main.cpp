@@ -7,7 +7,6 @@
 #include "main.h"
 #include "manager.h"
 #include "inputManager.h"
-
 #include "ImGui\imgui.h"
 #include "ImGui\imgui_impl_dx9.h"
 

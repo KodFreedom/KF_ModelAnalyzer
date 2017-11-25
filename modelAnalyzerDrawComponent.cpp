@@ -25,5 +25,5 @@ void CModelAnalyzerDrawComponent::Draw(void)
 	auto pRootNode = c_pMA->GetRootNode();
 	if (!pRootNode) { return; }
 	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
-	pRootNode->RecursiveDraw(c_pMA->GetMaterials(), c_pMA->IsDrawSkeleton(), c_pMA->IsDrawMesh(), c_pMA->IsDrawCollider());
+	pRootNode->RecursiveDraw(c_pMA->GetMaterials(), c_pMA->IsRenderSkeletons(), c_pMA->IsRenderMeshes(), c_pMA->IsRenderColliders());
 }

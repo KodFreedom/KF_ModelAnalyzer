@@ -569,7 +569,7 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 				CKFUtility::CorrectTexType(type);
 				name += '.' + type;
 				material.DiffuseTextureName = name;
-				//break;
+				break;
 			}
 		}
 		else
@@ -736,6 +736,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 			motion.Frames.push_back(frame);
 		}
 		motion.Frames.shrink_to_fit();
+		motion.ChangeWhenOverExitFrame =
 		motion.EndFrame = motion.Frames.size() - 1;
 		animator->Motions.push_back(motion);
 	}
