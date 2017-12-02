@@ -664,6 +664,10 @@ void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, 
 		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
 		archive(make_nvp("ShaderType", shaderType));
 
+		//Type
+		MeshType type = haveAnimator ? k3dSkin : k3dMesh;
+		archive(make_nvp("MeshType", type));
+
 		if (haveAnimator) saveSkinMeshJson(mesh, meshName);
 		else saveMeshJson(mesh, meshName);
 	}
@@ -710,7 +714,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	for (int count = 0; count < meshNumber; ++count)
 	{
 		// Name
-		auto& meshName = Name + '_' + to_string(count);
+		string& meshName = Name + '_' + to_string(count);
 		size = (int)meshName.size();
 		archive.saveBinary(&size, sizeof(int));
 		archive.saveBinary(&meshName[0], size);
@@ -728,6 +732,10 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 		if (!Meshes[count].EnableLight && !Meshes[count].EnableFog && Meshes[count].EnableCullFace) shaderType = ShaderType::kNoLightNoFog;
 		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
 		archive.saveBinary(&shaderType, sizeof(shaderType));
+
+		//Type
+		MeshType type = haveAnimator ? k3dSkin : k3dMesh;
+		archive.saveBinary(&type, sizeof(type));
 
 		// MeshInfo
 		if (haveAnimator) saveSkinMeshBinary(Meshes[count], meshName);
@@ -1108,13 +1116,13 @@ void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
 void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 {
 	auto& filePath = "data/mesh/" + meshName + ".mesh";
-	ofstream file(filePath);
+	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 
 	//DrawType
 	auto drawType = TriangleList;
-	archive.saveBinary(&drawType, sizeof(DrawType));
+	archive.saveBinary(&drawType, sizeof(drawType));
 
 	//NumVtx,Idx,Polygon
 	archive.saveBinary(&mesh.VertexNumber, sizeof(int));
@@ -1145,7 +1153,7 @@ void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
 {
 	auto& filePath = "data/skinMesh/" + meshName + ".skinMesh";
-	ofstream file(filePath);
+	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 
