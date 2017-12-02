@@ -42,7 +42,7 @@ void Material::SaveAsBinary(const unordered_map<string, Material>& mapMaterial)
 	for (auto& pair : mapMaterial)
 	{
 		auto& filePath = "data/material/" + pair.first + ".material";
-		ofstream file(filePath);
+		ofstream file(filePath, ios::binary);
 		if (!file.is_open()) return;
 		BinaryOutputArchive archive(file);
 		int size = (int)pair.second.DiffuseTextureName.size();

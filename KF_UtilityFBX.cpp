@@ -421,7 +421,7 @@ bool CKFUtilityFBX::Save(const MyModel& model, const string& fileName, const Out
 		}
 
 		//Save
-		ofstream file(filePath);
+		ofstream file(filePath, ios::binary);
 		if (!file.is_open()) return false;
 		BinaryOutputArchive archive(file);
 		model.pNode->RecursiveSave(archive, fileName, model.pAnimator ? true : false);

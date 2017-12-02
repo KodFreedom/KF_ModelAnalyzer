@@ -38,7 +38,7 @@
     },
     "ColliderNumber": 1,
     "Collider": {
-        "Type": 2,
+        "Type": 1,
         "Position": {
             "X": 0.0,
             "Y": 0.699999988079071,
@@ -50,9 +50,9 @@
             "Z": 0.0
         },
         "Scale": {
-            "X": 1.100000023841858,
+            "X": 1.0,
             "Y": 1.399999976158142,
-            "Z": 1.100000023841858
+            "Z": 1.0
         }
     },
     "MeshNumber": 1,
@@ -60,4 +60,5 @@
     "MaterialName": "Barrel",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "MeshType": 0,
     "ChildNumber": 0

@@ -93,7 +93,7 @@ void CAnimator::SaveAsJson(const string& fileName)
 void CAnimator::SaveAsBinary(const string& fileName)
 {
 	auto& filePath = "data/avatar/" + fileName + ".avatar";
-	ofstream file(filePath);
+	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 	int clusterNumber = (int)Clusters.size();
@@ -153,7 +153,7 @@ void CAnimator::saveAsJson(const Motion& motion)
 void CAnimator::saveAsBinary(const Motion& motion)
 {
 	auto& filePath = "data/motion/" + motion.Name + ".motion";
-	ofstream file(filePath);
+	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 	archive.saveBinary(&motion.IsLoop, sizeof(bool));
