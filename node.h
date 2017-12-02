@@ -56,8 +56,8 @@ struct VertexOutNoSkin
 {
 	CKFVec3	 Position;
 	CKFVec3	 Normal;
-	CKFColor Color;
 	CKFVec2	 UV;
+	CKFColor Color;
 
 	template <class Archive>
 	void serialize(Archive & ar)
@@ -70,8 +70,8 @@ struct VertexOutSkin
 {
 	CKFVec3					Position;
 	CKFVec3					Normal;
-	CKFColor				Color;
 	CKFVec2					UV;
+	CKFColor				Color;
 	vector<BoneReference>	BoneReferences;
 
 	template <class Archive>
