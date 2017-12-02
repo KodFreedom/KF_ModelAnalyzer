@@ -1,0 +1,63 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "Barrel",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 1,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.699999988079071,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.100000023841858,
+            "Y": 1.399999976158142,
+            "Z": 1.100000023841858
+        }
+    },
+    "MeshNumber": 1,
+    "MeshName": "Barrel_0",
+    "MaterialName": "Barrel",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "ChildNumber": 0

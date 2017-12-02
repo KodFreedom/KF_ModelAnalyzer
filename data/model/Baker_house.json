@@ -1,0 +1,117 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "Baker_house",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 4,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -1.9800000190734864,
+            "Y": 4.0,
+            "Z": 0.25
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 5.0,
+            "Y": 8.0,
+            "Z": 8.5
+        }
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 1.7999999523162842,
+            "Y": 2.0,
+            "Z": 1.25
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 2.799999952316284,
+            "Y": 4.0,
+            "Z": 6.5
+        }
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 3.9600000381469728,
+            "Y": 2.5,
+            "Z": 1.350000023841858
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 5.0,
+            "Z": 2.5
+        }
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -1.899999976158142,
+            "Y": 0.30000001192092898,
+            "Z": -4.5
+        },
+        "Rotation": {
+            "X": 0.7400000095367432,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 2.6500000953674318,
+            "Y": 2.0,
+            "Z": 0.5
+        }
+    },
+    "MeshNumber": 1,
+    "MeshName": "Baker_house_0",
+    "MaterialName": "Baker_house",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "ChildNumber": 0

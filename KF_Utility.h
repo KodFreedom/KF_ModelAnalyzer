@@ -39,13 +39,13 @@ enum RenderPriority
 	RP_Max
 };
 
-enum RenderStateType
+// シェーダータイプ
+enum ShaderType
 {
-	RS_Default = 0,					// LightOn_CCW_Multi_Solid_FogOn
-	RS_NoLight_NoFog,				// LightOff_CCW_Multi_Solid_FogOff
-	RS_NoCullMode,					// LightOn_None_Multi_Solid_FogOn
-	RS_NoLight_NoFog_NoCullMode,	// LightOff_None_Multi_Solid_FogOff
-	RS_Max
+	kDefaultShader = 0, // LightOn_CCW_Multi_Solid_FogOn
+	kNoLightNoFog, // LightOff_CCW_Multi_Solid_FogOff
+	kCullNone, // LightOn_None_Multi_Solid_FogOn
+	kShaderMax
 };
 
 //--------------------------------------------------------------------------------

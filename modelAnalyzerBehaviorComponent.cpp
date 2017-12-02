@@ -438,6 +438,7 @@ void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 			//Offset
 			ImGui::InputFloat3("Transform", &pNode->Translation.m_fX);
 			ImGui::DragFloat3("Rotation", &pNode->RotationOffset.m_fX, rotation_speed_, 0.0f, KF_PI * 2.0f);
+			ImGui::InputFloat4("Rotation Quaternion", &pNode->Rotation.m_fX);
 			ImGui::InputFloat3("Scaling", &pNode->Scale.m_fX);
 
 			//Mesh
@@ -526,8 +527,12 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 	}
 
 	// Model Name
-	string strBuf = "Node Name : " + current_node_->Name;
-	ImGui::Text(strBuf.c_str());
+	char buffer[kBufferSize] = {};
+	strcpy_s(buffer, file_name_.c_str());
+	if (ImGui::InputText("Name", buffer, kBufferSize))
+	{
+		current_node_->Name = buffer;
+	}
 
 	// Collider
 	if (ImGui::CollapsingHeader("Collider"))
@@ -576,7 +581,7 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 		}
 
 		//Add Collider
-		if (ImGui::Button("Add Collider"))
+		if (ImGui::Button("AddCollider"))
 		{
 			ColliderInfo col;
 			col.Type = CS::COL_SPHERE;
@@ -596,7 +601,7 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 		ImGui::InputFloat3("Fixed Scale", &current_node_correct_scale_.m_fX);
 
 		// Recalculate By Mtx
-		if (ImGui::Button("Fix Verteces"))
+		if (ImGui::Button("FixVerteces"))
 		{
 			CKFMtx44 mtxThis;
 

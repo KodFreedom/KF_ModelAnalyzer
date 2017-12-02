@@ -150,7 +150,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 		VERTEX_3D* pVtx;
 		mesh.VertexBuffer->Lock(0, 0, (void**)&pVtx, 0);
 
-		#pragma omp parallel for 
+#pragma omp parallel for 
 		for (int count = 0; count < (int)mesh.Verteces.size(); ++count)
 		{
 			CKFMtx44 mtx;
@@ -185,7 +185,7 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 {
 	for (auto& mesh : Meshes)
 	{
-		#pragma omp parallel for 
+#pragma omp parallel for 
 		for (int count = 0; count < (int)mesh.Verteces.size(); ++count)
 		{
 			auto& vertexDX = mesh.Verteces[count];
@@ -279,7 +279,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 				0,						//オフセット（開始位置）
 				sizeof(VERTEX_3D));		//ストライド量
 
-			// 頂点インデックスの設定
+										// 頂点インデックスの設定
 			pDevice->SetIndices(mesh.IndexBuffer);
 
 			// 頂点フォーマットの設定
@@ -356,6 +356,9 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 			}
 			else if (col.Type == CS::COL_AABB)
 			{
+				mtxCol.m_af[0][0] = CKFMath::VecMagnitude(CKFVec3(mtxCol.m_af[0][0], mtxCol.m_af[0][1], mtxCol.m_af[0][2]));
+				mtxCol.m_af[1][1] = CKFMath::VecMagnitude(CKFVec3(mtxCol.m_af[1][0], mtxCol.m_af[1][1], mtxCol.m_af[1][2]));
+				mtxCol.m_af[2][2] = CKFMath::VecMagnitude(CKFVec3(mtxCol.m_af[2][0], mtxCol.m_af[2][1], mtxCol.m_af[2][2]));
 				mtxCol.m_af[0][1] = mtxCol.m_af[0][2]
 					= mtxCol.m_af[1][0] = mtxCol.m_af[1][2]
 					= mtxCol.m_af[2][0] = mtxCol.m_af[2][1] = 0.0f;
@@ -646,8 +649,21 @@ void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, 
 	for (int count = 0; count < meshNumber; ++count)
 	{
 		auto& mesh = Meshes[count];
-		auto& meshName = fileName + '_' + Name + '_' + to_string(count);
+		auto& meshName = Name + '_' + to_string(count);
 		archive(make_nvp("MeshName", meshName));
+
+		//Material
+		archive(make_nvp("MaterialName", mesh.MaterialName));
+
+		//Render Priority
+		archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
+
+		//Shader Type
+		ShaderType shaderType = ShaderType::kDefaultShader;
+		if (!Meshes[count].EnableLight && !Meshes[count].EnableFog && Meshes[count].EnableCullFace) shaderType = ShaderType::kNoLightNoFog;
+		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
+		archive(make_nvp("ShaderType", shaderType));
+
 		if (haveAnimator) saveSkinMeshJson(mesh, meshName);
 		else saveMeshJson(mesh, meshName);
 	}
@@ -669,7 +685,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	//Node名
 	int size = (int)Name.size();
 	archive.saveBinary(&size, sizeof(int));
-	archive.saveBinary(&Name, size);
+	archive.saveBinary(&Name[0], size);
 
 	//Offset
 	auto& rotation = Rotation * CKFMath::EulerToQuaternion(RotationOffset);
@@ -682,7 +698,10 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	archive.saveBinary(&colliderNumber, sizeof(int));
 	for (auto& collider : Colliders)
 	{
-		archive.saveBinary(&collider, sizeof(ColliderInfo));
+		archive.saveBinary(&collider.Type, sizeof(collider.Type));
+		archive.saveBinary(&collider.Position, sizeof(collider.Position));
+		archive.saveBinary(&collider.Rotation, sizeof(collider.Rotation));
+		archive.saveBinary(&collider.Scale, sizeof(collider.Scale));
 	}
 
 	//Mesh
@@ -690,10 +709,27 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	archive.saveBinary(&meshNumber, sizeof(int));
 	for (int count = 0; count < meshNumber; ++count)
 	{
-		auto& meshName = fileName + '_' + Name + '_' + to_string(count);
+		// Name
+		auto& meshName = Name + '_' + to_string(count);
 		size = (int)meshName.size();
 		archive.saveBinary(&size, sizeof(int));
-		archive.saveBinary(&meshName, size);
+		archive.saveBinary(&meshName[0], size);
+
+		//Material
+		int nameSize = (int)Meshes[count].MaterialName.size();
+		archive.saveBinary(&nameSize, sizeof(int));
+		archive.saveBinary(&Meshes[count].MaterialName[0], nameSize);
+
+		//Render Priority
+		archive.saveBinary(&Meshes[count].MyRenderPriority, sizeof(Meshes[count].MyRenderPriority));
+
+		//Shader Type
+		ShaderType shaderType = ShaderType::kDefaultShader;
+		if (!Meshes[count].EnableLight && !Meshes[count].EnableFog && Meshes[count].EnableCullFace) shaderType = ShaderType::kNoLightNoFog;
+		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
+		archive.saveBinary(&shaderType, sizeof(shaderType));
+
+		// MeshInfo
 		if (haveAnimator) saveSkinMeshBinary(Meshes[count], meshName);
 		else saveMeshBinary(Meshes[count], meshName);
 	}
@@ -988,19 +1024,6 @@ void CMyNode::saveMeshJson(const Mesh& mesh, const string& meshName)
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
 
-	//Material
-	archive(make_nvp("MaterialName", mesh.MaterialName));
-
-	//Render Priority
-	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
-
-	//Render State
-	RenderStateType renderStateType = RenderStateType::RS_Default;
-	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
-	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
-	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
-	archive(make_nvp("RenderStateType", renderStateType));
-	
 	//DrawType
 	int drawType = (int)TriangleList;
 	archive(make_nvp("DrawType", drawType));
@@ -1044,19 +1067,6 @@ void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
-
-	//Material
-	archive(make_nvp("MaterialName", mesh.MaterialName));
-
-	//Render Priority
-	archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
-
-	//Render State
-	RenderStateType renderStateType = RenderStateType::RS_Default;
-	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
-	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
-	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
-	archive(make_nvp("RenderStateType", renderStateType));
 
 	//DrawType
 	int drawType = (int)TriangleList;
@@ -1102,21 +1112,6 @@ void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
 
-	//Material
-	int nameSize = (int)mesh.MaterialName.size();
-	archive.saveBinary(&nameSize, sizeof(int));
-	archive.saveBinary(&mesh.MaterialName[0], nameSize);
-
-	//Render Priority
-	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));
-
-	//Render State
-	RenderStateType renderStateType = RenderStateType::RS_Default;
-	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
-	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
-	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
-	archive.saveBinary(&renderStateType, sizeof(RenderStateType));
-
 	//DrawType
 	auto drawType = TriangleList;
 	archive.saveBinary(&drawType, sizeof(DrawType));
@@ -1153,21 +1148,6 @@ void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
-
-	//Material
-	int nameSize = (int)mesh.MaterialName.size();
-	archive.saveBinary(&nameSize, sizeof(int));
-	archive.saveBinary(&mesh.MaterialName[0], nameSize);
-
-	//Render Priority
-	archive.saveBinary(&mesh.MyRenderPriority, sizeof(RenderPriority));
-
-	//Render State
-	RenderStateType renderStateType = RenderStateType::RS_Default;
-	if (!mesh.EnableLight && !mesh.EnableFog && mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog;
-	else if (!mesh.EnableLight && !mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoLight_NoFog_NoCullMode;
-	else if (mesh.EnableLight && mesh.EnableFog && !mesh.EnableCullFace) renderStateType = RenderStateType::RS_NoCullMode;
-	archive.saveBinary(&renderStateType, sizeof(RenderStateType));
 
 	//DrawType
 	auto drawType = TriangleList;
