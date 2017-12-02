@@ -1,0 +1,100 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "greatsword_of_fn",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 3,
+    "Collider": {
+        "Type": 0,
+        "Position": {
+            "X": 0.0,
+            "Y": 1.7999999523162842,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.25,
+            "Y": 0.25,
+            "Z": 0.25
+        }
+    },
+    "Collider": {
+        "Type": 0,
+        "Position": {
+            "X": 0.0,
+            "Y": 1.350000023841858,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.25,
+            "Y": 0.25,
+            "Z": 0.25
+        }
+    },
+    "Collider": {
+        "Type": 0,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.8999999761581421,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.25,
+            "Y": 0.25,
+            "Z": 0.25
+        }
+    },
+    "MeshNumber": 1,
+    "MeshName": "greatsword_of_fn_0",
+    "MaterialName": "greatsword_of_fn1",
+    "RenderPriority": 0,
+    "ShaderType": 1,
+    "MeshType": 0,
+    "ChildNumber": 0

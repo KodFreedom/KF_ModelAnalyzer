@@ -410,7 +410,7 @@ void CModelAnalyzerBehaviorComponent::ShowModelInfoWindow(void)
 	// Node Info
 	if (ImGui::CollapsingHeader("Node Info"))
 	{
-		ShowNodeInfo(root_node_);
+		root_node_ = ShowNodeInfo(root_node_);
 	}
 
 	// End
@@ -420,14 +420,18 @@ void CModelAnalyzerBehaviorComponent::ShowModelInfoWindow(void)
 //--------------------------------------------------------------------------------
 // ShowNodeInfo
 //--------------------------------------------------------------------------------
-void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
+CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 {
-	if (!pNode) return;
+	if (!pNode) return nullptr;
 
+	bool isDeleteNode = false;
 	if (ImGui::TreeNode(pNode->Name.c_str()))
 	{
 		if (ImGui::CollapsingHeader("Info"))
 		{
+			//Delete
+			if (ImGui::Button("Delete")) isDeleteNode ^= 1;
+
 			//Type
 			int size = (int)pNode->AttributeNames.size();
 			for (int count = 0; count < size; ++count)
@@ -444,12 +448,16 @@ void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 			//Mesh
 			if (!pNode->Meshes.empty() && ImGui::TreeNode("Mesh"))
 			{
-				for (int count = 0; count < (int)pNode->Meshes.size(); ++count)
+				for (int count = 0; count < (int)pNode->Meshes.size();)
 				{
 					auto& mesh = pNode->Meshes[count];
 					auto& strMeshName = to_string(count);
+					bool isDelete = false;
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
+						//delete
+						if (ImGui::Button("Delete")) isDelete ^= 1;
+
 						//Info
 						ImGui::Text("PolygonNumber : %d", mesh.PolygonNumber);
 						ImGui::Text("VertexNumber : %d  IndexNumber : %d", mesh.VertexNumber, mesh.IndexNumber);
@@ -479,6 +487,15 @@ void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 						ImGui::Checkbox("Enable Fog", &mesh.EnableFog);
 						ImGui::TreePop();
 					}
+
+					if (isDelete)
+					{
+						pNode->Meshes.erase(pNode->Meshes.begin() + count);
+					}
+					else
+					{
+						++count;
+					}
 				}
 				ImGui::TreePop();
 			}
@@ -501,14 +518,27 @@ void CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 		if (!pNode->Children.empty() && ImGui::CollapsingHeader("Child"))
 		{
 			//Child
-			for (auto pChild : pNode->Children)
+			for (auto iterator = pNode->Children.begin(); iterator != pNode->Children.end();)
 			{
-				ShowNodeInfo(pChild);
+				if (ShowNodeInfo(*iterator) == nullptr)
+				{
+					iterator = pNode->Children.erase(iterator);
+				}
+				else
+				{
+					++iterator;
+				}
 			}
 		}
-
 		ImGui::TreePop();
 	}
+
+	if (isDeleteNode)
+	{
+		pNode->Release();
+		return nullptr;
+	}
+	return pNode;
 }
 
 //--------------------------------------------------------------------------------
