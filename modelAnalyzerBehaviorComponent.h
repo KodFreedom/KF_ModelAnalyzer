@@ -64,7 +64,7 @@ private:
 	void		ShowMainMenuFile(void);
 	void		ShowMainWindow(void);
 	void		ShowModelInfoWindow(void);
-	void		ShowNodeInfo(CMyNode* pNode);
+	CMyNode*	ShowNodeInfo(CMyNode* pNode);
 	void		ShowNodeNowWindow(void);
 	void		ShowAnimatorWindow(void);
 	void		ShowCameraWindow(void);
