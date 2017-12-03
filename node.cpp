@@ -734,11 +734,11 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 		archive.saveBinary(&shaderType, sizeof(shaderType));
 
 		//Type
-		MeshType type = haveAnimator ? k3dSkin : k3dMesh;
+		MeshType type = Meshes[count].IsSkin ? k3dSkin : k3dMesh;
 		archive.saveBinary(&type, sizeof(type));
 
 		// MeshInfo
-		if (haveAnimator) saveSkinMeshBinary(Meshes[count], meshName);
+		if (Meshes[count].IsSkin) saveSkinMeshBinary(Meshes[count], meshName);
 		else saveMeshBinary(Meshes[count], meshName);
 	}
 
