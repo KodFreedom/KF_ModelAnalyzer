@@ -23,9 +23,9 @@
 //--------------------------------------------------------------------------------
 struct BoneReference
 {
-	BoneReference(const us index, float weight, const string& name)
+	BoneReference(const short index, float weight, const string& name)
 		: Index(index), Weight(weight), Name(name) {}
-	us		Index;
+	short	Index;
 	string	Name;
 	float	Weight;
 
@@ -72,13 +72,14 @@ struct VertexOutSkin
 	CKFVec3					Normal;
 	CKFVec2					UV;
 	CKFColor				Color;
-	vector<BoneReference>	BoneReferences;
+	Short4					BoneIndexes;
+	CKFVec4					BoneWeights;
 
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
 		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color)
-			, make_nvp("UV", UV), make_nvp("BoneReferences", BoneReferences));
+			, make_nvp("UV", UV), make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
 	}
 };
 
@@ -104,7 +105,11 @@ struct VertexDX
 		result.Normal = Vertex.vNormal;
 		result.Color = CKFMath::sc_cWhite;
 		result.UV = Vertex.vUV;
-		result.BoneReferences = BoneReferences;
+		for (int count = 0; count < BoneReferences.size(); ++count)
+		{
+			result.BoneIndexes.m_[count] = BoneReferences[count].Index;
+			result.BoneWeights.m_[count] = BoneReferences[count].Weight;
+		}
 		return result;
 	}
 };
@@ -206,7 +211,7 @@ public:
 	void RecursiveRecombineMeshes(void);
 	void RecursiveReverseTexV(void);
 	void RecalculateMeshesBy(const CKFMtx44& matrix);
-	void RecursiveMatchClusterID(const Frame& initFrame);
+	void RecursiveMatchClusterID(const vector<Cluster>& avatar);
 	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 

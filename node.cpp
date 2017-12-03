@@ -150,7 +150,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 		VERTEX_3D* pVtx;
 		mesh.VertexBuffer->Lock(0, 0, (void**)&pVtx, 0);
 
-#pragma omp parallel for 
+//#pragma omp parallel for 
 		for (int count = 0; count < (int)mesh.Verteces.size(); ++count)
 		{
 			CKFMtx44 mtx;
@@ -181,7 +181,7 @@ void CMyNode::RecursiveUpdateSkin(const vector<Cluster>& clusters)
 //--------------------------------------------------------------------------------
 //  RecursiveMatchClusterID
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
+void CMyNode::RecursiveMatchClusterID(const vector<Cluster>& avatar)
 {
 	for (auto& mesh : Meshes)
 	{
@@ -191,11 +191,11 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 			auto& vertexDX = mesh.Verteces[count];
 			for (auto& boneReference : vertexDX.BoneReferences)
 			{
-				for (int countBoneFrame = 0; countBoneFrame < (int)initFrame.BoneFrames.size(); ++countBoneFrame)
+				for (int countBone = 0; countBone < (int)avatar.size(); ++countBone)
 				{
-					if (boneReference.Name == initFrame.BoneFrames[countBoneFrame].Name)
+					if (boneReference.Name == avatar[countBone].Name)
 					{
-						boneReference.Index = countBoneFrame;
+						boneReference.Index = countBone;
 						break;
 					}
 				}
@@ -206,7 +206,7 @@ void CMyNode::RecursiveMatchClusterID(const Frame& initFrame)
 	//Child
 	for (auto pChild : Children)
 	{
-		pChild->RecursiveMatchClusterID(initFrame);
+		pChild->RecursiveMatchClusterID(avatar);
 	}
 }
 
@@ -1071,7 +1071,7 @@ void CMyNode::saveMeshJson(const Mesh& mesh, const string& meshName)
 //--------------------------------------------------------------------------------
 void CMyNode::saveSkinMeshJson(const Mesh& mesh, const string& meshName)
 {
-	auto& filePath = "data/skinMesh/" + meshName + ".json";
+	auto& filePath = "data/skin/" + meshName + ".json";
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
@@ -1152,7 +1152,7 @@ void CMyNode::saveMeshBinary(const Mesh& mesh, const string& meshName)
 //--------------------------------------------------------------------------------
 void CMyNode::saveSkinMeshBinary(const Mesh& mesh, const string& meshName)
 {
-	auto& filePath = "data/skinMesh/" + meshName + ".skinMesh";
+	auto& filePath = "data/skin/" + meshName + ".skin";
 	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
