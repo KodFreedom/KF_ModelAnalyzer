@@ -128,7 +128,7 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (!root_node_) return;
 
-	if (animator_ && is_playing_motion_)
+	if (animator_ && is_playing_motion_ && !animator_->Motions.empty())
 	{
 		auto& motion = animator_->Motions[motion_no_];
 		auto& avatar = motion.Frames[current_frame_];
@@ -223,7 +223,7 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		root_node_->RecursiveRecombineMeshes();
 		if (animator_)
 		{
-			root_node_->RecursiveMatchClusterID(myModel.pAnimator->Motions[0].Frames[0]);
+			root_node_->RecursiveMatchClusterID(myModel.pAnimator->Clusters);
 		}
 	}
 	else
@@ -678,7 +678,7 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 {
-	if (!is_display_animator_window_ || animator_->Motions.empty()) return;
+	if (!is_display_animator_window_) return;
 
 	// Begin
 	if (!ImGui::Begin("Animation Window", &is_display_animator_window_))
@@ -687,24 +687,27 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 		return;
 	}
 
-	// Play
-	if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
-	
-	// Type
-	vector<string> labels;
-	labels.reserve(animator_->Motions.size());
-	for (auto& motion : animator_->Motions)
+	if (!animator_-> Motions.empty())
 	{
-		labels.push_back(motion.Name);
-	}
-	if (ImGui::Combo("Select Motion", (int*)&motion_no_, labels))
-	{
-		current_frame_ = 0;
-	}
-	labels.clear();
+		// Play
+		if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
 
-	// Animation Current
-	ShowCurrentAnimationWindow();
+		// Type
+		vector<string> labels;
+		labels.reserve(animator_->Motions.size());
+		for (auto& motion : animator_->Motions)
+		{
+			labels.push_back(motion.Name);
+		}
+		if (ImGui::Combo("Select Motion", (int*)&motion_no_, labels))
+		{
+			current_frame_ = 0;
+		}
+		labels.clear();
+
+		// Animation Current
+		ShowCurrentAnimationWindow();
+	}
 
 	// AddAnimation
 	if (ImGui::Button("Add animation"))
@@ -858,6 +861,8 @@ void CModelAnalyzerBehaviorComponent::ShowCameraWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 {
+	if (animator_->Motions.empty()) return;
+	bool isDelete = false;
 	if (ImGui::CollapsingHeader("CurrentAnimation"))
 	{
 		auto& current = animator_->Motions[motion_no_];
@@ -900,6 +905,7 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 			if (ImGui::Button("Delete out of range frames"))
 			{
 				animator_->DeleteOutOfRangeFrames(motion_no_);
+				current_frame_ = current.StartFrame;
 			}
 
 			ImGui::TreePop();
@@ -1060,11 +1066,17 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 			ImGui::TreePop();
 		}
 
-		// Todo : Delete Animation
-		//if (ImGui::Button("Delete animation"))
-		//{
-		//
-		//}
+		// Delete Animation
+		if (ImGui::Button("Delete animation"))
+		{
+			isDelete ^= 1;
+		}
+	}
+	if (isDelete)
+	{
+		animator_->Motions.erase(animator_->Motions.begin() + motion_no_);
+		motion_no_ = 0;
+		current_frame_ = 0;
 	}
 }
 

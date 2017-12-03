@@ -32,6 +32,34 @@
 //  å^íËã`
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
+//  Short4
+//--------------------------------------------------------------------------------
+class Short4
+{
+public:
+	Short4() : x_(0), y_(0), z_(0), w_(0) {}
+	~Short4() {}
+
+	union
+	{
+		struct
+		{
+			short x_;
+			short y_;
+			short z_;
+			short w_;
+		};
+		short m_[4];
+	};
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("X", x_), make_nvp("Y", y_), make_nvp("Z", z_), make_nvp("W", w_));
+	}
+};
+
+//--------------------------------------------------------------------------------
 //  Vector2
 //--------------------------------------------------------------------------------
 class CKFVec2
@@ -166,14 +194,27 @@ public:
 	CKFVec4(const CKFVec3& vVec, const float& fW) : m_fX(vVec.m_fX), m_fY(vVec.m_fY), m_fZ(vVec.m_fZ), m_fW(fW) {}
 	~CKFVec4() {}
 
-	float m_fX;
-	float m_fY;
-	float m_fZ;
-	float m_fW;
+	union 
+	{
+		struct
+		{
+			float m_fX;
+			float m_fY;
+			float m_fZ;
+			float m_fW;
+		};
+		float m_[4];
+	};
 
 	//éZèpââéZéq
 	CKFVec4 operator*(const CKFMtx44& mtxValue) const;
 	void operator*=(const CKFMtx44& mtxValue);
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("X", m_fX), make_nvp("Y", m_fY), make_nvp("Z", m_fZ), make_nvp("W", m_fW));
+	}
 };
 
 //--------------------------------------------------------------------------------

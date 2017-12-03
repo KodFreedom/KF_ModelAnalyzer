@@ -242,6 +242,7 @@ void CAnimator::saveMotionTransitionsCpp(const int motionNo)
 	// Include
 	file << "#include \"" + motion.Name + "_motion_state.h" + "\"\n";
 	file << "#include \"animator.h\"\n";
+	file << "#include \"motion_data.h\"\n";
 	if (!motion.IsLoop && motion.ChangeWhenOver)
 	{
 		file << "#include \"" + motion.ChangeWhenOverNextMotion + "_motion_state.h" + "\"\n";
@@ -262,21 +263,21 @@ void CAnimator::saveMotionTransitionsCpp(const int motionNo)
 		if (motion.ChangeWhenOver)
 		{
 			auto& nextClassName = CKFUtility::ParameterNameToMethodName(motion.ChangeWhenOverNextMotion) + "MotionState";
-			file << "\tif (current_motion_frame_counter_ >= frame_to_exit_)\n";
+			file << "\tif (current_frame_counter_ >= frame_to_exit_)\n";
 			file << "\t{\n";
-			file << "\t\tcurrent_motion_frame_counter_ = frame_to_exit_ - 1;\n";
-			file << "\t\tanimator.Change(new BlendMotionState(current_motion_name_, "
-				"new " + nextClassName + "(0), "
-				+ "current_motion_frame_counter_, "
-				+ std::to_string(motion.ChangeWhenOverBlendFrame) + ");\n";
+			file << "\t\tcurrent_frame_counter_ = frame_to_exit_ - 1;\n";
+			file << "\t\tanimator.Change(MY_NEW BlendMotionState(current_motion_name_, "
+				"MY_NEW " + nextClassName + "(0), "
+				+ "current_frame_counter_, "
+				+ std::to_string(motion.ChangeWhenOverBlendFrame) + "));\n";
 			file << "\t\treturn;\n";
 			file << "\t}\n";
 		}
 		else
 		{
-			file << "\tif (current_motion_frame_counter_ >= frameNumber)\n";
+			file << "\tif (current_frame_counter_ >= static_cast<int>(current_motion_data_->frames_.size()))\n";
 			file << "\t{\n";
-			file << "\t\t--current_motion_frame_counter_;\n";
+			file << "\t\t--current_frame_counter_;\n";
 			file << "\t}\n";
 		}
 	}
@@ -314,10 +315,10 @@ void CAnimator::saveMotionTransitionsCpp(const int motionNo)
 		file << "\t{\n";
 
 		auto& nextClassName = CKFUtility::ParameterNameToMethodName(transition.NextMotion) + "MotionState";
-		file << "\t\tanimator.Change(new BlendMotionState(current_motion_name_, "
-			"new " + nextClassName + "(0), "
-			+ "current_motion_frame_counter_, "
-			+ std::to_string(transition.BlendFrame) + ");\n";
+		file << "\t\tanimator.Change(MY_NEW BlendMotionState(current_motion_name_, "
+			"MY_NEW " + nextClassName + "(0), "
+			+ "current_frame_counter_, "
+			+ std::to_string(transition.BlendFrame) + "));\n";
 		file << "\t\treturn;\n";
 		file << "\t}\n";
 	}
