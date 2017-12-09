@@ -1,0 +1,207 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 2,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 5.0,
+            "Z": -0.30000001192092898
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 12.0,
+            "Y": 12.0,
+            "Z": 7.0
+        }
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -3.0,
+            "Y": 3.0,
+            "Z": 4.400000095367432
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 4.0,
+            "Y": 8.0,
+            "Z": 2.0
+        }
+    },
+    "MeshNumber": 0,
+    "ChildNumber": 6,
+    "Name": "plants",
+    "Translation": {
+        "X": -4.905096054077148,
+        "Y": 2.6447789669036867,
+        "Z": 5.478792667388916
+    },
+    "Rotation": {
+        "X": -0.0917331874370575,
+        "Y": -0.4546653926372528,
+        "Z": -0.047408364713191989,
+        "W": 0.8846563100814819
+    },
+    "Scale": {
+        "X": 1.4285378456115723,
+        "Y": 1.4285378456115723,
+        "Z": 1.4285378456115723
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "plants_0",
+    "MaterialName": "None__plant_tga",
+    "RenderPriority": 1,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "roof",
+    "Translation": {
+        "X": 0.024167010560631753,
+        "Y": 8.300195693969727,
+        "Z": 0.7095205187797546
+    },
+    "Rotation": {
+        "X": 0.5000002384185791,
+        "Y": -0.4999997615814209,
+        "Z": -0.4999997615814209,
+        "W": -0.5000002384185791
+    },
+    "Scale": {
+        "X": 4.476332187652588,
+        "Y": 4.476332187652588,
+        "Z": 4.476332187652588
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "roof_0",
+    "MaterialName": "None__roof_psd",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "glass",
+    "Translation": {
+        "X": -0.040717221796512607,
+        "Y": 7.913156509399414,
+        "Z": -0.2818206548690796
+    },
+    "Rotation": {
+        "X": 7.277362783497665e-7,
+        "Y": 0.7071067690849304,
+        "Z": 0.7071067094802856,
+        "W": 7.277362215063476e-7
+    },
+    "Scale": {
+        "X": 4.476332187652588,
+        "Y": 4.476332187652588,
+        "Z": 4.476332187652588
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "glass_0",
+    "MaterialName": "None__window_psd",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "brick",
+    "Translation": {
+        "X": -0.04049389064311981,
+        "Y": 1.763857126235962,
+        "Z": -0.2586958408355713
+    },
+    "Rotation": {
+        "X": 8.146035668232799e-8,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 4.476332187652588,
+        "Y": 4.476332187652588,
+        "Z": 4.476332187652588
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "brick_0",
+    "MaterialName": "None__brick_medieval_psd",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "wood",
+    "Translation": {
+        "X": -0.021877219900488855,
+        "Y": 8.203439712524414,
+        "Z": 1.1959679126739503
+    },
+    "Rotation": {
+        "X": 8.146035668232799e-8,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 4.476332187652588,
+        "Y": 4.476332187652588,
+        "Z": 4.476332187652588
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "wood_0",
+    "MaterialName": "None__wood_planks_old_0087_01_preview_jpg",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "wall",
+    "Translation": {
+        "X": -0.04029272124171257,
+        "Y": 5.943612098693848,
+        "Z": 0.7731884121894836
+    },
+    "Rotation": {
+        "X": 8.146035668232799e-8,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 4.476332187652588,
+        "Y": 4.476332187652588,
+        "Z": 4.476332187652588
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "wall_0",
+    "MaterialName": "None__wall_psd_001",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0

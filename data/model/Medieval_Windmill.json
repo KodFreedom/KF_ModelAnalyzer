@@ -1,0 +1,182 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 2,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.20000000298023225,
+            "Y": 10.0,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 10.5,
+            "Y": 30.0,
+            "Z": 11.0
+        }
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -6.0,
+            "Y": -0.20000000298023225,
+            "Z": -0.10000000149011612
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.550000011920929
+        },
+        "Scale": {
+            "X": 3.0,
+            "Y": 1.0,
+            "Z": 3.0999999046325685
+        }
+    },
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "WindMill",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 8.146034247147327e-8,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "WindMill_0",
+    "MaterialName": "Material #78",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 4,
+    "Name": "Fan",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 1.3234889800848444e-23,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "Fan_0",
+    "MaterialName": "Material #78",
+    "RenderPriority": 1,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "Ornament",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 1.3234889800848444e-23,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "Ornament_0",
+    "MaterialName": "Material #78",
+    "RenderPriority": 1,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "Ext",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 4.214684778958144e-8,
+        "Y": 0.0,
+        "Z": 4.214684778958144e-8,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "Ext_0",
+    "MaterialName": "Material #78",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0,
+    "Name": "Lamp",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 4.4010189270693448e-8,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 1,
+    "MeshName": "Lamp_0",
+    "MaterialName": "Material #78",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "MeshType": 0,
+    "ChildNumber": 0

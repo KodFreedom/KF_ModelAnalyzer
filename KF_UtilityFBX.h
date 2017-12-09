@@ -54,7 +54,7 @@ private:
 	CKFUtilityFBX() {}
 	~CKFUtilityFBX() {}
 
-	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode);
+	static CMyNode*		recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyNode* parent);
 	static void			analyzeMaterial(FbxScene* lScene, unordered_map<string, Material>& mapMaterial);
 	static CAnimator*	analyzeAnimator(FbxImporter* lImporter, FbxScene* lScene);
 	static void			analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, CAnimator* animator);

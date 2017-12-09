@@ -72,7 +72,7 @@ struct VertexOutSkin
 	CKFVec3					Normal;
 	CKFVec2					UV;
 	CKFColor				Color;
-	Short4					BoneIndexes;
+	CKFVec4					BoneIndexes;
 	CKFVec4					BoneWeights;
 
 	template <class Archive>
@@ -121,9 +121,10 @@ struct Mesh
 	Mesh()
 		: EnableCullFace(false)
 		, EnableLight(false)
-		, EnableFog(true)
+		, CastShadow(true)
 		, IsSkin(false)
 		, MyRenderPriority(RenderPriority::RP_Default)
+		, MyShaderType(ShaderType::kDefaultShader)
 #ifdef USING_DIRECTX
 		, VertexNumber(0)
 		, IndexNumber(0)
@@ -141,9 +142,10 @@ struct Mesh
 	string					MaterialName;
 	bool					EnableCullFace;
 	bool					EnableLight;
-	bool					EnableFog;
+	bool					CastShadow;
 	bool					IsSkin;
 	RenderPriority			MyRenderPriority;
+	ShaderType				MyShaderType;
 
 #ifdef USING_DIRECTX
 	int						VertexNumber;
@@ -153,6 +155,8 @@ struct Mesh
 	LPDIRECT3DVERTEXBUFFER9 VertexBuffer;
 	LPDIRECT3DINDEXBUFFER9	IndexBuffer;
 #endif
+
+	static void DisAttachToBone(Mesh& mesh);
 };
 
 struct ColliderInfo
@@ -182,9 +186,11 @@ public:
 		, RotationOffset(CKFVec3(0.0f))
 		, Scale(CKFVec3(1.0f))
 		, ColliderMaterialID(1)
+		, Parent(nullptr)
 	{}
 	~CMyNode() {}
 
+	CMyNode*		Parent;
 	list<CMyNode*>	Children;
 	string			Name;
 	vector<string>	AttributeNames;
@@ -214,6 +220,9 @@ public:
 	void RecursiveMatchClusterID(const vector<Cluster>& avatar);
 	void RecursiveSave(JSONOutputArchive& archive, const string& fileName, const bool& haveAnimator);
 	void RecursiveSave(BinaryOutputArchive& archive, const string& fileName, const bool& haveAnimator);
+	void RecursivePush(vector<string>& node_names, vector<CMyNode*>& nodes);
+	bool RecursiveCheckIsChild(const CMyNode* const node);
+	void ChangeParent(CMyNode* newparent);
 
 private:
 	void analyzePoint(FbxMesh* pMesh);

@@ -70,6 +70,7 @@ private:
 	void		ShowCameraWindow(void);
 	void		ShowMaterialWindow(void);
 	void		ShowCurrentAnimationWindow(void);
+	bool		ChangeParent(CMyNode* pNode);
 	void		ChangeTexture(string& meshTexture);
 	void		AddAnimation(void);
 
@@ -84,6 +85,8 @@ private:
 	string		     file_name_;
 	CMyNode*	     root_node_;
 	CAnimator*	     animator_;
+	vector<string>   node_names_;
+	vector<CMyNode*> nodes_;
 	unordered_map<string, Material>	materials_;
 
 	//ImGui

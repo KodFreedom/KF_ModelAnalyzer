@@ -35,6 +35,11 @@ void CAnimator::UpdateClusterWorld(void)
 {
 	for (auto& cluster : Clusters)
 	{
+		if (cluster.Name == "sword_1")
+		{
+			cluster.World = cluster.Node->World;
+			continue;
+		}
 		cluster.World = cluster.BindPoseInverse * cluster.Node->World;
 	}
 }

@@ -194,7 +194,7 @@ void CManager::Update(void)
 	m_pMode->Update();
 
 	//コリジョン更新
-	m_pCollisionSystem->Update();
+	//m_pCollisionSystem->Update();
 
 	//物理演算更新
 	//m_pPhysicsSystem->Update();
@@ -209,7 +209,7 @@ void CManager::LateUpdate(void)
 	m_pMode->LateUpdate();
 
 	//コリジョン更新
-	m_pCollisionSystem->LateUpdate();
+	//m_pCollisionSystem->LateUpdate();
 
 	//Fade更新
 	m_pFade->Update();

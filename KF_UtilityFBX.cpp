@@ -61,7 +61,7 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
 	// Node
-	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode());
+	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode(), nullptr);
 
 	// Material
 	analyzeMaterial(lScene, myModel.mapMaterial);
@@ -461,10 +461,11 @@ int CKFUtilityFBX::FindRepetition(const list<VertexDX>& listVtx, const VertexDX&
 //--------------------------------------------------------------------------------
 //  recursiveNode
 //--------------------------------------------------------------------------------
-CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
+CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyNode* parent)
 {
 	if (!pNode) { return NULL; }
 	auto pMyNode = new CMyNode;
+	pMyNode->Parent = parent;
 	pMyNode->Name = pNode->GetName();
 	auto& local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
 	CKFMath::MtxToTransRotScale(local, pMyNode->Translation, pMyNode->Rotation, pMyNode->Scale);
@@ -481,13 +482,18 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode)
 			pMyNode->analyzeNormal(pMesh);              
 			pMyNode->analyzeUV(pMesh);               
 			pMyNode->analyzeMaterial(pMesh);
-			pMyNode->analyzeCluster(pMesh);
+			//if (pMyNode->Name != "juggernaut_weapon")
+			{
+				pMyNode->analyzeCluster(pMesh);
+			}
+			
 		}
 	}
 
 	for (int nCnt = 0; nCnt < pNode->GetChildCount(); ++nCnt)
 	{
-		pMyNode->Children.push_back(recursiveNode(pManager, pNode->GetChild(nCnt)));
+		auto child = recursiveNode(pManager, pNode->GetChild(nCnt), pMyNode);
+		pMyNode->Children.push_back(child);
 	}
 
 	return pMyNode;
@@ -682,7 +688,7 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 	// Skeleton
 	list<FbxNode*> skeletons;
 	findSkeletons(lScene->GetRootNode(), skeletons);
-	if (skeletons.size() != animator->Clusters.size())
+	if (skeletons.size() < animator->Clusters.size())
 	{
 		MessageBox(NULL, "skeletonÇÃêîÇ™çáÇÌÇ»Ç¢ÅIÅI", "analyzeAnimation", MB_OK | MB_ICONWARNING);
 		return;
@@ -712,12 +718,11 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 		for (auto currentTime = startTime; currentTime < endTime; currentTime += oneFrameTime)
 		{
 			Frame frame;
-			frame.BoneFrames.resize(skeletons.size());
-
+			frame.BoneFrames.resize(animator->Clusters.size());
 			for (auto skeleton : skeletons)
 			{
 				string name = skeleton->GetName();
-				int clusterNo = 0;
+				int clusterNo = -1;
 				for (int countCluster = 0; countCluster < (int)animator->Clusters.size(); ++countCluster)
 				{
 					if (name == animator->Clusters[countCluster].Name)
@@ -725,6 +730,10 @@ void CKFUtilityFBX::analyzeAnimation(FbxImporter* lImporter, FbxScene* lScene, C
 						clusterNo = countCluster;
 						break;
 					}
+				}
+				if (clusterNo == -1)
+				{
+					continue;
 				}
 				frame.BoneFrames[clusterNo].Name = name;
 				auto& matrix = CKFMtx44::FbxToMtx(skeleton->EvaluateLocalTransform(currentTime));
