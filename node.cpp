@@ -53,6 +53,18 @@ bool VertexDX::operator==(const VertexDX& value) const
 #endif
 
 //--------------------------------------------------------------------------------
+//  ボーンを削除
+//--------------------------------------------------------------------------------
+void Mesh::DisAttachToBone(Mesh& mesh)
+{
+	mesh.IsSkin = false;
+	for (auto& vertex : mesh.Verteces)
+	{
+		vertex.BoneReferences.clear();
+	}
+}
+
+//--------------------------------------------------------------------------------
 //
 //  MyNode
 //
@@ -659,10 +671,7 @@ void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, 
 		archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
 
 		//Shader Type
-		ShaderType shaderType = ShaderType::kDefaultShader;
-		if (!Meshes[count].EnableLight && !Meshes[count].EnableFog && Meshes[count].EnableCullFace) shaderType = ShaderType::kNoLightNoFog;
-		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
-		archive(make_nvp("ShaderType", shaderType));
+		archive(make_nvp("ShaderType", Meshes[count].MyShaderType));
 
 		//Type
 		MeshType type = haveAnimator ? k3dSkin : k3dMesh;
@@ -728,10 +737,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 		archive.saveBinary(&Meshes[count].MyRenderPriority, sizeof(Meshes[count].MyRenderPriority));
 
 		//Shader Type
-		ShaderType shaderType = ShaderType::kDefaultShader;
-		if (!Meshes[count].EnableLight && !Meshes[count].EnableFog && Meshes[count].EnableCullFace) shaderType = ShaderType::kNoLightNoFog;
-		else if (Meshes[count].EnableLight && Meshes[count].EnableFog && !Meshes[count].EnableCullFace) shaderType = ShaderType::kCullNone;
-		archive.saveBinary(&shaderType, sizeof(shaderType));
+		archive.saveBinary(&Meshes[count].MyShaderType, sizeof(Meshes[count].MyShaderType));
 
 		//Type
 		MeshType type = Meshes[count].IsSkin ? k3dSkin : k3dMesh;
@@ -748,6 +754,41 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 	for (auto& pChild : Children)
 	{
 		pChild->RecursiveSave(archive, fileName, haveAnimator);
+	}
+}
+
+//--------------------------------------------------------------------------------
+//  RecursiveCheckIsChild
+//--------------------------------------------------------------------------------
+bool CMyNode::RecursiveCheckIsChild(const CMyNode* const node)
+{
+	for (auto& child : this->Children)
+	{
+		if (node == child) return true;
+		if (child->RecursiveCheckIsChild(node) == true) return true;
+	}
+	return false;
+}
+
+//--------------------------------------------------------------------------------
+//  ChangeParent
+//--------------------------------------------------------------------------------
+void CMyNode::ChangeParent(CMyNode* newparent)
+{
+	Parent = newparent;
+	Parent->Children.push_back(this);
+}
+
+//--------------------------------------------------------------------------------
+//  RecursivePush
+//--------------------------------------------------------------------------------
+void CMyNode::RecursivePush(vector<string>& node_names, vector<CMyNode*>& nodes)
+{
+	node_names.push_back(Name);
+	nodes.push_back(this);
+	for (auto child : Children)
+	{
+		child->RecursivePush(node_names, nodes);
 	}
 }
 
@@ -991,7 +1032,7 @@ void CMyNode::analyzeMaterial(FbxMesh* pMesh)
 void CMyNode::analyzeCluster(FbxMesh* pMesh)
 {
 	auto& currentMesh = Meshes.back();
-
+	
 	// スキンの数を取得 
 	int nNumSkin = pMesh->GetDeformerCount(FbxDeformer::eSkin);
 

@@ -221,6 +221,7 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.DiffuseTextureName);
 		}
 		root_node_->RecursiveRecombineMeshes();
+		root_node_->RecursivePush(node_names_, nodes_);
 		if (animator_)
 		{
 			root_node_->RecursiveMatchClusterID(myModel.pAnimator->Clusters);
@@ -267,6 +268,8 @@ void CModelAnalyzerBehaviorComponent::ReleaseModel(void)
 			SaveModel(nID == IDYES ? Json : Binary);
 		}
 	}
+	node_names_.clear();
+	nodes_.clear();
 	SAFE_RELEASE(root_node_);
 	SAFE_RELEASE(animator_);
 	for (auto& pair : materials_)
@@ -425,12 +428,22 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 	if (!pNode) return nullptr;
 
 	bool isDeleteNode = false;
+	bool isChangeParent = false;
 	if (ImGui::TreeNode(pNode->Name.c_str()))
 	{
 		if (ImGui::CollapsingHeader("Info"))
 		{
 			//Delete
 			if (ImGui::Button("Delete")) isDeleteNode ^= 1;
+
+			//Change Parent
+			if (pNode->Parent)
+			{
+				if (ChangeParent(pNode) == true)
+				{
+					isChangeParent = true;
+				}
+			}
 
 			//Type
 			int size = (int)pNode->AttributeNames.size();
@@ -458,6 +471,12 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 						//delete
 						if (ImGui::Button("Delete")) isDelete ^= 1;
 
+						//delete skin
+						if (ImGui::Button("Disattach bone"))
+						{
+							Mesh::DisAttachToBone(mesh);
+						}
+
 						//Info
 						ImGui::Text("PolygonNumber : %d", mesh.PolygonNumber);
 						ImGui::Text("VertexNumber : %d  IndexNumber : %d", mesh.VertexNumber, mesh.IndexNumber);
@@ -478,13 +497,22 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 						ImGui::ListBox("Render Priority\n(single select)", (int*)&mesh.MyRenderPriority, listbox_rp, 3, 3);
 
 						// Light
-						ImGui::Checkbox("Enable Light", &mesh.EnableLight);
+						ImGui::Checkbox("Enable Light(for editor)", &mesh.EnableLight);
 
 						// CullFace
-						ImGui::Checkbox("Enable CullFace", &mesh.EnableCullFace);
+						ImGui::Checkbox("Enable CullFace(for editor", &mesh.EnableCullFace);
 
 						// Fog
-						ImGui::Checkbox("Enable Fog", &mesh.EnableFog);
+						ImGui::Checkbox("Cast Shadow", &mesh.CastShadow);
+
+						// ShaderType
+						static const char* listbox_st[ShaderType::kShaderMax] =
+						{
+							"DefaultShader",
+							"NoLightNoFog",
+							"CullNone"
+						};
+						ImGui::ListBox("Shader Type", (int*)&mesh.MyShaderType, listbox_st, 3, 3);
 						ImGui::TreePop();
 					}
 
@@ -536,6 +564,10 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 	if (isDeleteNode)
 	{
 		pNode->Release();
+		return nullptr;
+	}
+	if (isChangeParent)
+	{
 		return nullptr;
 	}
 	return pNode;
@@ -1117,4 +1149,25 @@ void CModelAnalyzerBehaviorComponent::AddAnimation(void)
 			CKFUtilityFBX::LoadAnimation(strFileName, animator_);
 		}
 	}
+}
+
+//--------------------------------------------------------------------------------
+// ShowChangeParent
+//--------------------------------------------------------------------------------
+bool CModelAnalyzerBehaviorComponent::ChangeParent(CMyNode* pNode)
+{
+	int index = 0;
+	if (ImGui::Combo("Change Parent", (int*)&index, node_names_))
+	{
+		if (nodes_[index] != pNode
+			&& nodes_[index] != pNode->Parent)
+		{
+			if (pNode->RecursiveCheckIsChild(nodes_[index]) == false)
+			{
+				pNode->ChangeParent(nodes_[index]);
+				return true;
+			}
+		}
+	}
+	return false;
 }

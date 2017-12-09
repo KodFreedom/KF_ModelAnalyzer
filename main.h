@@ -38,7 +38,7 @@ using namespace cereal;
 #include <fbxsdk.h>
 
 //OpenMP
-#include <omp.h>
+//#include <omp.h>
 
 //KFä÷êî
 #include "KF_Math.h"
