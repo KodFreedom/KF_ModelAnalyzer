@@ -715,6 +715,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 		archive.saveBinary(&collider.Position, sizeof(collider.Position));
 		archive.saveBinary(&collider.Rotation, sizeof(collider.Rotation));
 		archive.saveBinary(&collider.Scale, sizeof(collider.Scale));
+		archive.saveBinary(&collider.IsTrigger, sizeof(collider.IsTrigger));
 	}
 
 	//Mesh
