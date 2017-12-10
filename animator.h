@@ -148,6 +148,12 @@ struct Cluster
 	}
 };
 
+struct IKController
+{
+	IKController() : index(0) {}
+	int			index;
+};
+
 //--------------------------------------------------------------------------------
 //  ƒNƒ‰ƒX’è‹`
 //--------------------------------------------------------------------------------
@@ -168,12 +174,18 @@ public:
 			}
 			motion.Frames.clear();
 		}
+
 		Motions.clear();
+
+		for (auto& controller : IKControllers)
+		{
+			controller.index = 0;
+		}
 	}
 
-	vector<Motion> Motions;
+	vector<Motion>	Motions;
 	vector<Cluster> Clusters;
-	CMyNode*		IKControllers[eIKParts::eIKMax];
+	IKController	IKControllers[eIKParts::eIKMax];
 
 	void UpdateBones(const Frame& current);
 	void UpdateClusterWorld(void);

@@ -713,40 +713,75 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 	if (!is_display_animator_window_) return;
 
 	// Begin
-	if (!ImGui::Begin("Animation Window", &is_display_animator_window_))
+	if (!ImGui::Begin("Animator Window", &is_display_animator_window_))
 	{
 		ImGui::End();
 		return;
 	}
 
-	if (!animator_-> Motions.empty())
+	// IK
+	if (ImGui::CollapsingHeader("IKController"))
 	{
-		// Play
-		if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
-
-		// Type
-		vector<string> labels;
-		labels.reserve(animator_->Motions.size());
-		for (auto& motion : animator_->Motions)
+		static const char* IKName[eIKMax] =
 		{
-			labels.push_back(motion.Name);
-		}
-		if (ImGui::Combo("Select Motion", (int*)&motion_no_, labels))
-		{
-			current_frame_ = 0;
-		}
-		labels.clear();
+			"Hips",
+			"Spine",
+			"ShoulderLeft",
+			"UpperArmLeft",
+			"LowerArmLeft",
+			"HandLeft",
+			"ShoulderRight",
+			"UpperArmRight",
+			"LowerArmRight",
+			"HandRight",
+			"UpperLegLeft",
+			"LowerLegLeft",
+			"FootLeft",
+			"ToesLeft",
+			"UpperLegRight",
+			"LowerLegRight",
+			"FootRight",
+			"ToesRight",
+		};
 
-		// Animation Current
-		ShowCurrentAnimationWindow();
+		for (int count = 0; count < eIKMax; ++count)
+		{
+			ImGui::Combo(IKName[count], (int*)&animator_->IKControllers[count].index, node_names_);
+		}
 	}
 
-	// AddAnimation
-	if (ImGui::Button("Add animation"))
+	// Motion
+	if (ImGui::CollapsingHeader("Motion"))
 	{
-		AddAnimation();
-	}
+		if (!animator_->Motions.empty())
+		{
+			// Play
+			if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
 
+			// Type
+			vector<string> labels;
+			labels.reserve(animator_->Motions.size());
+			for (auto& motion : animator_->Motions)
+			{
+				labels.push_back(motion.Name);
+			}
+			if (ImGui::Combo("Select Motion", (int*)&motion_no_, labels))
+			{
+				current_frame_ = 0;
+			}
+			labels.clear();
+
+			// Animation Current
+			ShowCurrentAnimationWindow();
+		}
+
+		// AddAnimation
+		if (ImGui::Button("Add animation"))
+		{
+			AddAnimation();
+		}
+	}
+	
 	// End
 	ImGui::End();
 }
@@ -925,6 +960,7 @@ void CModelAnalyzerBehaviorComponent::ShowCameraWindow(void)
 //--------------------------------------------------------------------------------
 void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 {
+	// Motion
 	if (animator_->Motions.empty()) return;
 	bool isDelete = false;
 	if (ImGui::CollapsingHeader("CurrentAnimation"))

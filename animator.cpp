@@ -78,7 +78,36 @@ void CAnimator::SaveAsJson(const string& fileName)
 	ofstream file(filePath);
 	if (!file.is_open()) return;
 	JSONOutputArchive archive(file);
+
+	// Cluster
 	archive(make_nvp("Clusters", Clusters));
+
+	// IKController
+	static const char* IKName[eIKMax] =
+	{
+		"Hips",
+		"Spine",
+		"ShoulderLeft",
+		"UpperArmLeft",
+		"LowerArmLeft",
+		"HandLeft",
+		"ShoulderRight",
+		"UpperArmRight",
+		"LowerArmRight",
+		"HandRight",
+		"UpperLegLeft",
+		"LowerLegLeft",
+		"FootLeft",
+		"ToesLeft",
+		"UpperLegRight",
+		"LowerLegRight",
+		"FootRight",
+		"ToesRight",
+	};
+	for (auto& controller : IKControllers)
+	{
+		archive(make_nvp(IKName[controller.index], controller.index));
+	}
 
 	// Motion
 	int motionNumber = (int)Motions.size();
@@ -101,23 +130,31 @@ void CAnimator::SaveAsBinary(const string& fileName)
 	ofstream file(filePath, ios::binary);
 	if (!file.is_open()) return;
 	BinaryOutputArchive archive(file);
+
+	// Cluster
 	int clusterNumber = (int)Clusters.size();
-	archive.saveBinary(&clusterNumber, sizeof(int));
+	archive.saveBinary(&clusterNumber, sizeof(clusterNumber));
 	for (auto& cluster : Clusters)
 	{
 		int size = (int)cluster.Name.size();
-		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&size, sizeof(size));
 		archive.saveBinary(&cluster.Name[0], size);
 		archive.saveBinary(&cluster.BindPoseInverse, sizeof(CKFMtx44));
 	}
 
+	// IKController
+	for (auto& controller : IKControllers)
+	{
+		archive.saveBinary(&controller.index, sizeof(controller.index));
+	}
+
 	// Motion
 	int motionNumber = (int)Motions.size();
-	archive.saveBinary(&motionNumber, sizeof(int));
+	archive.saveBinary(&motionNumber, sizeof(motionNumber));
 	for (int count = 0; count < motionNumber; ++count)
 	{
 		int size = (int)Motions[count].Name.size();
-		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&size, sizeof(size));
 		archive.saveBinary(&Motions[count].Name[0], size);
 		DeleteOutOfRangeFrames(count);
 		saveAsBinary(Motions[count]);
