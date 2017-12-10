@@ -507,17 +507,20 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 						// CullFace
 						ImGui::Checkbox("Enable CullFace(for editor", &mesh.EnableCullFace);
 
-						// Fog
+						// CastShadow
 						ImGui::Checkbox("Cast Shadow", &mesh.CastShadow);
 
 						// ShaderType
-						static const char* listbox_st[ShaderType::kShaderMax] =
+						static const char* listbox_st[kShaderMax] =
 						{
 							"DefaultShader",
 							"NoLightNoFog",
-							"CullNone"
+							"CullNone",
+							"DefaultSkinShader",
+							"JuggernautMeshShader",
+							"JuggernautSkinShader"
 						};
-						ImGui::ListBox("Shader Type", (int*)&mesh.MyShaderType, listbox_st, 3, 3);
+						ImGui::ListBox("Shader Type", (int*)&mesh.MyShaderType, listbox_st, kShaderMax, kShaderMax);
 						ImGui::TreePop();
 					}
 
@@ -632,6 +635,9 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 						itr->Scale.m_fX;
 				}
 
+				//IsCollider
+				ImGui::Checkbox("IsTrigger", &itr->IsTrigger);
+
 				bDelete = ImGui::Button("Delete Collider");
 				ImGui::TreePop();
 			}
@@ -655,6 +661,7 @@ void CModelAnalyzerBehaviorComponent::ShowNodeNowWindow(void)
 			col.Position = CKFMath::sc_vZero;
 			col.Rotation = CKFMath::sc_vZero;
 			col.Scale = CKFMath::sc_vOne;
+			col.IsTrigger = false;
 			current_node_->Colliders.push_back(col);
 		}
 	}
@@ -812,46 +819,57 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 	// マテリアルの編集
 	if (ImGui::CollapsingHeader("Materials"))
 	{
-		for (auto& pair : materials_)
+		for (auto iterator = materials_.begin(); iterator != materials_.end();)
 		{
-			if (ImGui::TreeNode(pair.first.c_str()))
+			bool isDelete = false;
+			if (ImGui::TreeNode(iterator->first.c_str()))
 			{
-				ImGui::ColorEdit3("Diffuse", (float*)&pair.second.Diffuse);
-				ImGui::ColorEdit3("Ambient", (float*)&pair.second.Ambient);
-				ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
-				ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
-				ImGui::InputFloat("Power", &pair.second.Power);
-				ImGui::Text("ColorTexture : %s", pair.second.ColorTexture.c_str());
+				ImGui::ColorEdit3("Diffuse", (float*)&iterator->second.Diffuse);
+				ImGui::ColorEdit3("Ambient", (float*)&iterator->second.Ambient);
+				ImGui::ColorEdit3("Specular", (float*)&iterator->second.Specular);
+				ImGui::ColorEdit3("Emissive", (float*)&iterator->second.Emissive);
+				ImGui::InputFloat("Power", &iterator->second.Power);
+				ImGui::Text("ColorTexture : %s", iterator->second.ColorTexture.c_str());
 				if (ImGui::Button("Change ColorTexture"))
 				{
-					ChangeTexture(pair.second.ColorTexture);
+					ChangeTexture(iterator->second.ColorTexture);
 				}
-				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTexture.c_str());
+				ImGui::Text("DiffuseTexture : %s", iterator->second.DiffuseTexture.c_str());
 				if (ImGui::Button("Change DiffuseTexture"))
 				{
-					ChangeTexture(pair.second.DiffuseTexture);
+					ChangeTexture(iterator->second.DiffuseTexture);
 				}
-				ImGui::Text("DiffuseTextureMask : %s", pair.second.DiffuseTextureMask.c_str());
+				ImGui::Text("DiffuseTextureMask : %s", iterator->second.DiffuseTextureMask.c_str());
 				if (ImGui::Button("Change DiffuseTextureMask"))
 				{
-					ChangeTexture(pair.second.DiffuseTextureMask);
+					ChangeTexture(iterator->second.DiffuseTextureMask);
 				}
-				ImGui::Text("SpecularTexture : %s", pair.second.SpecularTexture.c_str());
+				ImGui::Text("SpecularTexture : %s", iterator->second.SpecularTexture.c_str());
 				if (ImGui::Button("Change SpecularTexture"))
 				{
-					ChangeTexture(pair.second.SpecularTexture);
+					ChangeTexture(iterator->second.SpecularTexture);
 				}
-				ImGui::Text("SpecularTextureMask : %s", pair.second.SpecularTextureMask.c_str());
+				ImGui::Text("SpecularTextureMask : %s", iterator->second.SpecularTextureMask.c_str());
 				if (ImGui::Button("Change SpecularTextureMask"))
 				{
-					ChangeTexture(pair.second.SpecularTextureMask);
+					ChangeTexture(iterator->second.SpecularTextureMask);
 				}
-				ImGui::Text("NormalTexture : %s", pair.second.NormalTexture.c_str());
+				ImGui::Text("NormalTexture : %s", iterator->second.NormalTexture.c_str());
 				if (ImGui::Button("Change NormalTexture"))
 				{
-					ChangeTexture(pair.second.NormalTexture);
+					ChangeTexture(iterator->second.NormalTexture);
 				}
+				if(ImGui::Button("Delete")) isDelete = true;
 				ImGui::TreePop();
+			}
+
+			if (isDelete == true)
+			{
+				iterator = materials_.erase(iterator);
+			}
+			else
+			{
+				++iterator;
 			}
 		}
 	}

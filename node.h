@@ -165,11 +165,12 @@ struct ColliderInfo
 	CKFVec3			Position;
 	CKFVec3			Rotation;
 	CKFVec3			Scale;
+	bool			IsTrigger;
 
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Type", Type), make_nvp("Position", Position), make_nvp("Rotation", Rotation), make_nvp("Scale", Scale));
+		ar(make_nvp("Type", Type), make_nvp("Position", Position), make_nvp("Rotation", Rotation), make_nvp("Scale", Scale), make_nvp("IsTrigger", IsTrigger));
 	}
 };
 
