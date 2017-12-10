@@ -697,7 +697,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 {
 	//Node–¼
 	int size = (int)Name.size();
-	archive.saveBinary(&size, sizeof(int));
+	archive.saveBinary(&size, sizeof(size));
 	archive.saveBinary(&Name[0], size);
 
 	//Offset
@@ -708,7 +708,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 
 	//Collider
 	int colliderNumber = (int)Colliders.size();
-	archive.saveBinary(&colliderNumber, sizeof(int));
+	archive.saveBinary(&colliderNumber, sizeof(colliderNumber));
 	for (auto& collider : Colliders)
 	{
 		archive.saveBinary(&collider.Type, sizeof(collider.Type));
@@ -719,18 +719,18 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 
 	//Mesh
 	int meshNumber = (int)Meshes.size();
-	archive.saveBinary(&meshNumber, sizeof(int));
+	archive.saveBinary(&meshNumber, sizeof(meshNumber));
 	for (int count = 0; count < meshNumber; ++count)
 	{
 		// Name
 		string& meshName = Name + '_' + to_string(count);
 		size = (int)meshName.size();
-		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&size, sizeof(size));
 		archive.saveBinary(&meshName[0], size);
 
 		//Material
 		int nameSize = (int)Meshes[count].MaterialName.size();
-		archive.saveBinary(&nameSize, sizeof(int));
+		archive.saveBinary(&nameSize, sizeof(nameSize));
 		archive.saveBinary(&Meshes[count].MaterialName[0], nameSize);
 
 		//Render Priority
@@ -750,7 +750,7 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 
 	//Child
 	int childNumber = (int)Children.size();
-	archive.saveBinary(&childNumber, sizeof(int));
+	archive.saveBinary(&childNumber, sizeof(childNumber));
 	for (auto& pChild : Children)
 	{
 		pChild->RecursiveSave(archive, fileName, haveAnimator);
