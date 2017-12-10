@@ -62,6 +62,7 @@ CModelAnalyzerBehaviorComponent::CModelAnalyzerBehaviorComponent(CGameObject* co
 	, is_render_skeletons_(true)
 	, is_render_meshes_(true)
 	, is_render_colliders_(true)
+	, is_render_bounding_sphere(true)
 	, is_reserve_texcoordv_(false)
 	, is_saved_(false)
 	, root_node_(nullptr)
@@ -340,6 +341,8 @@ void CModelAnalyzerBehaviorComponent::ShowMainWindow(void)
 		"Disdraw mesh" : "Draw mesh")) is_render_meshes_ ^= 1;
 	if (ImGui::Button(is_render_colliders_ ?
 		"Disdraw collider" : "Draw collider")) is_render_colliders_ ^= 1;
+	if (ImGui::Button(is_render_bounding_sphere ?
+		"Disdraw bounding sphere" : "Draw bounding sphere")) is_render_bounding_sphere ^= 1;
 
 	// End
 	ImGui::End();
@@ -473,6 +476,15 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 					bool isDelete = false;
 					if (ImGui::TreeNode(strMeshName.c_str()))
 					{
+						// BoundingSphere
+						ImGui::Text("BoundingSphere :\n"
+							"Position : %.3f, %.3f, %.3f\n"
+							"Radius : &.6f",
+							mesh.BoundingSpherePosition.m_fX,
+							mesh.BoundingSpherePosition.m_fX,
+							mesh.BoundingSpherePosition.m_fX,
+							mesh.BoundingSphereRadius);
+
 						//delete
 						if (ImGui::Button("Delete")) isDelete ^= 1;
 

@@ -65,6 +65,32 @@ void Mesh::DisAttachToBone(Mesh& mesh)
 }
 
 //--------------------------------------------------------------------------------
+//  boudningSphereの算出
+//--------------------------------------------------------------------------------
+void Mesh::ComputeBoundingSphere(Mesh& mesh)
+{
+	float min_x = INFINITY;
+	float min_y = INFINITY;
+	float min_z = INFINITY;
+	float max_x = -INFINITY;
+	float max_y = -INFINITY;
+	float max_z = -INFINITY;
+
+	for (auto& vertex : mesh.Verteces)
+	{
+		min_x = min(min_x, vertex.Vertex.vPos.m_fX);
+		min_y = min(min_y, vertex.Vertex.vPos.m_fY);
+		min_z = min(min_z, vertex.Vertex.vPos.m_fZ);
+		max_x = max(max_x, vertex.Vertex.vPos.m_fX);
+		max_y = max(max_y, vertex.Vertex.vPos.m_fY);
+		max_z = max(max_z, vertex.Vertex.vPos.m_fZ);
+	}
+
+	mesh.BoundingSpherePosition = CKFVec3((max_x + min_x) * 0.5f, (max_y + min_y) * 0.5f, (max_z + min_z) * 0.5f);
+	mesh.BoundingSphereRadius = max(max(fabsf(max_x - min_x) * 0.5f, fabsf(max_y - min_y) * 0.5f), fabsf(max_z - min_z) * 0.5f);
+}
+
+//--------------------------------------------------------------------------------
 //
 //  MyNode
 //
@@ -225,14 +251,23 @@ void CMyNode::RecursiveMatchClusterID(const vector<Cluster>& avatar)
 //--------------------------------------------------------------------------------
 //  RecursiveDraw
 //--------------------------------------------------------------------------------
-void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider)
+void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider, const bool& drawBoundingSphere)
 {
 #ifdef USING_DIRECTX
 	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
-	//Mesh
-	if (drawMesh)
+
+	if (!s_pMeshSphere)
 	{
-		for (auto& mesh : Meshes)
+		CMain::GetManager()->GetTextureManager()->UseTexture("polygon.png");
+		D3DXCreateSphere(pDevice, 1.0f, 10, 10, &s_pMeshSphere, nullptr);
+	}
+	if (!s_pMeshCube) { D3DXCreateBox(pDevice, 1.0f, 1.0f, 1.0f, &s_pMeshCube, nullptr); }
+	
+	
+	for (auto& mesh : Meshes)
+	{
+		//Mesh
+		if (drawMesh)
 		{
 			if (mesh.MyRenderPriority == RP_AlphaTest)
 			{
@@ -290,7 +325,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 				0,						//オフセット（開始位置）
 				sizeof(VERTEX_3D));		//ストライド量
 
-			// 頂点インデックスの設定
+										// 頂点インデックスの設定
 			pDevice->SetIndices(mesh.IndexBuffer);
 
 			// 頂点フォーマットの設定
@@ -312,14 +347,31 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 				pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 			}
 		}
+
+		// Bounding Sphere
+		if (drawBoundingSphere)
+		{
+			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture("polygon.png");
+			D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(ColliderMaterialID);
+			D3DMATERIAL9 matDef;
+			pDevice->GetMaterial(&matDef);
+			pDevice->SetTexture(0, pTexture);
+			pDevice->SetMaterial(&material);
+
+			CKFMtx44 mtxBoundingSphere;
+			mtxBoundingSphere.m_af[0][0] = mesh.BoundingSphereRadius;
+			mtxBoundingSphere.m_af[1][1] = mesh.BoundingSphereRadius;
+			mtxBoundingSphere.m_af[2][2] = mesh.BoundingSphereRadius;
+			mtxBoundingSphere.m_af[3][0] = mesh.BoundingSpherePosition.m_fX;
+			mtxBoundingSphere.m_af[3][1] = mesh.BoundingSpherePosition.m_fY;
+			mtxBoundingSphere.m_af[3][2] = mesh.BoundingSpherePosition.m_fZ;
+			mtxBoundingSphere *= World;
+			D3DXMATRIX mtx = mtxBoundingSphere;
+			pDevice->SetTransform(D3DTS_WORLD, &mtx);
+			s_pMeshSphere->DrawSubset(0);
+		}
 	}
 
-	if (!s_pMeshSphere)
-	{
-		CMain::GetManager()->GetTextureManager()->UseTexture("polygon.png");
-		D3DXCreateSphere(pDevice, 1.0f, 10, 10, &s_pMeshSphere, nullptr);
-	}
-	if (!s_pMeshCube) { D3DXCreateBox(pDevice, 1.0f, 1.0f, 1.0f, &s_pMeshCube, nullptr); }
 	auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture("polygon.png");
 	D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(ColliderMaterialID);
 	D3DMATERIAL9 matDef;
@@ -385,13 +437,14 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 			}
 		}
 	}
+
 	pDevice->SetTexture(0, nullptr);
 	pDevice->SetMaterial(&matDef);
 
 	//Child
 	for (auto pNode : Children)
 	{
-		pNode->RecursiveDraw(mapMaterial, drawSkeleton, drawMesh, drawCollider);
+		pNode->RecursiveDraw(mapMaterial, drawSkeleton, drawMesh, drawCollider, drawBoundingSphere);
 	}
 #else
 	glPushMatrix();
@@ -566,6 +619,9 @@ void CMyNode::RecursiveRecombineMeshes(void)
 			++itrIdx;
 		}
 		mesh.IndexBuffer->Unlock();
+
+		// Bouding Sphere
+		Mesh::ComputeBoundingSphere(mesh);
 	}
 #endif
 
@@ -622,6 +678,8 @@ void CMyNode::RecalculateMeshesBy(const CKFMtx44& matrix)
 			pVtx[count].vNormal = vtx.vNormal;
 		}
 		mesh.VertexBuffer->Unlock();
+
+		Mesh::ComputeBoundingSphere(mesh);
 	}
 #endif
 
