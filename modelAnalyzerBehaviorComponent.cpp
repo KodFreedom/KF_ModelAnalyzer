@@ -128,14 +128,19 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (!root_node_) return;
 
-	if (animator_ && is_playing_motion_ && !animator_->Motions.empty())
+	if (animator_ && !animator_->Motions.empty())
 	{
 		auto& motion = animator_->Motions[motion_no_];
+
+		if (is_playing_motion_)
+		{
+			current_frame_ = (current_frame_ - motion.StartFrame + 1) % (motion.EndFrame + 1 - motion.StartFrame) + motion.StartFrame;
+		}
+
 		auto& avatar = motion.Frames[current_frame_];
 		animator_->UpdateBones(avatar);
-		current_frame_ = (current_frame_ - motion.StartFrame + 1) % (motion.EndFrame - motion.StartFrame) + motion.StartFrame;
 	}
-
+	
 	root_node_->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
 
 	if (animator_)
@@ -758,6 +763,10 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 			// Play
 			if (ImGui::Button(is_playing_motion_ ? "Pause" : "Play")) is_playing_motion_ ^= 1;
 
+			// Frame
+			auto& current = animator_->Motions[motion_no_];
+			ImGui::SliderInt("Frame", &current_frame_, current.StartFrame, current.EndFrame);
+			
 			// Type
 			vector<string> labels;
 			labels.reserve(animator_->Motions.size());
@@ -975,29 +984,24 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 			current.Name = buffer;
 		}
 
-		// 今のフレーム
-		ImGui::Text("Current Frame : %d", current_frame_);
-
 		// フレーム編集
 		if (ImGui::TreeNode("Edit Frame"))
 		{
 			// Start Frame
-			int startFrame = current.StartFrame;
-			if (ImGui::InputInt("StartFrame", &startFrame))
+			if (ImGui::SliderInt("StartFrame", &current.StartFrame, 0, current.EndFrame))
 			{
-				if (startFrame <= current.EndFrame)
+				if (current_frame_ < current.StartFrame)
 				{
-					current.StartFrame = startFrame;
+					current_frame_ = current.StartFrame;
 				}
 			}
 
 			// End Frame
-			int endFrame = current.EndFrame;
-			if (ImGui::InputInt("EndFrame", &endFrame))
+			if (ImGui::SliderInt("EndFrame", &current.EndFrame, current.StartFrame, (int)current.Frames.size() - 1))
 			{
-				if (endFrame >= current.StartFrame)
+				if (current_frame_ > current.EndFrame)
 				{
-					current.EndFrame = endFrame;
+					current_frame_ = current.EndFrame;
 				}
 			}
 

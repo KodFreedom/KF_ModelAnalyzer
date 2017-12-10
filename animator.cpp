@@ -53,8 +53,8 @@ void CAnimator::DeleteOutOfRangeFrames(const int motionNo)
 	if (current.StartFrame > 0 || current.EndFrame < (int)current.Frames.size() - 1)
 	{
 		vector<Frame> newFrames;
-		newFrames.reserve(current.EndFrame - current.StartFrame);
-		for (int count = current.StartFrame; count < current.EndFrame; ++count)
+		newFrames.reserve(current.EndFrame + 1 - current.StartFrame);
+		for (int count = current.StartFrame; count <= current.EndFrame; ++count)
 		{
 			newFrames.push_back(current.Frames[count]);
 		}
