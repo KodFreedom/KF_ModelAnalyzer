@@ -33,6 +33,29 @@ enum eFloatOperator
 	fLess,
 };
 
+enum eIKParts
+{
+	eHips,
+	eSpine,
+	eShoulderLeft,
+	eUpperArmLeft,
+	eLowerArmLeft,
+	eHandLeft,
+	eShoulderRight,
+	eUpperArmRight,
+	eLowerArmRight,
+	eHandRight,
+	eUpperLegLeft,
+	eLowerLegLeft,
+	eFootLeft,
+	eToesLeft,
+	eUpperLegRight,
+	eLowerLegRight,
+	eFootRight,
+	eToesRight,
+	eIKMax
+};
+
 //--------------------------------------------------------------------------------
 //  ç\ë¢ëÃíËã`
 //--------------------------------------------------------------------------------
@@ -150,6 +173,7 @@ public:
 
 	vector<Motion> Motions;
 	vector<Cluster> Clusters;
+	CMyNode*		IKControllers[eIKParts::eIKMax];
 
 	void UpdateBones(const Frame& current);
 	void UpdateClusterWorld(void);
