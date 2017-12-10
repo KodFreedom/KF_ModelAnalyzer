@@ -260,7 +260,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 			if (mapMaterial.find(mesh.MaterialName) != mapMaterial.end())
 			{
 				auto& material = mapMaterial.at(mesh.MaterialName);
-				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(material.DiffuseTextureName);
+				auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture(material.ColorTexture);
 				pDevice->SetTexture(0, pTexture);
 
 				// マテリアルの設定
@@ -291,7 +291,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 				0,						//オフセット（開始位置）
 				sizeof(VERTEX_3D));		//ストライド量
 
-										// 頂点インデックスの設定
+			// 頂点インデックスの設定
 			pDevice->SetIndices(mesh.IndexBuffer);
 
 			// 頂点フォーマットの設定

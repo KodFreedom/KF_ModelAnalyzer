@@ -482,11 +482,7 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyN
 			pMyNode->analyzeNormal(pMesh);              
 			pMyNode->analyzeUV(pMesh);               
 			pMyNode->analyzeMaterial(pMesh);
-			//if (pMyNode->Name != "juggernaut_weapon")
-			{
-				pMyNode->analyzeCluster(pMesh);
-			}
-			
+			pMyNode->analyzeCluster(pMesh);
 		}
 	}
 
@@ -574,7 +570,7 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 				CKFUtility::AnalyzeFilePath(path, name, type);
 				CKFUtility::CorrectTexType(type);
 				name += '.' + type;
-				material.DiffuseTextureName = name;
+				material.ColorTexture = name;
 				break;
 			}
 		}
@@ -622,7 +618,7 @@ void CKFUtilityFBX::analyzeMaterial(FbxScene* lScene, unordered_map<string, Mate
 
 					if (entryName == "Maya|DiffuseTexture")
 					{
-						material.DiffuseTextureName = name;
+						material.ColorTexture = name;
 					}
 					//break;
 				}

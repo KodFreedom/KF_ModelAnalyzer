@@ -105,7 +105,7 @@ struct VertexDX
 		result.Normal = Vertex.vNormal;
 		result.Color = CKFMath::sc_cWhite;
 		result.UV = Vertex.vUV;
-		for (int count = 0; count < BoneReferences.size(); ++count)
+		for (int count = 0; count < (int)BoneReferences.size(); ++count)
 		{
 			result.BoneIndexes.m_[count] = BoneReferences[count].Index;
 			result.BoneWeights.m_[count] = BoneReferences[count].Weight;

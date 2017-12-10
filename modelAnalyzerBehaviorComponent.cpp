@@ -218,7 +218,7 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		materials_ = myModel.mapMaterial;
 		for (auto& pair : materials_)
 		{
-			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.DiffuseTextureName);
+			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.ColorTexture);
 		}
 		root_node_->RecursiveRecombineMeshes();
 		root_node_->RecursivePush(node_names_, nodes_);
@@ -274,7 +274,7 @@ void CModelAnalyzerBehaviorComponent::ReleaseModel(void)
 	SAFE_RELEASE(animator_);
 	for (auto& pair : materials_)
 	{
-		CMain::GetManager()->GetTextureManager()->DisuseTexture(pair.second.DiffuseTextureName);
+		CMain::GetManager()->GetTextureManager()->DisuseTexture(pair.second.ColorTexture);
 	}
 	materials_.clear();
 	Init();
@@ -777,20 +777,35 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 				ImGui::ColorEdit3("Specular", (float*)&pair.second.Specular);
 				ImGui::ColorEdit3("Emissive", (float*)&pair.second.Emissive);
 				ImGui::InputFloat("Power", &pair.second.Power);
-				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTextureName.c_str());
-				if (ImGui::Button("Change Diffuse Texture"))
+				ImGui::Text("ColorTexture : %s", pair.second.ColorTexture.c_str());
+				if (ImGui::Button("Change ColorTexture"))
 				{
-					ChangeTexture(pair.second.DiffuseTextureName);
+					ChangeTexture(pair.second.ColorTexture);
 				}
-				ImGui::Text("SpecularTexture : %s", pair.second.SpecularTextureName.c_str());
-				if (ImGui::Button("Change Specular Texture"))
+				ImGui::Text("DiffuseTexture : %s", pair.second.DiffuseTexture.c_str());
+				if (ImGui::Button("Change DiffuseTexture"))
 				{
-					ChangeTexture(pair.second.SpecularTextureName);
+					ChangeTexture(pair.second.DiffuseTexture);
 				}
-				ImGui::Text("NormalTexture : %s", pair.second.NormalTextureName.c_str());
-				if (ImGui::Button("Change Normal Texture"))
+				ImGui::Text("DiffuseTextureMask : %s", pair.second.DiffuseTextureMask.c_str());
+				if (ImGui::Button("Change DiffuseTextureMask"))
 				{
-					ChangeTexture(pair.second.NormalTextureName);
+					ChangeTexture(pair.second.DiffuseTextureMask);
+				}
+				ImGui::Text("SpecularTexture : %s", pair.second.SpecularTexture.c_str());
+				if (ImGui::Button("Change SpecularTexture"))
+				{
+					ChangeTexture(pair.second.SpecularTexture);
+				}
+				ImGui::Text("SpecularTextureMask : %s", pair.second.SpecularTextureMask.c_str());
+				if (ImGui::Button("Change SpecularTextureMask"))
+				{
+					ChangeTexture(pair.second.SpecularTextureMask);
+				}
+				ImGui::Text("NormalTexture : %s", pair.second.NormalTexture.c_str());
+				if (ImGui::Button("Change NormalTexture"))
+				{
+					ChangeTexture(pair.second.NormalTexture);
 				}
 				ImGui::TreePop();
 			}
@@ -815,33 +830,50 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 		ImGui::ColorEdit3("Specular", (float*)&material.Specular);
 		ImGui::ColorEdit3("Emissive", (float*)&material.Emissive);
 		ImGui::DragFloat("Power", &material.Power);
-		ImGui::Text("DiffuseTexture : %s", material.DiffuseTextureName.c_str());
-		if (ImGui::Button("Change Diffuse Texture"))
+		ImGui::Text("ColorTexture : %s", material.ColorTexture.c_str());
+		if (ImGui::Button("Change ColorTexture"))
 		{
-			ChangeTexture(material.DiffuseTextureName);
+			ChangeTexture(material.ColorTexture);
 		}
-		ImGui::Text("SpecularTexture : %s", material.SpecularTextureName.c_str());
-		if (ImGui::Button("Change Specular Texture"))
+		ImGui::Text("DiffuseTexture : %s", material.DiffuseTexture.c_str());
+		if (ImGui::Button("Change DiffuseTexture"))
 		{
-			ChangeTexture(material.SpecularTextureName);
+			ChangeTexture(material.DiffuseTexture);
 		}
-		ImGui::Text("NormalTexture : %s", material.NormalTextureName.c_str());
-		if (ImGui::Button("Change Normal Texture"))
+		ImGui::Text("DiffuseTextureMask : %s", material.DiffuseTextureMask.c_str());
+		if (ImGui::Button("Change DiffuseTextureMask"))
 		{
-			ChangeTexture(material.NormalTextureName);
+			ChangeTexture(material.DiffuseTextureMask);
 		}
-
+		ImGui::Text("SpecularTexture : %s", material.SpecularTexture.c_str());
+		if (ImGui::Button("Change SpecularTexture"))
+		{
+			ChangeTexture(material.SpecularTexture);
+		}
+		ImGui::Text("SpecularTextureMask : %s", material.SpecularTextureMask.c_str());
+		if (ImGui::Button("Change SpecularTextureMask"))
+		{
+			ChangeTexture(material.SpecularTextureMask);
+		}
+		ImGui::Text("NormalTexture : %s", material.NormalTexture.c_str());
+		if (ImGui::Button("Change NormalTexture"))
+		{
+			ChangeTexture(material.NormalTexture);
+		}
 		if (ImGui::Button("Add to Materials"))
 		{
 			materials_.emplace(name, material);
-			if (material.DiffuseTextureName.empty())
+			if (material.DiffuseTexture.empty())
 			{
-				CMain::GetManager()->GetTextureManager()->UseTexture(material.DiffuseTextureName);
+				CMain::GetManager()->GetTextureManager()->UseTexture(material.ColorTexture);
 			}
 			name.clear();
-			material.DiffuseTextureName.clear();
-			material.NormalTextureName.clear();
-			material.SpecularTextureName.clear();
+			material.ColorTexture.clear();
+			material.DiffuseTexture.clear();
+			material.DiffuseTextureMask.clear();
+			material.NormalTexture.clear();
+			material.SpecularTexture.clear();
+			material.SpecularTextureMask.clear();
 			material.Diffuse = CKFColor(1.0f);
 			material.Ambient = CKFColor(0.2f, 0.2f, 0.2f, 1.0f);
 			material.Specular = CKFColor(0.0f, 0.0f, 0.0f, 1.0f);

@@ -24,9 +24,12 @@ public:
 		, Emissive(CKFColor(0.0f, 0.0f, 0.0f, 1.0f))
 		, Power(1.0f) {}
 
-	string	 DiffuseTextureName;
-	string	 SpecularTextureName;
-	string	 NormalTextureName;
+	string   ColorTexture;
+	string	 DiffuseTexture;
+	string	 DiffuseTextureMask;
+	string	 SpecularTexture;
+	string	 SpecularTextureMask;
+	string	 NormalTexture;
 	CKFColor Ambient;	// ŠÂ‹«Œõ‚Ì”½ŽË—¦
 	CKFColor Diffuse;	// –ŸŽËŒõ‚Ì”½ŽË—¦
 	CKFColor Specular;	// ‹¾–ÊŒõ‚Ì”½ŽË—¦
