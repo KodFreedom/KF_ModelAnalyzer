@@ -17,7 +17,7 @@ void JuggAttackRightMotionState::ChangeMotion(Animator& animator)
 	}
 	if(animator.GetIsDeath() == true)
 	{
-		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggDeathMotionState(0), current_frame_counter_, 5));
+		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggDeathMotionState(0), current_frame_counter_, 10));
 		return;
 	}
 }

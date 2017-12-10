@@ -5,13 +5,13 @@
 #include "jugg_stun_motion_state.h"
 #include "animator.h"
 #include "motion_data.h"
-#include "jugg_neutral_motion_state.h"
+#include "jugg_stun_motion_state.h"
 #include "jugg_death_motion_state.h"
 void JuggStunMotionState::ChangeMotion(Animator& animator)
 {
 	if(animator.GetIsStun() == false)
 	{
-		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggNeutralMotionState(0), current_frame_counter_, 10));
+		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggStunMotionState(0), current_frame_counter_, 10));
 		return;
 	}
 	if(animator.GetIsDeath() == true)

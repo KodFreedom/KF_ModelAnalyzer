@@ -1,0 +1,32 @@
+{
+    "ColorTexture": "juggernaut_legs_color.tga",
+    "DiffuseTexture": "juggernaut_legs_diffuseWarp.tga",
+    "DiffuseTextureMask": "juggernaut_legs_diffuseWarpMask.tga",
+    "SpecularTexture": "juggernaut_legs_specularExponent.tga",
+    "SpecularTextureMask": "juggernaut_legs_specularMask.tga",
+    "NormalTexture": "juggernaut_legs_normal.tga",
+    "Ambient": {
+        "R": 0.20000000298023225,
+        "G": 0.20000000298023225,
+        "B": 0.20000000298023225,
+        "A": 1.0
+    },
+    "Diffuse": {
+        "R": 1.0,
+        "G": 1.0,
+        "B": 1.0,
+        "A": 1.0
+    },
+    "Specular": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 1.0
+    },
+    "Emissive": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 1.0
+    },
+    "Power": 1.0

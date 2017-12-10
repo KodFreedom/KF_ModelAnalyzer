@@ -66,13 +66,31 @@ struct VertexOutNoSkin
 	}
 };
 
+class BoneVector
+{
+public:
+	BoneVector()
+	{
+		for (auto& m : m_) m = 0.0f;
+	}
+	~BoneVector() {}
+
+	float m_[9];
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("m_", m_));
+	}
+};
+
 struct VertexOutSkin
 {
-	CKFVec3		Position;
-	CKFVec3		Normal;
-	CKFVec2		UV;
-	CKFMtx44	BoneIndexes;
-	CKFMtx44	BoneWeights;
+	CKFVec3	Position;
+	CKFVec3	Normal;
+	CKFVec2	UV;
+	BoneVector BoneIndexes;
+	BoneVector BoneWeights;
 
 	template <class Archive>
 	void serialize(Archive & ar)

@@ -6,6 +6,7 @@
 #include "animator.h"
 #include "motion_data.h"
 #include "jugg_neutral_motion_state.h"
+#include "jugg_death_motion_state.h"
 #include "jugg_jump_attack_motion_state.h"
 void JuggJumpMotionState::ChangeMotion(Animator& animator)
 {
@@ -15,12 +16,17 @@ void JuggJumpMotionState::ChangeMotion(Animator& animator)
 	}
 	if(animator.GetIsGrounded() == true)
 	{
-		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggNeutralMotionState(0), current_frame_counter_, 10));
+		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggNeutralMotionState(0), current_frame_counter_, 5));
+		return;
+	}
+	if(animator.GetIsDeath() == true)
+	{
+		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggDeathMotionState(0), current_frame_counter_, 5));
 		return;
 	}
 	if(animator.GetIsAttack() == true)
 	{
-		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggJumpAttackMotionState(0), current_frame_counter_, 2));
+		animator.Change(MY_NEW BlendMotionState(current_motion_name_, MY_NEW JuggJumpAttackMotionState(0), current_frame_counter_, 5));
 		return;
 	}
 }

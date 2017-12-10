@@ -229,7 +229,6 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 {
 #ifdef USING_DIRECTX
 	auto pDevice = CMain::GetManager()->GetRenderer()->GetDevice();
-
 	//Mesh
 	if (drawMesh)
 	{
