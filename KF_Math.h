@@ -161,7 +161,11 @@ public:
 		const float& f41, const float& f42, const float& f43, const float& f44);
 	~CKFMtx44() {}
 
-	float m_af[4][4];
+	union
+	{
+		float m_[16];
+		float m_af[4][4];
+	};
 
 	//ƒLƒƒƒXƒg
 #ifdef USING_DIRECTX
@@ -179,7 +183,7 @@ public:
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Elements", m_af));
+		ar(make_nvp("m_", m_));
 	}
 };
 

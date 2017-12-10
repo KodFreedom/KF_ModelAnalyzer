@@ -68,18 +68,17 @@ struct VertexOutNoSkin
 
 struct VertexOutSkin
 {
-	CKFVec3					Position;
-	CKFVec3					Normal;
-	CKFVec2					UV;
-	CKFColor				Color;
-	CKFVec4					BoneIndexes;
-	CKFVec4					BoneWeights;
+	CKFVec3		Position;
+	CKFVec3		Normal;
+	CKFVec2		UV;
+	CKFMtx44	BoneIndexes;
+	CKFMtx44	BoneWeights;
 
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color)
-			, make_nvp("UV", UV), make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("UV", UV)
+			, make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
 	}
 };
 
@@ -103,7 +102,6 @@ struct VertexDX
 		VertexOutSkin result;
 		result.Position = Vertex.vPos;
 		result.Normal = Vertex.vNormal;
-		result.Color = CKFMath::sc_cWhite;
 		result.UV = Vertex.vUV;
 		for (int count = 0; count < (int)BoneReferences.size(); ++count)
 		{
