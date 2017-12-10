@@ -66,20 +66,37 @@ struct VertexOutNoSkin
 	}
 };
 
-struct VertexOutSkin
+class BoneVector
 {
-	CKFVec3					Position;
-	CKFVec3					Normal;
-	CKFVec2					UV;
-	CKFColor				Color;
-	CKFVec4					BoneIndexes;
-	CKFVec4					BoneWeights;
+public:
+	BoneVector()
+	{
+		for (auto& m : m_) m = 0.0f;
+	}
+	~BoneVector() {}
+
+	float m_[9];
 
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("Color", Color)
-			, make_nvp("UV", UV), make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
+		ar(make_nvp("m_", m_));
+	}
+};
+
+struct VertexOutSkin
+{
+	CKFVec3	Position;
+	CKFVec3	Normal;
+	CKFVec2	UV;
+	BoneVector BoneIndexes;
+	BoneVector BoneWeights;
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("UV", UV)
+			, make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
 	}
 };
 
@@ -103,7 +120,6 @@ struct VertexDX
 		VertexOutSkin result;
 		result.Position = Vertex.vPos;
 		result.Normal = Vertex.vNormal;
-		result.Color = CKFMath::sc_cWhite;
 		result.UV = Vertex.vUV;
 		for (int count = 0; count < (int)BoneReferences.size(); ++count)
 		{

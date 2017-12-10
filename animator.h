@@ -35,8 +35,8 @@ enum eFloatOperator
 
 enum eIKParts
 {
-	eHips,
-	eSpine,
+	eHead,
+	eNeck,
 	eShoulderLeft,
 	eUpperArmLeft,
 	eLowerArmLeft,

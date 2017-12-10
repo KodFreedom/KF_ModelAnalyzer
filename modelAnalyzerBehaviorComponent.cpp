@@ -736,8 +736,8 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 	{
 		static const char* IKName[eIKMax] =
 		{
-			"Hips",
-			"Spine",
+			"Head",
+			"Neck",
 			"ShoulderLeft",
 			"UpperArmLeft",
 			"LowerArmLeft",
