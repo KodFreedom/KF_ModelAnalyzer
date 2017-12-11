@@ -141,6 +141,7 @@ struct Mesh
 		, IsSkin(false)
 		, MyRenderPriority(RenderPriority::RP_Default)
 		, MyShaderType(ShaderType::kDefaultShader)
+		, BoundingSphereRadius(0.0f)
 #ifdef USING_DIRECTX
 		, VertexNumber(0)
 		, IndexNumber(0)
@@ -162,6 +163,8 @@ struct Mesh
 	bool					IsSkin;
 	RenderPriority			MyRenderPriority;
 	ShaderType				MyShaderType;
+	CKFVec3					BoundingSpherePosition;
+	float					BoundingSphereRadius;
 
 #ifdef USING_DIRECTX
 	int						VertexNumber;
@@ -173,6 +176,7 @@ struct Mesh
 #endif
 
 	static void DisAttachToBone(Mesh& mesh);
+	static void ComputeBoundingSphere(Mesh& mesh);
 };
 
 struct ColliderInfo
@@ -230,7 +234,7 @@ public:
 	void Release(void);
 	void RecursiveUpdateMatrix(const CKFMtx44& parent);
 	void RecursiveUpdateSkin(const vector<Cluster>& clusters);
-	void RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider);
+	void RecursiveDraw(const unordered_map<string, Material>& mapMaterial, const bool& drawSkeleton, const bool& drawMesh, const bool& drawCollider, const bool& drawBoundingSphere);
 	void RecursiveRecombineMeshes(void);
 	void RecursiveReverseTexV(void);
 	void RecalculateMeshesBy(const CKFMtx44& matrix);

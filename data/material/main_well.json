@@ -1,17 +1,20 @@
 {
-    "DiffuseTextureName": "Well_diffuse.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "well.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.5879999995231628,
-        "G": 0.5879999995231628,
-        "B": 0.5879999995231628,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {
-        "R": 0.5879999995231628,
-        "G": 0.5879999995231628,
-        "B": 0.5879999995231628,
+        "R": 1.0,
+        "G": 0.9999899864196777,
+        "B": 0.9999899864196777,
         "A": 1.0
     },
     "Specular": {

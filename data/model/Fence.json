@@ -16,7 +16,64 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 0,
+    "ColliderNumber": 3,
+    "Collider": {
+        "Type": 1,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.5,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.5,
+            "Y": 1.5,
+            "Z": 0.5
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 1,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.5,
+            "Z": 2.6500000953674318
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.5,
+            "Y": 1.5,
+            "Z": 0.5
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.6000000238418579,
+            "Z": 1.2999999523162842
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.5,
+            "Y": 0.5,
+            "Z": 2.200000047683716
+        },
+        "IsTrigger": false
+    },
     "MeshNumber": 0,
     "ChildNumber": 1,
     "Name": "Fence",
@@ -36,29 +93,18 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 1,
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.0,
-            "Y": 0.5,
-            "Z": 1.3300000429153443
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.5,
-            "Y": 1.2000000476837159,
-            "Z": 3.0999999046325685
-        }
-    },
+    "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "Fence_0",
-    "MaterialName": "Material",
+    "MaterialName": "fence",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.4557388424873352,
+        "Z": 1.3241840600967408
+    },
+    "BoundingSphereRadius": 1.541192650794983,
     "MeshType": 0,
     "ChildNumber": 0

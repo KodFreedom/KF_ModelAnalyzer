@@ -1,11 +1,14 @@
 {
-    "DiffuseTextureName": "Medieval house_concrete_2.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "brick.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.25,
-        "G": 0.24999749660491944,
-        "B": 0.24999749660491944,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {
@@ -21,9 +24,9 @@
         "A": 1.0
     },
     "Emissive": {
-        "R": 0.43627452850341799,
-        "G": 0.436270147562027,
-        "B": 0.436270147562027,
+        "R": 9.999999974752428e-7,
+        "G": 9.999899930335233e-7,
+        "B": 9.999899930335233e-7,
         "A": 1.0
     },
     "Power": 1.0

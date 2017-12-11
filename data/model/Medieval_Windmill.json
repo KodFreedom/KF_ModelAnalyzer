@@ -21,7 +21,7 @@
         "Type": 2,
         "Position": {
             "X": 0.20000000298023225,
-            "Y": 10.0,
+            "Y": 20.0,
             "Z": 0.0
         },
         "Rotation": {
@@ -30,28 +30,30 @@
             "Z": 0.0
         },
         "Scale": {
-            "X": 10.5,
-            "Y": 30.0,
-            "Z": 11.0
-        }
+            "X": 15.600000381469727,
+            "Y": 50.0,
+            "Z": 15.600000381469727
+        },
+        "IsTrigger": false
     },
     "Collider": {
         "Type": 2,
         "Position": {
-            "X": -6.0,
-            "Y": -0.20000000298023225,
-            "Z": -0.10000000149011612
+            "X": -9.0,
+            "Y": -0.6000000238418579,
+            "Z": -0.20000000298023225
         },
         "Rotation": {
             "X": 0.0,
             "Y": 0.0,
-            "Z": 0.550000011920929
+            "Z": 0.6000000238418579
         },
         "Scale": {
-            "X": 3.0,
-            "Y": 1.0,
-            "Z": 3.0999999046325685
-        }
+            "X": 6.0,
+            "Y": 2.0,
+            "Z": 4.699999809265137
+        },
+        "IsTrigger": false
     },
     "MeshNumber": 0,
     "ChildNumber": 1,
@@ -75,9 +77,16 @@
     "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "WindMill_0",
-    "MaterialName": "Material #78",
+    "MaterialName": "Windmill",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.2596268653869629,
+        "Y": 27.813377380371095,
+        "Z": -0.0989995002746582
+    },
+    "BoundingSphereRadius": 29.595558166503908,
     "MeshType": 0,
     "ChildNumber": 4,
     "Name": "Fan",
@@ -100,9 +109,16 @@
     "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "Fan_0",
-    "MaterialName": "Material #78",
+    "MaterialName": "Windmill",
     "RenderPriority": 1,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.22228527069091798,
+        "Y": 29.746448516845704,
+        "Z": 9.249161720275879
+    },
+    "BoundingSphereRadius": 19.23394775390625,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "Ornament",
@@ -125,9 +141,16 @@
     "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "Ornament_0",
-    "MaterialName": "Material #78",
+    "MaterialName": "Windmill",
     "RenderPriority": 1,
-    "ShaderType": 0,
+    "ShaderType": 1,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -13.317673683166504,
+        "Y": 36.35072326660156,
+        "Z": -0.06117835268378258
+    },
+    "BoundingSphereRadius": 2.523571014404297,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "Ext",
@@ -150,9 +173,16 @@
     "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "Ext_0",
-    "MaterialName": "Material #78",
+    "MaterialName": "Windmill",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -9.90701675415039,
+        "Y": 24.026586532592775,
+        "Z": -0.017791748046875
+    },
+    "BoundingSphereRadius": 11.426050186157227,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "Lamp",
@@ -175,8 +205,15 @@
     "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "Lamp_0",
-    "MaterialName": "Material #78",
+    "MaterialName": "Windmill",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -7.543710708618164,
+        "Y": 4.570194244384766,
+        "Z": 2.5682058334350588
+    },
+    "BoundingSphereRadius": 1.5132954120635987,
     "MeshType": 0,
     "ChildNumber": 0

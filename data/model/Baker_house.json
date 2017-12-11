@@ -53,7 +53,8 @@
             "X": 5.0,
             "Y": 8.0,
             "Z": 8.5
-        }
+        },
+        "IsTrigger": false
     },
     "Collider": {
         "Type": 2,
@@ -71,7 +72,8 @@
             "X": 2.799999952316284,
             "Y": 4.0,
             "Z": 6.5
-        }
+        },
+        "IsTrigger": false
     },
     "Collider": {
         "Type": 2,
@@ -89,17 +91,18 @@
             "X": 1.5,
             "Y": 5.0,
             "Z": 2.5
-        }
+        },
+        "IsTrigger": false
     },
     "Collider": {
         "Type": 2,
         "Position": {
             "X": -1.899999976158142,
-            "Y": 0.30000001192092898,
+            "Y": 0.20000000298023225,
             "Z": -4.5
         },
         "Rotation": {
-            "X": 0.7400000095367432,
+            "X": 3.8500001430511476,
             "Y": 0.0,
             "Z": 0.0
         },
@@ -107,12 +110,20 @@
             "X": 2.6500000953674318,
             "Y": 2.0,
             "Z": 0.5
-        }
+        },
+        "IsTrigger": false
     },
     "MeshNumber": 1,
     "MeshName": "Baker_house_0",
     "MaterialName": "Baker_house",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 4.429219722747803,
+        "Z": -2.384185791015625e-7
+    },
+    "BoundingSphereRadius": 4.959074020385742,
     "MeshType": 0,
     "ChildNumber": 0

@@ -46,6 +46,7 @@ public:
 	const bool& IsRenderSkeletons(void) const { return is_render_skeletons_; }
 	const bool& IsRenderMeshes(void) const { return is_render_meshes_; }
 	const bool& IsRenderColliders(void) const { return is_render_colliders_; }
+	const bool& IsRenderBoundingSphere(void) const { return is_render_bounding_sphere; }
 	const auto& GetMaterials(void) const { return materials_; }
 
 private:
@@ -80,6 +81,7 @@ private:
 	bool		     is_render_skeletons_;
 	bool		     is_render_meshes_;
 	bool		     is_render_colliders_;
+	bool			 is_render_bounding_sphere;
 	bool		     is_reserve_texcoordv_;
 	bool		     is_saved_;
 	string		     file_name_;

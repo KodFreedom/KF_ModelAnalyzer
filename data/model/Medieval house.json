@@ -1,0 +1,202 @@
+{
+    "Name": "RootNode",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 3,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -5.800000190734863,
+            "Y": 5.0,
+            "Z": 2.4000000953674318
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 6.5,
+            "Y": 15.0,
+            "Z": 12.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 7.900000095367432,
+            "Y": 5.0,
+            "Z": 7.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 6.5,
+            "Y": 15.0,
+            "Z": 12.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 1.2000000476837159,
+            "Y": 7.5,
+            "Z": 3.299999952316284
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 7.0,
+            "Y": 8.0,
+            "Z": 5.0
+        },
+        "IsTrigger": false
+    },
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "Model",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "Mesh1",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
+    "MeshNumber": 7,
+    "MeshName": "Mesh1_0",
+    "MaterialName": "Wall",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080079078674317,
+        "Y": 1.899999976158142,
+        "Z": 4.587921142578125
+    },
+    "BoundingSphereRadius": 10.06539535522461,
+    "MeshType": 0,
+    "MeshName": "Mesh1_1",
+    "MaterialName": "Wood",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080074310302735,
+        "Y": 6.057246685028076,
+        "Z": 4.512921333312988
+    },
+    "BoundingSphereRadius": 10.967558860778809,
+    "MeshType": 0,
+    "MeshName": "Mesh1_2",
+    "MaterialName": "Door",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080076694488526,
+        "Y": 1.5216048955917359,
+        "Z": 9.842921257019043
+    },
+    "BoundingSphereRadius": 7.760395050048828,
+    "MeshType": 0,
+    "MeshName": "Mesh1_3",
+    "MaterialName": "End",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080074310302735,
+        "Y": 5.820000171661377,
+        "Z": 4.337921142578125
+    },
+    "BoundingSphereRadius": 10.285394668579102,
+    "MeshType": 0,
+    "MeshName": "Mesh1_4",
+    "MaterialName": "Window",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080079078674317,
+        "Y": 6.125890731811523,
+        "Z": 7.116671562194824
+    },
+    "BoundingSphereRadius": 9.51539421081543,
+    "MeshType": 0,
+    "MeshName": "Mesh1_5",
+    "MaterialName": "Concrete",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080074310302735,
+        "Y": 8.000687599182129,
+        "Z": 4.587921619415283
+    },
+    "BoundingSphereRadius": 10.504615783691407,
+    "MeshType": 0,
+    "MeshName": "Mesh1_6",
+    "MaterialName": "Roof",
+    "RenderPriority": 0,
+    "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 1.1080074310302735,
+        "Y": 9.890046119689942,
+        "Z": 4.542921543121338
+    },
+    "BoundingSphereRadius": 10.967558860778809,
+    "MeshType": 0,
+    "ChildNumber": 0

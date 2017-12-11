@@ -16,25 +16,7 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 1,
-    "Collider": {
-        "Type": 0,
-        "Position": {
-            "X": 0.0,
-            "Y": -0.30000001192092898,
-            "Z": 0.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.8999999761581421,
-            "Y": 0.8999999761581421,
-            "Z": 0.8999999761581421
-        }
-    },
+    "ColliderNumber": 0,
     "MeshNumber": 0,
     "ChildNumber": 1,
     "Name": "Rock-1",
@@ -54,11 +36,37 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 0,
+    "ColliderNumber": 1,
+    "Collider": {
+        "Type": 0,
+        "Position": {
+            "X": 0.0,
+            "Y": -0.800000011920929,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 2.0,
+            "Y": 2.0,
+            "Z": 2.0
+        },
+        "IsTrigger": false
+    },
     "MeshNumber": 1,
     "MeshName": "Rock-1_0",
-    "MaterialName": "Material.006",
+    "MaterialName": "Rock",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.014425575733184815,
+        "Y": 0.4476872384548187,
+        "Z": -0.0570102334022522
+    },
+    "BoundingSphereRadius": 1.8842921257019044,
     "MeshType": 0,
     "ChildNumber": 0

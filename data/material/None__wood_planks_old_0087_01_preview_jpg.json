@@ -1,11 +1,14 @@
 {
-    "DiffuseTextureName": "wood_planks.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "wood_planks.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.2549019455909729,
-        "G": 0.25489938259124758,
-        "B": 0.25489938259124758,
+        "R": 0.20588237047195435,
+        "G": 0.2058803141117096,
+        "B": 0.2058803141117096,
         "A": 1.0
     },
     "Diffuse": {
@@ -21,9 +24,9 @@
         "A": 1.0
     },
     "Emissive": {
-        "R": 0.5098038911819458,
-        "G": 0.5097987651824951,
-        "B": 0.5097987651824951,
+        "R": 9.999999974752428e-7,
+        "G": 9.999899930335233e-7,
+        "B": 9.999899930335233e-7,
         "A": 1.0
     },
     "Power": 1.0

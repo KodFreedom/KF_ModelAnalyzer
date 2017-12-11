@@ -16,7 +16,45 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 0,
+    "ColliderNumber": 2,
+    "Collider": {
+        "Type": 1,
+        "Position": {
+            "X": 0.0,
+            "Y": -0.5,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 3.299999952316284,
+            "Y": 1.0,
+            "Z": 3.299999952316284
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 0,
+        "Position": {
+            "X": 0.0,
+            "Y": 0.6000000238418579,
+            "Z": 0.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 0.8999999761581421,
+            "Y": 0.8999999761581421,
+            "Z": 0.8999999761581421
+        },
+        "IsTrigger": false
+    },
     "MeshNumber": 0,
     "ChildNumber": 3,
     "Name": "water",
@@ -32,9 +70,9 @@
         "W": 1.0
     },
     "Scale": {
-        "X": 1.100000023841858,
-        "Y": 1.0,
-        "Z": 1.100000023841858
+        "X": 1.0647910833358765,
+        "Y": 1.0647910833358765,
+        "Z": 1.0
     },
     "ColliderNumber": 0,
     "MeshNumber": 1,
@@ -42,6 +80,13 @@
     "MaterialName": "main_well",
     "RenderPriority": 0,
     "ShaderType": 1,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.6648647785186768,
+        "Z": -0.054457008838653567
+    },
+    "BoundingSphereRadius": 0.5050669312477112,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "w_bn",
@@ -61,48 +106,19 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 2,
-    "Collider": {
-        "Type": 1,
-        "Position": {
-            "X": 0.0,
-            "Y": -0.5,
-            "Z": 0.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 4.0,
-            "Y": 1.0,
-            "Z": 4.0
-        }
-    },
-    "Collider": {
-        "Type": 0,
-        "Position": {
-            "X": 0.0,
-            "Y": 0.5,
-            "Z": 0.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 0.800000011920929,
-            "Z": 0.800000011920929
-        }
-    },
+    "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "w_bn_0",
-    "MaterialName": "Material #0",
+    "MaterialName": "main_well",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.018610835075378419,
+        "Y": 1.215643048286438,
+        "Z": -0.05446052551269531
+    },
+    "BoundingSphereRadius": 2.256622314453125,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "w_bin",
@@ -128,10 +144,24 @@
     "MaterialName": "main_well",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -1.2264091968536378,
+        "Y": 0.24613389372825623,
+        "Z": -0.6776273250579834
+    },
+    "BoundingSphereRadius": 0.314839243888855,
     "MeshType": 0,
     "MeshName": "w_bin_1",
-    "MaterialName": "Material #0",
+    "MaterialName": "main_well",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -1.30433988571167,
+        "Y": 0.39862102270126345,
+        "Z": -0.6952204704284668
+    },
+    "BoundingSphereRadius": 0.3276228904724121,
     "MeshType": 0,
     "ChildNumber": 0

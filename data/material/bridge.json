@@ -1,17 +1,20 @@
 {
-    "DiffuseTextureName": "Bridge_d.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "Bridge.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.0,
-        "G": 0.0,
-        "B": 0.0,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {
-        "R": 0.800000011920929,
-        "G": 0.800000011920929,
-        "B": 0.800000011920929,
+        "R": 1.0,
+        "G": 0.9999899864196777,
+        "B": 0.9999899864196777,
         "A": 1.0
     },
     "Specular": {
@@ -21,9 +24,9 @@
         "A": 1.0
     },
     "Emissive": {
-        "R": 0.800000011920929,
-        "G": 0.800000011920929,
-        "B": 0.800000011920929,
+        "R": 9.999999974752428e-7,
+        "G": 9.999899930335233e-7,
+        "B": 9.999899930335233e-7,
         "A": 1.0
     },
     "Power": 1.0

@@ -42,6 +42,13 @@
     "MaterialName": "lambert1",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 5.960464477539063e-8,
+        "Y": 4.55622673034668,
+        "Z": 2.9802322387695315e-8
+    },
+    "BoundingSphereRadius": 4.566112518310547,
     "MeshType": 1,
     "ChildNumber": 0,
     "Name": "joint1",

@@ -1,11 +1,14 @@
 {
-    "DiffuseTextureName": "Stone2_diffuse.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "Stone2_diffuse.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.25,
-        "G": 0.24999749660491944,
-        "B": 0.24999749660491944,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {

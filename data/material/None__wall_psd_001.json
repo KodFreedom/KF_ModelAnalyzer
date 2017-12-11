@@ -1,11 +1,14 @@
 {
-    "DiffuseTextureName": "Medieval house_wall_4.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "wall.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.2549019455909729,
-        "G": 0.25489938259124758,
-        "B": 0.25489938259124758,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {
@@ -21,9 +24,9 @@
         "A": 1.0
     },
     "Emissive": {
-        "R": 0.5049020051956177,
-        "G": 0.5048969388008118,
-        "B": 0.5048969388008118,
+        "R": 9.999999974752428e-7,
+        "G": 9.999899930335233e-7,
+        "B": 9.999899930335233e-7,
         "A": 1.0
     },
     "Power": 1.0

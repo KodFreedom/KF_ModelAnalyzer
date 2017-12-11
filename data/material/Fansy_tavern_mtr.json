@@ -1,11 +1,14 @@
 {
-    "DiffuseTextureName": "Fancy_Tavern.png",
-    "SpecularTextureName": "",
-    "NormalTextureName": "",
+    "ColorTexture": "Fancy_Tavern.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
     "Ambient": {
-        "R": 0.0,
-        "G": 0.0,
-        "B": 0.0,
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
         "A": 1.0
     },
     "Diffuse": {
