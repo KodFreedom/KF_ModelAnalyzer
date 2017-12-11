@@ -118,5 +118,12 @@
     "MaterialName": "bridge",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 1.5209484100341797,
+        "Z": 4.76837158203125e-7
+    },
+    "BoundingSphereRadius": 7.800002574920654,
     "MeshType": 0,
     "ChildNumber": 0

@@ -80,6 +80,13 @@
     "MaterialName": "None__plant_tga",
     "RenderPriority": 1,
     "ShaderType": 1,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.011304419487714768,
+        "Y": 0.025711379945278169,
+        "Z": -0.04483835771679878
+    },
+    "BoundingSphereRadius": 0.05567476525902748,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "roof",
@@ -105,6 +112,13 @@
     "MaterialName": "None__roof_psd",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.000015949830412864686,
+        "Y": 0.000021595042198896409,
+        "Z": 0.0
+    },
+    "BoundingSphereRadius": 0.01553760003298521,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "glass",
@@ -130,6 +144,13 @@
     "MaterialName": "None__window_psd",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "BoundingSphereRadius": 0.01341595035046339,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "brick",
@@ -155,6 +176,13 @@
     "MaterialName": "None__brick_medieval_psd",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "BoundingSphereRadius": 0.013567949645221234,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "wood",
@@ -180,6 +208,13 @@
     "MaterialName": "None__wood_planks_old_0087_01_preview_jpg",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": -0.0002434602938592434
+    },
+    "BoundingSphereRadius": 0.01834644004702568,
     "MeshType": 0,
     "ChildNumber": 0,
     "Name": "wall",
@@ -205,5 +240,12 @@
     "MaterialName": "None__wall_psd_001",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "BoundingSphereRadius": 0.013372499495744706,
     "MeshType": 0,
     "ChildNumber": 0

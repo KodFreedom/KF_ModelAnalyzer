@@ -16,26 +16,6 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 0,
-    "MeshNumber": 0,
-    "ChildNumber": 1,
-    "Name": "house",
-    "Translation": {
-        "X": 0.0,
-        "Y": 0.0,
-        "Z": 0.0
-    },
-    "Rotation": {
-        "X": 0.0,
-        "Y": 0.0,
-        "Z": 0.0,
-        "W": 1.0
-    },
-    "Scale": {
-        "X": 1.0,
-        "Y": 1.0,
-        "Z": 1.0
-    },
     "ColliderNumber": 3,
     "Collider": {
         "Type": 2,
@@ -94,10 +74,37 @@
         },
         "IsTrigger": false
     },
+    "MeshNumber": 0,
+    "ChildNumber": 1,
+    "Name": "house",
+    "Translation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+    },
+    "Rotation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0,
+        "W": 1.0
+    },
+    "Scale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+    },
+    "ColliderNumber": 0,
     "MeshNumber": 1,
     "MeshName": "house_0",
     "MaterialName": "HouseTexture",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 3.6850576400756838,
+        "Y": 7.410567760467529,
+        "Z": 2.0233993530273439
+    },
+    "BoundingSphereRadius": 14.943232536315918,
     "MeshType": 0,
     "ChildNumber": 0

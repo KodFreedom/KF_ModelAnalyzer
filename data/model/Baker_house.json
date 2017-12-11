@@ -118,5 +118,12 @@
     "MaterialName": "Baker_house",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 4.429219722747803,
+        "Z": -2.384185791015625e-7
+    },
+    "BoundingSphereRadius": 4.959074020385742,
     "MeshType": 0,
     "ChildNumber": 0

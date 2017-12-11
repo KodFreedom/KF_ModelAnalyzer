@@ -61,5 +61,12 @@
     "MaterialName": "Barrel",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": 0.0,
+        "Y": 0.35201284289360049,
+        "Z": 0.0
+    },
+    "BoundingSphereRadius": 0.35201284289360049,
     "MeshType": 0,
     "ChildNumber": 0
