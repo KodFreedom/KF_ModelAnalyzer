@@ -1,0 +1,32 @@
+{
+    "ColorTexture": "Medieval_house_1_House_D.tga",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
+    "Ambient": {
+        "R": 0.20588237047195435,
+        "G": 0.2058803141117096,
+        "B": 0.2058803141117096,
+        "A": 1.0
+    },
+    "Diffuse": {
+        "R": 1.0,
+        "G": 1.0,
+        "B": 1.0,
+        "A": 1.0
+    },
+    "Specular": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 1.0
+    },
+    "Emissive": {
+        "R": 9.999999974752428e-7,
+        "G": 9.999899930335233e-7,
+        "B": 9.999899930335233e-7,
+        "A": 1.0
+    },
+    "Power": 1.0

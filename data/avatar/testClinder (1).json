@@ -1,0 +1,92 @@
+{
+    "Clusters": [
+        {
+            "Name": "joint1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 2.832769343193999e-16,
+                    "value1": 1.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": -1.0,
+                    "value5": 2.832769343193999e-16,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 9.0,
+                    "value13": -2.5494925147537177e-15,
+                    "value14": 0.0,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "joint2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 2.832769343193999e-16,
+                    "value1": 1.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": -1.0,
+                    "value5": 2.832769343193999e-16,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 5.0,
+                    "value13": -1.4163846715969995e-15,
+                    "value14": 0.0,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "joint3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.0,
+                    "value13": 0.0,
+                    "value14": 0.0,
+                    "value15": 1.0
+                }
+            }
+        }
+    ],
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "Hips": 0,
+    "MotionNumber": 1,
+    "MotionName": "Take 001"

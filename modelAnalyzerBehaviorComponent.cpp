@@ -282,6 +282,7 @@ void CModelAnalyzerBehaviorComponent::ReleaseModel(void)
 	{
 		CMain::GetManager()->GetTextureManager()->DisuseTexture(pair.second.ColorTexture);
 	}
+	current_node_ = nullptr;
 	materials_.clear();
 	Init();
 }

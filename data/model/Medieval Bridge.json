@@ -16,7 +16,311 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 0,
+    "ColliderNumber": 16,
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 14.25,
+            "Y": 10.0,
+            "Z": 19.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 10.0,
+            "Y": 40.0,
+            "Z": 15.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -14.25,
+            "Y": 10.0,
+            "Z": 19.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 10.0,
+            "Y": 40.0,
+            "Z": 15.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 16.5,
+            "Z": 19.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 20.0,
+            "Y": 6.0,
+            "Z": 7.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 6.5,
+            "Y": 5.0,
+            "Z": 19.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 6.0,
+            "Y": 20.0,
+            "Z": 8.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -6.099999904632568,
+            "Y": 5.0,
+            "Z": 19.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 7.0,
+            "Y": 20.0,
+            "Z": 8.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 2.3499999046325685,
+            "Z": 18.5
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 7.0,
+            "Y": 5.0,
+            "Z": 7.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 4.880000114440918,
+            "Z": 9.5
+        },
+        "Rotation": {
+            "X": 0.1600000113248825,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 17.0,
+            "Y": 2.0,
+            "Z": 14.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 5.940000057220459,
+            "Z": -12.199999809265137
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 17.0,
+            "Y": 2.0,
+            "Z": 30.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 2.75,
+            "Z": -36.30000305175781
+        },
+        "Rotation": {
+            "X": 2.7660000324249269,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 17.0,
+            "Y": 1.0,
+            "Z": 20.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 0.0,
+            "Y": 1.4199999570846558,
+            "Z": 32.0
+        },
+        "Rotation": {
+            "X": 0.22700001299381257,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 17.0,
+            "Y": 2.0,
+            "Z": 22.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -8.899999618530274,
+            "Y": 1.2999999523162842,
+            "Z": 32.0
+        },
+        "Rotation": {
+            "X": 0.22700001299381257,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 8.0,
+            "Z": 22.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 8.800000190734864,
+            "Y": 1.2999999523162842,
+            "Z": 32.0
+        },
+        "Rotation": {
+            "X": 0.22700001299381257,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 8.0,
+            "Z": 22.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -8.899999618530274,
+            "Y": 2.5999999046325685,
+            "Z": -35.0
+        },
+        "Rotation": {
+            "X": 2.7660000324249269,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 8.0,
+            "Z": 20.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 8.800000190734864,
+            "Y": 2.5999999046325685,
+            "Z": -35.0
+        },
+        "Rotation": {
+            "X": 2.7660000324249269,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 8.0,
+            "Z": 20.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": 8.800000190734864,
+            "Y": 4.900000095367432,
+            "Z": -5.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 10.0,
+            "Z": 45.0
+        },
+        "IsTrigger": false
+    },
+    "Collider": {
+        "Type": 2,
+        "Position": {
+            "X": -8.899999618530274,
+            "Y": 4.900000095367432,
+            "Z": -5.0
+        },
+        "Rotation": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+        },
+        "Scale": {
+            "X": 1.5,
+            "Y": 10.0,
+            "Z": 45.0
+        },
+        "IsTrigger": false
+    },
     "MeshNumber": 0,
     "ChildNumber": 1,
     "Name": "Model",
@@ -36,314 +340,54 @@
         "Y": 1.0,
         "Z": 1.0
     },
-    "ColliderNumber": 16,
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 7.300000190734863,
-            "Y": 7.5,
-            "Z": 0.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 5.0,
-            "Y": 15.0,
-            "Z": 8.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": -7.300000190734863,
-            "Y": 7.5,
-            "Z": 0.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 5.0,
-            "Y": 15.0,
-            "Z": 8.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.0,
-            "Y": 0.75,
-            "Z": 6.5
-        },
-        "Rotation": {
-            "X": 0.22500000894069673,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 9.0,
-            "Y": 1.0,
-            "Z": 11.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.5,
-            "Y": 1.9500000476837159,
-            "Z": -0.10000000149011612
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 4.0,
-            "Y": 1.0,
-            "Z": 2.700000047683716
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.0,
-            "Y": 2.5,
-            "Z": -4.820000171661377
-        },
-        "Rotation": {
-            "X": 0.1550000011920929,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 9.0,
-            "Y": 1.0,
-            "Z": 6.599999904632568
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.0,
-            "Y": 2.9800000190734865,
-            "Z": -15.5
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 9.0,
-            "Y": 1.0,
-            "Z": 15.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.0,
-            "Y": 1.2999999523162842,
-            "Z": -27.5
-        },
-        "Rotation": {
-            "X": 2.7700002193450929,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 9.0,
-            "Y": 1.0,
-            "Z": 10.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": -3.200000047683716,
-            "Y": 6.0,
-            "Z": -0.10000000149011612
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 3.5,
-            "Y": 8.0,
-            "Z": 3.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 3.5999999046325685,
-            "Y": 6.0,
-            "Z": -0.10000000149011612
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 2.5,
-            "Y": 8.0,
-            "Z": 3.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 0.44999998807907107,
-            "Y": 8.25,
-            "Z": -0.10000000149011612
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 3.799999952316284,
-            "Y": 3.5,
-            "Z": 3.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 4.5,
-            "Y": 0.4000000059604645,
-            "Z": -26.5
-        },
-        "Rotation": {
-            "X": 2.7700002193450929,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 6.0,
-            "Z": 10.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": -4.300000190734863,
-            "Y": 0.4000000059604645,
-            "Z": -26.5
-        },
-        "Rotation": {
-            "X": 2.7700002193450929,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 6.0,
-            "Z": 10.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": -4.300000190734863,
-            "Y": 2.0,
-            "Z": -11.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 6.0,
-            "Z": 24.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 4.5,
-            "Y": 2.0,
-            "Z": -11.0
-        },
-        "Rotation": {
-            "X": 0.0,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 6.0,
-            "Z": 24.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": 4.349999904632568,
-            "Y": 0.699999988079071,
-            "Z": 6.5
-        },
-        "Rotation": {
-            "X": 0.2200000137090683,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 4.0,
-            "Z": 11.0
-        }
-    },
-    "Collider": {
-        "Type": 2,
-        "Position": {
-            "X": -4.300000190734863,
-            "Y": 0.699999988079071,
-            "Z": 6.5
-        },
-        "Rotation": {
-            "X": 0.2200000137090683,
-            "Y": 0.0,
-            "Z": 0.0
-        },
-        "Scale": {
-            "X": 0.800000011920929,
-            "Y": 4.0,
-            "Z": 11.0
-        }
-    },
+    "ColliderNumber": 0,
     "MeshNumber": 4,
     "MeshName": "Model_0",
-    "MaterialName": "Towers",
+    "MaterialName": "medieval_bridge_towers",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.05958747863769531,
+        "Y": 13.42499828338623,
+        "Z": -0.12247085571289063
+    },
+    "BoundingSphereRadius": 27.187175750732423,
     "MeshType": 0,
     "MeshName": "Model_1",
-    "MaterialName": "Main",
+    "MaterialName": "medieval_bridge_main",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.05038166046142578,
+        "Y": 14.245000839233399,
+        "Z": 18.789480209350587
+    },
+    "BoundingSphereRadius": 18.369434356689454,
     "MeshType": 0,
     "MeshName": "Model_2",
-    "MaterialName": "Bridge3",
+    "MaterialName": "medieval_bridge_road",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.17874717712402345,
+        "Y": 10.883188247680664,
+        "Z": -1.0439586639404297
+    },
+    "BoundingSphereRadius": 43.53999328613281,
     "MeshType": 0,
     "MeshName": "Model_3",
-    "MaterialName": "Bridge4",
+    "MaterialName": "medieval_bridge_wall",
     "RenderPriority": 0,
     "ShaderType": 0,
+    "CastShadow": true,
+    "BoundingSpherePosition": {
+        "X": -0.04785013198852539,
+        "Y": 4.884998321533203,
+        "Z": -1.0439586639404297
+    },
+    "BoundingSphereRadius": 43.53999328613281,
     "MeshType": 0,
     "ChildNumber": 0

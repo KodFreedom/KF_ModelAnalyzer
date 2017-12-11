@@ -1,0 +1,32 @@
+{
+    "ColorTexture": "Medieval house_end.jpg",
+    "DiffuseTexture": "",
+    "DiffuseTextureMask": "",
+    "SpecularTexture": "",
+    "SpecularTextureMask": "",
+    "NormalTexture": "",
+    "Ambient": {
+        "R": 0.20098036527633668,
+        "G": 0.2009783536195755,
+        "B": 0.2009783536195755,
+        "A": 1.0
+    },
+    "Diffuse": {
+        "R": 1.0,
+        "G": 0.9999949336051941,
+        "B": 0.9999899864196777,
+        "A": 1.0
+    },
+    "Specular": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 1.0
+    },
+    "Emissive": {
+        "R": 0.0,
+        "G": 0.0,
+        "B": 0.0,
+        "A": 1.0
+    },
+    "Power": 1.0
