@@ -479,10 +479,10 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 						// BoundingSphere
 						ImGui::Text("BoundingSphere :\n"
 							"Position : %.3f, %.3f, %.3f\n"
-							"Radius : &.6f",
+							"Radius : %.6f",
 							mesh.BoundingSpherePosition.m_fX,
-							mesh.BoundingSpherePosition.m_fX,
-							mesh.BoundingSpherePosition.m_fX,
+							mesh.BoundingSpherePosition.m_fY,
+							mesh.BoundingSpherePosition.m_fZ,
 							mesh.BoundingSphereRadius);
 
 						//delete

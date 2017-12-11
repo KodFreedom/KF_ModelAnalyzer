@@ -352,7 +352,7 @@ void CMyNode::RecursiveDraw(const unordered_map<string, Material>& mapMaterial, 
 		if (drawBoundingSphere)
 		{
 			auto pTexture = CMain::GetManager()->GetTextureManager()->GetTexture("polygon.png");
-			D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(ColliderMaterialID);
+			D3DMATERIAL9 material = CMain::GetManager()->GetMaterialManager()->GetMaterial(0);
 			D3DMATERIAL9 matDef;
 			pDevice->GetMaterial(&matDef);
 			pDevice->SetTexture(0, pTexture);
@@ -728,7 +728,14 @@ void CMyNode::RecursiveSave(JSONOutputArchive& archive, const string& fileName, 
 		archive(make_nvp("RenderPriority", mesh.MyRenderPriority));
 
 		//Shader Type
-		archive(make_nvp("ShaderType", Meshes[count].MyShaderType));
+		archive(make_nvp("ShaderType", mesh.MyShaderType));
+
+		//Cast Shadow
+		archive(make_nvp("CastShadow", mesh.CastShadow));
+
+		//Bounding Sphere
+		archive(make_nvp("BoundingSpherePosition", mesh.BoundingSpherePosition));
+		archive(make_nvp("BoundingSphereRadius", mesh.BoundingSphereRadius));
 
 		//Type
 		MeshType type = haveAnimator ? k3dSkin : k3dMesh;
@@ -796,6 +803,13 @@ void CMyNode::RecursiveSave(BinaryOutputArchive& archive, const string& fileName
 
 		//Shader Type
 		archive.saveBinary(&Meshes[count].MyShaderType, sizeof(Meshes[count].MyShaderType));
+
+		//Cast Shadow
+		archive.saveBinary(&Meshes[count].CastShadow, sizeof(Meshes[count].CastShadow));
+
+		//Bounding Sphere
+		archive.saveBinary(&Meshes[count].BoundingSpherePosition, sizeof(Meshes[count].BoundingSpherePosition));
+		archive.saveBinary(&Meshes[count].BoundingSphereRadius, sizeof(Meshes[count].BoundingSphereRadius));
 
 		//Type
 		MeshType type = Meshes[count].IsSkin ? k3dSkin : k3dMesh;
