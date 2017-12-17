@@ -477,7 +477,8 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyN
 		if (type == FbxNodeAttribute::eMesh)
 		{	//Meshî•ñ
 			pMyNode->Meshes.push_back(Mesh());              
-			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));               
+			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));        
+			pMesh->GenerateTangentsDataForAllUVSets();
 			pMyNode->analyzePoint(pMesh);              
 			pMyNode->analyzeNormal(pMesh);              
 			pMyNode->analyzeUV(pMesh);               

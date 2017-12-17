@@ -108,8 +108,9 @@ void CMyNode::Release(void)
 	//Mesh
 	for (auto& mesh : Meshes)
 	{
-		//mesh.vecMtx.clear();
 		mesh.Normals.clear();
+		mesh.Tangents.clear();
+		mesh.Binormals.clear();
 		mesh.NormalIndeces.clear();
 		for (auto& point : mesh.Points)
 		{
@@ -550,6 +551,8 @@ void CMyNode::RecursiveRecombineMeshes(void)
 			vertexDX.Vertex.vNormal = mesh.Normals[mesh.NormalIndeces[count]];
 			vertexDX.Vertex.vUV = mesh.UVSets[0].UVs[mesh.UVSets[0].UVIndeces[count]];
 			vertexDX.Vertex.vPos = point.Position;
+			vertexDX.Tangent = mesh.Tangents[mesh.NormalIndeces[count]];
+			vertexDX.Binormal = mesh.Binormals[mesh.NormalIndeces[count]];
 			vertexDX.BoneReferences.assign(point.BoneReferences.begin(), point.BoneReferences.end());
 
 			int nIdx = CKFUtilityFBX::FindRepetition(listVtx, vertexDX);
@@ -910,18 +913,29 @@ void CMyNode::analyzeNormal(FbxMesh* pMesh)
 	for (int count = 0; count < nLayerCnt; ++count)
 	{
 		auto pElementNormal = pMesh->GetElementNormal(count);
-
 		if (!pElementNormal) { continue; }
+		auto pElementTangent = pMesh->GetElementTangent(count);
+		auto pElementBinormal = pMesh->GetElementBinormal(count);
 
 		//法線データの取得
 		auto& currentMesh = Meshes.back();
 		auto nNumNormal = pElementNormal->GetDirectArray().GetCount();
 		currentMesh.Normals.resize(nNumNormal);
+		currentMesh.Tangents.resize(nNumNormal);
+		currentMesh.Binormals.resize(nNumNormal);
 		for (int count = 0; count < nNumNormal; ++count)
 		{
 			currentMesh.Normals[count].m_fX = (float)pElementNormal->GetDirectArray()[count][0];
 			currentMesh.Normals[count].m_fY = (float)pElementNormal->GetDirectArray()[count][1];
 			currentMesh.Normals[count].m_fZ = (float)pElementNormal->GetDirectArray()[count][2];
+
+			currentMesh.Tangents[count].m_fX = (float)pElementTangent->GetDirectArray()[count][0];
+			currentMesh.Tangents[count].m_fY = (float)pElementTangent->GetDirectArray()[count][1];
+			currentMesh.Tangents[count].m_fZ = (float)pElementTangent->GetDirectArray()[count][2];
+
+			currentMesh.Binormals[count].m_fX = (float)pElementBinormal->GetDirectArray()[count][0];
+			currentMesh.Binormals[count].m_fY = (float)pElementBinormal->GetDirectArray()[count][1];
+			currentMesh.Binormals[count].m_fZ = (float)pElementBinormal->GetDirectArray()[count][2];
 		}
 
 		//マッピングモード、リファレンスモード取得
