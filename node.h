@@ -66,16 +66,34 @@ struct VertexOutNoSkin
 	}
 };
 
-class BoneVector
+class IndexVector
 {
 public:
-	BoneVector()
+	IndexVector()
+	{
+		for (auto& m : m_) m = 0;
+	}
+	~IndexVector() {}
+
+	short m_[10];
+
+	template <class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(make_nvp("m_", m_));
+	}
+};
+
+class WeightVector
+{
+public:
+	WeightVector()
 	{
 		for (auto& m : m_) m = 0.0f;
 	}
-	~BoneVector() {}
+	~WeightVector() {}
 
-	float m_[9];
+	float m_[10];
 
 	template <class Archive>
 	void serialize(Archive & ar)
@@ -91,8 +109,8 @@ struct VertexOutSkin
 	CKFVec3	Tangent;
 	CKFVec3	Binormal;
 	CKFVec2	UV;
-	BoneVector BoneIndexes;
-	BoneVector BoneWeights;
+	IndexVector BoneIndexes;
+	WeightVector BoneWeights;
 
 	template <class Archive>
 	void serialize(Archive & ar)
