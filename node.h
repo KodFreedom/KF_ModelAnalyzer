@@ -88,6 +88,8 @@ struct VertexOutSkin
 {
 	CKFVec3	Position;
 	CKFVec3	Normal;
+	CKFVec3	Tangent;
+	CKFVec3	Binormal;
 	CKFVec2	UV;
 	BoneVector BoneIndexes;
 	BoneVector BoneWeights;
@@ -95,7 +97,8 @@ struct VertexOutSkin
 	template <class Archive>
 	void serialize(Archive & ar)
 	{
-		ar(make_nvp("Position", Position), make_nvp("Normal", Normal), make_nvp("UV", UV)
+		ar(make_nvp("Position", Position), make_nvp("Normal", Normal)
+			, make_nvp("Tangent", Tangent), make_nvp("Binormal", Binormal), make_nvp("UV", UV)
 			, make_nvp("BoneIndexes", BoneIndexes), make_nvp("BoneWeights", BoneWeights));
 	}
 };
@@ -103,6 +106,8 @@ struct VertexOutSkin
 struct VertexDX
 {
 	VERTEX_3D				Vertex;
+	CKFVec3					Tangent;
+	CKFVec3					Binormal;
 	vector<BoneReference>	BoneReferences;
 
 	bool operator==(const VertexDX& vValue) const;
@@ -120,6 +125,8 @@ struct VertexDX
 		VertexOutSkin result;
 		result.Position = Vertex.vPos;
 		result.Normal = Vertex.vNormal;
+		result.Tangent = Tangent;
+		result.Binormal = Binormal;
 		result.UV = Vertex.vUV;
 		for (int count = 0; count < (int)BoneReferences.size(); ++count)
 		{
@@ -153,6 +160,8 @@ struct Mesh
 
 	vector<ControlPoint>	Points;
 	vector<CKFVec3>			Normals;
+	vector<CKFVec3>			Tangents;
+	vector<CKFVec3>			Binormals;
 	vector<UVSet>			UVSets;
 	vector<us>				PointIndeces;
 	vector<us>				NormalIndeces;
