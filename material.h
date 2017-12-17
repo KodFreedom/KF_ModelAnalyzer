@@ -30,6 +30,16 @@ public:
 	string	 SpecularTexture;
 	string	 SpecularTextureMask;
 	string	 NormalTexture;
+	string   DetailTexture;
+	string   DetailMask;
+	string   TintByBaseMask;
+	string   RimMask;
+	string   Translucency;
+	string   MetalnessMask;
+	string   SelfIllumMask;
+	string   FresnelWarpColor;
+	string   FresnelWarpRim;
+	string   FresnelWarpSpecular;
 	CKFColor Ambient;	// ŠÂ‹«Œõ‚Ì”½ŽË—¦
 	CKFColor Diffuse;	// –ŸŽËŒõ‚Ì”½ŽË—¦
 	CKFColor Specular;	// ‹¾–ÊŒõ‚Ì”½ŽË—¦

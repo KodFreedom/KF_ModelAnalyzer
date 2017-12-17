@@ -872,6 +872,56 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 				{
 					ChangeTexture(iterator->second.NormalTexture);
 				}
+				ImGui::Text("DetailTexture : %s", iterator->second.DetailTexture.c_str());
+				if (ImGui::Button("Change DetailTexture"))
+				{
+					ChangeTexture(iterator->second.DetailTexture);
+				}
+				ImGui::Text("DetailMask : %s", iterator->second.DetailMask.c_str());
+				if (ImGui::Button("Change DetailMask"))
+				{
+					ChangeTexture(iterator->second.DetailMask);
+				}
+				ImGui::Text("TintByBaseMask : %s", iterator->second.TintByBaseMask.c_str());
+				if (ImGui::Button("Change TintByBaseMask"))
+				{
+					ChangeTexture(iterator->second.TintByBaseMask);
+				}
+				ImGui::Text("RimMask : %s", iterator->second.RimMask.c_str());
+				if (ImGui::Button("Change RimMask"))
+				{
+					ChangeTexture(iterator->second.RimMask);
+				}
+				ImGui::Text("Translucency : %s", iterator->second.Translucency.c_str());
+				if (ImGui::Button("Change Translucency"))
+				{
+					ChangeTexture(iterator->second.Translucency);
+				}
+				ImGui::Text("MetalnessMask : %s", iterator->second.MetalnessMask.c_str());
+				if (ImGui::Button("Change MetalnessMask"))
+				{
+					ChangeTexture(iterator->second.MetalnessMask);
+				}
+				ImGui::Text("SelfIllumMask : %s", iterator->second.SelfIllumMask.c_str());
+				if (ImGui::Button("Change SelfIllumMask"))
+				{
+					ChangeTexture(iterator->second.SelfIllumMask);
+				}
+				ImGui::Text("FresnelWarpColor : %s", iterator->second.FresnelWarpColor.c_str());
+				if (ImGui::Button("Change FresnelWarpColor"))
+				{
+					ChangeTexture(iterator->second.FresnelWarpColor);
+				}
+				ImGui::Text("FresnelWarpRim : %s", iterator->second.FresnelWarpRim.c_str());
+				if (ImGui::Button("Change FresnelWarpRim"))
+				{
+					ChangeTexture(iterator->second.FresnelWarpRim);
+				}
+				ImGui::Text("FresnelWarpSpecular : %s", iterator->second.FresnelWarpSpecular.c_str());
+				if (ImGui::Button("Change FresnelWarpSpecular"))
+				{
+					ChangeTexture(iterator->second.FresnelWarpSpecular);
+				}
 				if(ImGui::Button("Delete")) isDelete = true;
 				ImGui::TreePop();
 			}
@@ -935,6 +985,56 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 		{
 			ChangeTexture(material.NormalTexture);
 		}
+		ImGui::Text("DetailTexture : %s", material.DetailTexture.c_str());
+		if (ImGui::Button("Change DetailTexture"))
+		{
+			ChangeTexture(material.DetailTexture);
+		}
+		ImGui::Text("DetailMask : %s", material.DetailMask.c_str());
+		if (ImGui::Button("Change DetailMask"))
+		{
+			ChangeTexture(material.DetailMask);
+		}
+		ImGui::Text("TintByBaseMask : %s", material.TintByBaseMask.c_str());
+		if (ImGui::Button("Change TintByBaseMask"))
+		{
+			ChangeTexture(material.TintByBaseMask);
+		}
+		ImGui::Text("RimMask : %s", material.RimMask.c_str());
+		if (ImGui::Button("Change RimMask"))
+		{
+			ChangeTexture(material.RimMask);
+		}
+		ImGui::Text("Translucency : %s", material.Translucency.c_str());
+		if (ImGui::Button("Change Translucency"))
+		{
+			ChangeTexture(material.Translucency);
+		}
+		ImGui::Text("MetalnessMask : %s", material.MetalnessMask.c_str());
+		if (ImGui::Button("Change MetalnessMask"))
+		{
+			ChangeTexture(material.MetalnessMask);
+		}
+		ImGui::Text("SelfIllumMask : %s", material.SelfIllumMask.c_str());
+		if (ImGui::Button("Change SelfIllumMask"))
+		{
+			ChangeTexture(material.SelfIllumMask);
+		}
+		ImGui::Text("FresnelWarpColor : %s", material.FresnelWarpColor.c_str());
+		if (ImGui::Button("Change FresnelWarpColor"))
+		{
+			ChangeTexture(material.FresnelWarpColor);
+		}
+		ImGui::Text("FresnelWarpRim : %s", material.FresnelWarpRim.c_str());
+		if (ImGui::Button("Change FresnelWarpRim"))
+		{
+			ChangeTexture(material.FresnelWarpRim);
+		}
+		ImGui::Text("FresnelWarpSpecular : %s", material.FresnelWarpSpecular.c_str());
+		if (ImGui::Button("Change FresnelWarpSpecular"))
+		{
+			ChangeTexture(material.FresnelWarpSpecular);
+		}
 		if (ImGui::Button("Add to Materials"))
 		{
 			materials_.emplace(name, material);
@@ -949,6 +1049,16 @@ void CModelAnalyzerBehaviorComponent::ShowMaterialWindow(void)
 			material.NormalTexture.clear();
 			material.SpecularTexture.clear();
 			material.SpecularTextureMask.clear();
+			material.DetailTexture.clear();
+			material.DetailMask.clear();
+			material.TintByBaseMask.clear();
+			material.RimMask.clear();
+			material.Translucency.clear();
+			material.MetalnessMask.clear();
+			material.SelfIllumMask.clear();
+			material.FresnelWarpColor.clear();
+			material.FresnelWarpRim.clear();
+			material.FresnelWarpSpecular.clear();
 			material.Diffuse = CKFColor(1.0f);
 			material.Ambient = CKFColor(0.2f, 0.2f, 0.2f, 1.0f);
 			material.Specular = CKFColor(0.0f, 0.0f, 0.0f, 1.0f);
