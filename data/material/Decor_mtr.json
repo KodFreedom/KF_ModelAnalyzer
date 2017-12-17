@@ -5,10 +5,20 @@
     "SpecularTexture": "",
     "SpecularTextureMask": "",
     "NormalTexture": "",
+    "DetailTexture": "",
+    "DetailMask": "",
+    "TintByBaseMask": "",
+    "RimMask": "",
+    "Translucency": "",
+    "MetalnessMask": "",
+    "SelfIllumMask": "",
+    "FresnelWarpColor": "",
+    "FresnelWarpRim": "",
+    "FresnelWarpSpecular": "",
     "Ambient": {
-        "R": 0.20098036527633668,
-        "G": 0.2009783536195755,
-        "B": 0.2009783536195755,
+        "R": 0.20000000298023225,
+        "G": 0.20000000298023225,
+        "B": 0.20000000298023225,
         "A": 1.0
     },
     "Diffuse": {

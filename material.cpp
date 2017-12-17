@@ -28,6 +28,16 @@ void Material::SaveAsJson(const unordered_map<string, Material>& mapMaterial)
 		archive(make_nvp("SpecularTexture", pair.second.SpecularTexture));
 		archive(make_nvp("SpecularTextureMask", pair.second.SpecularTextureMask));
 		archive(make_nvp("NormalTexture", pair.second.NormalTexture));
+		archive(make_nvp("DetailTexture", pair.second.DetailTexture));
+		archive(make_nvp("DetailMask", pair.second.DetailMask));
+		archive(make_nvp("TintByBaseMask", pair.second.TintByBaseMask));
+		archive(make_nvp("RimMask", pair.second.RimMask));
+		archive(make_nvp("Translucency", pair.second.Translucency));
+		archive(make_nvp("MetalnessMask", pair.second.MetalnessMask));
+		archive(make_nvp("SelfIllumMask", pair.second.SelfIllumMask));
+		archive(make_nvp("FresnelWarpColor", pair.second.FresnelWarpColor));
+		archive(make_nvp("FresnelWarpRim", pair.second.FresnelWarpRim));
+		archive(make_nvp("FresnelWarpSpecular", pair.second.FresnelWarpSpecular));
 		archive(make_nvp("Ambient", pair.second.Ambient));
 		archive(make_nvp("Diffuse", pair.second.Diffuse));
 		archive(make_nvp("Specular", pair.second.Specular));
@@ -72,6 +82,46 @@ void Material::SaveAsBinary(const unordered_map<string, Material>& mapMaterial)
 		size = (int)pair.second.NormalTexture.size();
 		archive.saveBinary(&size, sizeof(int));
 		archive.saveBinary(&pair.second.NormalTexture[0], size);
+
+		size = (int)pair.second.DetailTexture.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.DetailTexture[0], size);
+
+		size = (int)pair.second.DetailMask.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.DetailMask[0], size);
+		
+		size = (int)pair.second.TintByBaseMask.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.TintByBaseMask[0], size);
+
+		size = (int)pair.second.RimMask.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.RimMask[0], size);
+
+		size = (int)pair.second.Translucency.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.Translucency[0], size);
+
+		size = (int)pair.second.MetalnessMask.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.MetalnessMask[0], size);
+
+		size = (int)pair.second.SelfIllumMask.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.SelfIllumMask[0], size);
+
+		size = (int)pair.second.FresnelWarpColor.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.FresnelWarpColor[0], size);
+
+		size = (int)pair.second.FresnelWarpRim.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.FresnelWarpRim[0], size);
+
+		size = (int)pair.second.FresnelWarpSpecular.size();
+		archive.saveBinary(&size, sizeof(int));
+		archive.saveBinary(&pair.second.FresnelWarpSpecular[0], size);
 
 		archive.saveBinary(&pair.second.Ambient, sizeof(CKFColor));
 		archive.saveBinary(&pair.second.Diffuse, sizeof(CKFColor));
