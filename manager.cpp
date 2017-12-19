@@ -75,6 +75,11 @@ bool CManager::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 
 	// Setup ImGui binding
 	ImGui_ImplDX9_Init(hWnd, m_pRenderer->GetDevice());
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+
+	// For Microsoft IME, pass your HWND to enable IME positioning:
+	io.ImeWindowHandle = hWnd;
 
 	//“ü—Í‚Ì¶¬
 	m_pInputManager = new CInputManager;

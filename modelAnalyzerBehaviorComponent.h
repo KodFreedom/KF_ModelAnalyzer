@@ -12,6 +12,7 @@
 #include "behaviorComponent.h"
 #include "KF_UtilityFBX.h"
 #include "material.h"
+#include "labels.h"
 
 //--------------------------------------------------------------------------------
 //  ‘O•ûéŒ¾
@@ -101,6 +102,7 @@ private:
 	CKFVec3		current_node_correct_translation_;
 	CKFVec3		current_node_correct_rotation_;
 	CKFVec3		current_node_correct_scale_;
+	Language    current_language_;
 
 	//Animator
 	bool		is_playing_motion_;
