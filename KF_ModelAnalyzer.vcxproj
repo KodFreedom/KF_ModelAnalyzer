@@ -108,6 +108,7 @@
     <ClInclude Include="KF_Utility.h" />
     <ClInclude Include="KF_UtilityDX.h" />
     <ClInclude Include="KF_UtilityFBX.h" />
+    <ClInclude Include="labels.h" />
     <ClInclude Include="lightManager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="manager.h" />

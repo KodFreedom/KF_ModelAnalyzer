@@ -419,5 +419,8 @@
     <ClInclude Include="material.h">
       <Filter>ヘッダー ファイル\FBX</Filter>
     </ClInclude>
+    <ClInclude Include="labels.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
