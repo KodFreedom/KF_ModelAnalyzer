@@ -104,10 +104,10 @@ void CAnimator::SaveAsJson(const string& fileName)
 		"FootRight",
 		"ToesRight",
 	};
-	for (auto& controller : IKControllers)
-	{
-		archive(make_nvp(IKName[controller.index], controller.index));
-	}
+    for (int count = 0; count < eIKMax; ++count)
+    {
+        archive(make_nvp(IKName[count], IKControllers[count].index));
+    }
 
 	// Motion
 	int motionNumber = (int)Motions.size();
