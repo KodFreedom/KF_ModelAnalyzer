@@ -1,0 +1,744 @@
+{
+    "Clusters": [
+        {
+            "Name": "Mutant:Head",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.05248413234949112,
+                    "value13": -162.85626220703126,
+                    "value14": -13.237526893615723,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:Hips",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.0,
+                    "value13": -92.55485534667969,
+                    "value14": -4.552499771118164,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -27.4060001373291,
+                    "value13": -147.49974060058595,
+                    "value14": 1.0439516305923463,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftFoot",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -13.656000137329102,
+                    "value13": -15.193092346191407,
+                    "value14": -3.516892433166504,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftForeArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -53.78076934814453,
+                    "value13": -147.4996337890625,
+                    "value14": 2.5030159950256349,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftHand",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -80.5342025756836,
+                    "value13": -147.49998474121095,
+                    "value14": 2.503000020980835,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -13.656000137329102,
+                    "value13": -49.50048828125,
+                    "value14": -6.163636207580566,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftShoulder",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -9.51301097869873,
+                    "value13": -145.43365478515626,
+                    "value14": 0.12102220952510834,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftToeBase",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -13.656000137329102,
+                    "value13": 0.00000762939453125,
+                    "value14": -18.428707122802736,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftToe_End",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -13.656000137329102,
+                    "value13": 0.00000762939453125,
+                    "value14": -35.31252670288086,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:LeftUpLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -13.655973434448243,
+                    "value13": -85.41961669921875,
+                    "value14": -4.682196140289307,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:Neck",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.05248413234949112,
+                    "value13": -154.03892517089845,
+                    "value14": -7.134911060333252,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 27.406002044677736,
+                    "value13": -147.49974060058595,
+                    "value14": 1.0439516305923463,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightFoot",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 13.656000137329102,
+                    "value13": -15.193092346191407,
+                    "value14": -3.516892433166504,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightForeArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 53.78076934814453,
+                    "value13": -147.4996337890625,
+                    "value14": 2.5030159950256349,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHand",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 80.5342025756836,
+                    "value13": -147.49998474121095,
+                    "value14": 2.503000020980835,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandIndex1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 98.9819564819336,
+                    "value13": -148.97987365722657,
+                    "value14": -6.151249408721924,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandIndex2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 106.496337890625,
+                    "value13": -148.97987365722657,
+                    "value14": -6.151249408721924,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandIndex3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 113.98572540283203,
+                    "value13": -148.97987365722657,
+                    "value14": -6.151249408721924,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandIndex4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 120.72451782226563,
+                    "value13": -148.367431640625,
+                    "value14": -6.357422828674316,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandPinky1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 98.0419692993164,
+                    "value13": -147.02224731445313,
+                    "value14": 12.506080627441407,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandPinky2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 105.08618927001953,
+                    "value13": -147.02224731445313,
+                    "value14": 12.506080627441407,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandPinky3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 112.16509246826172,
+                    "value13": -147.02224731445313,
+                    "value14": 12.506080627441407,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandPinky4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 119.25804901123047,
+                    "value13": -147.02224731445313,
+                    "value14": 12.506080627441407,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandThumb1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 83.02655029296875,
+                    "value13": -143.05364990234376,
+                    "value14": -3.6604764461517336,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandThumb2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 89.62919616699219,
+                    "value13": -138.73963928222657,
+                    "value14": -10.550925254821778,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandThumb3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 96.4139633178711,
+                    "value13": -135.77273559570313,
+                    "value14": -14.721451759338379,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightHandThumb4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 103.54461669921875,
+                    "value13": -133.73898315429688,
+                    "value14": -17.791088104248048,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 13.656000137329102,
+                    "value13": -49.50048828125,
+                    "value14": -6.163636207580566,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightShoulder",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 9.594124794006348,
+                    "value13": -145.43365478515626,
+                    "value14": 0.12102220952510834,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightToeBase",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 13.656000137329102,
+                    "value13": 0.00000762939453125,
+                    "value14": -18.428707122802736,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightToe_End",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 13.656000137329102,
+                    "value13": 0.00000762939453125,
+                    "value14": -35.31252670288086,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:RightUpLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "v
