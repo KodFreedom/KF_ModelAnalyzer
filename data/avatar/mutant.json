@@ -741,4 +741,123 @@
             "BindPoseInverse": {
                 "m_": {
                     "value0": 1.0,
-                    "v
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 13.655973434448243,
+                    "value13": -85.41961669921875,
+                    "value14": -4.682196140289307,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:Spine",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 2.9976021664879228e-15,
+                    "value13": -103.31871032714844,
+                    "value14": -5.796016693115234,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:Spine1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.018926605582237245,
+                    "value13": -116.38005828857422,
+                    "value14": -6.023497104644775,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Mutant:Spine2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.040557023137807849,
+                    "value13": -129.36827087402345,
+                    "value14": -5.106810092926025,
+                    "value15": 1.0
+                }
+            }
+        }
+    ],
+    "Hips": 0,
+    "Spine": 11,
+    "ShoulderLeft": 7,
+    "UpperArmLeft": 2,
+    "LowerArmLeft": 4,
+    "HandLeft": 5,
+    "ShoulderRight": 29,
+    "UpperArmRight": 12,
+    "LowerArmRight": 14,
+    "HandRight": 15,
+    "UpperLegLeft": 10,
+    "LowerLegLeft": 6,
+    "FootLeft": 3,
+    "ToesLeft": 8,
+    "UpperLegRight": 32,
+    "LowerLegRight": 28,
+    "FootRight": 13,
+    "ToesRight": 30,
+    "MotionNumber": 13,
+    "MotionName": "mutant_angry",
+    "MotionName": "mutant_damaged",
+    "MotionName": "mutant_dying",
+    "MotionName": "mutant_fall",
+    "MotionName": "mutant_idle",
+    "MotionName": "mutant_idle_wake_up",
+    "MotionName": "mutant_jump",
+    "MotionName": "mutant_land",
+    "MotionName": "mutant_punch",
+    "MotionName": "mutant_run",
+    "MotionName": "mutant_skill",
+    "MotionName": "mutant_swiping",
+    "MotionName": "mutant_walk"

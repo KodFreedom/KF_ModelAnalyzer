@@ -174,17 +174,15 @@ public:
 			}
 			motion.Frames.clear();
 		}
-
 		Motions.clear();
-
-		for (auto& controller : IKControllers)
-		{
-			controller.index = 0;
-		}
+        Clusters.clear();
+        ClusterNames.clear();
+        ZeroMemory(IKControllers, sizeof(int) * eIKMax);
 	}
 
 	vector<Motion>	Motions;
 	vector<Cluster> Clusters;
+    vector<string>  ClusterNames;
 	IKController	IKControllers[eIKParts::eIKMax];
 
 	void UpdateBones(const Frame& current);

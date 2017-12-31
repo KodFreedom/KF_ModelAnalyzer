@@ -793,7 +793,7 @@ void CModelAnalyzerBehaviorComponent::ShowAnimatorWindow(void)
 
 		for (int count = 0; count < eIKMax; ++count)
 		{
-			ImGui::Combo(ik_name[count], (int*)&animator_->IKControllers[count].index, node_names_);
+			ImGui::Combo(ik_name[count], (int*)&animator_->IKControllers[count].index, animator_->ClusterNames);
 		}
 	}
 
