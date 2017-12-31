@@ -658,10 +658,12 @@ CAnimator* CKFUtilityFBX::analyzeAnimator(FbxImporter* lImporter, FbxScene* lSce
 
 	// Cluster Matrix
 	pAnimator->Clusters.resize(clusters.size());
+    pAnimator->ClusterNames.resize(clusters.size());
 	int countCluster = 0;
 	for (auto pair : clusters)
 	{
 		pAnimator->Clusters[countCluster].Name = pair.first;
+        pAnimator->ClusterNames[countCluster] = pair.first;
 		FbxAMatrix meshGlobalInitPosition;
 		pair.second->GetTransformMatrix(meshGlobalInitPosition);
 		FbxAMatrix boneGlobalInitPosition;
