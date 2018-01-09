@@ -1,0 +1,1620 @@
+{
+    "Clusters": [
+        {
+            "Name": "Head",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.012510660104453564,
+                    "value13": -160.18692016601563,
+                    "value14": 3.1073853969573976,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "HeadTop_End",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.012510660104453564,
+                    "value13": -181.40859985351563,
+                    "value14": 2.0200209617614748,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Hips",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 0.0,
+                    "value13": -100.74239349365235,
+                    "value14": 3.59670090675354,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Jaw",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -0.0014847266720607877,
+                    "value13": -164.08885192871095,
+                    "value14": 0.10494998097419739,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "L_Eye",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -3.4222302436828615,
+                    "value13": -168.1400146484375,
+                    "value14": -6.186422824859619,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -18.3864688873291,
+                    "value13": -146.33644104003907,
+                    "value14": 7.618683815002441,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftFoot",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.294339179992676,
+                    "value13": -12.615315437316895,
+                    "value14": 5.225234031677246,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftForeArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -45.239036560058597,
+                    "value13": -146.33644104003907,
+                    "value14": 7.7579345703125,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHand",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -71.91165924072266,
+                    "value13": -146.33644104003907,
+                    "value14": 7.618683815002441,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandIndex1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -82.10665130615235,
+                    "value13": -145.95606994628907,
+                    "value14": 4.0798211097717289,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandIndex2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -85.86054992675781,
+                    "value13": -145.61962890625,
+                    "value14": 4.029356479644775,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandIndex3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -88.75651550292969,
+                    "value13": -145.35232543945313,
+                    "value14": 3.9933927059173586,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandIndex4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -91.04761505126953,
+                    "value13": -145.22622680664063,
+                    "value14": 3.959632158279419,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandMiddle1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -82.21427917480469,
+                    "value13": -146.13592529296876,
+                    "value14": 6.324932098388672,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandMiddle2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -86.55026245117188,
+                    "value13": -145.7065887451172,
+                    "value14": 6.122775554656982,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandMiddle3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -89.865234375,
+                    "value13": -145.40374755859376,
+                    "value14": 5.974616527557373,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandMiddle4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -92.392333984375,
+                    "value13": -144.94631958007813,
+                    "value14": 5.850444793701172,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandPinky1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -81.32121276855469,
+                    "value13": -145.18466186523438,
+                    "value14": 10.154913902282715,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandPinky2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -84.4847183227539,
+                    "value13": -145.02928161621095,
+                    "value14": 10.08702564239502,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandPinky3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -86.84571838378906,
+                    "value13": -144.9227752685547,
+                    "value14": 10.036665916442871,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandPinky4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -89.012939453125,
+                    "value13": -144.89682006835938,
+                    "value14": 9.977123260498047,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandRing1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -82.02149963378906,
+                    "value13": -145.8531494140625,
+                    "value14": 8.246240615844727,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandRing2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -85.80130004882813,
+                    "value13": -145.48117065429688,
+                    "value14": 8.137791633605957,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandRing3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -88.74628448486328,
+                    "value13": -145.28662109375,
+                    "value14": 8.057845115661621,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandRing4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -91.16509246826172,
+                    "value13": -145.041748046875,
+                    "value14": 7.983889579772949,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandThumb1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -74.34297180175781,
+                    "value13": -144.85769653320313,
+                    "value14": 4.251877307891846,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandThumb2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -78.3913803100586,
+                    "value13": -143.16836547851563,
+                    "value14": 1.376962661743164,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandThumb3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -81.11681365966797,
+                    "value13": -142.19749450683595,
+                    "value14": -0.36509305238723757,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftHandThumb4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -83.16474151611328,
+                    "value13": -141.36599731445313,
+                    "value14": -1.6190824508666993,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.333532333374024,
+                    "value13": -54.096290588378909,
+                    "value14": 5.595353603363037,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftShoulder",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.741034507751465,
+                    "value13": -144.95509338378907,
+                    "value14": 5.176418781280518,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftToeBase",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.285161972045899,
+                    "value13": 0.0010810234816744924,
+                    "value14": -7.317618370056152,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftToe_End",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.285696029663086,
+                    "value13": 0.0010810234816744924,
+                    "value14": -18.408763885498048,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "LeftUpLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -8.372469902038575,
+                    "value13": -96.16943359375,
+                    "value14": 5.027151107788086,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Neck",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 1.5372842318748926e-17,
+                    "value13": -150.9084930419922,
+                    "value14": 4.951506614685059,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Neck1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -1.1071402217438449e-17,
+                    "value13": -155.76425170898438,
+                    "value14": 3.937453269958496,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "R_Eye",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 3.4637458324432375,
+                    "value13": -168.09732055664063,
+                    "value14": -6.300469875335693,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 18.3864688873291,
+                    "value13": -146.33644104003907,
+                    "value14": 7.618683815002441,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightFoot",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.294339179992676,
+                    "value13": -12.615315437316895,
+                    "value14": 5.225234031677246,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightForeArm",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 45.239036560058597,
+                    "value13": -146.33644104003907,
+                    "value14": 7.7579345703125,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHand",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 71.91165924072266,
+                    "value13": -146.33644104003907,
+                    "value14": 7.618683815002441,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandIndex1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 82.10665130615235,
+                    "value13": -145.95606994628907,
+                    "value14": 4.0798211097717289,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandIndex2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 85.86054992675781,
+                    "value13": -145.61962890625,
+                    "value14": 4.029356479644775,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandIndex3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 88.75651550292969,
+                    "value13": -145.35232543945313,
+                    "value14": 3.9933927059173586,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandIndex4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 91.04761505126953,
+                    "value13": -145.22622680664063,
+                    "value14": 3.959632158279419,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandMiddle1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 82.21427917480469,
+                    "value13": -146.13592529296876,
+                    "value14": 6.324932098388672,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandMiddle2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 86.55026245117188,
+                    "value13": -145.7065887451172,
+                    "value14": 6.122775554656982,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandMiddle3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 89.865234375,
+                    "value13": -145.40374755859376,
+                    "value14": 5.974616527557373,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandMiddle4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 92.392333984375,
+                    "value13": -144.94631958007813,
+                    "value14": 5.850444793701172,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandPinky1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 81.32121276855469,
+                    "value13": -145.18466186523438,
+                    "value14": 10.154913902282715,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandPinky2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 84.4847183227539,
+                    "value13": -145.02928161621095,
+                    "value14": 10.08702564239502,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandPinky3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 86.84571838378906,
+                    "value13": -144.9227752685547,
+                    "value14": 10.036665916442871,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandPinky4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 89.012939453125,
+                    "value13": -144.89682006835938,
+                    "value14": 9.977123260498047,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandRing1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 82.02149963378906,
+                    "value13": -145.8531494140625,
+                    "value14": 8.246240615844727,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandRing2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 85.80130004882813,
+                    "value13": -145.48117065429688,
+                    "value14": 8.137791633605957,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandRing3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 88.74628448486328,
+                    "value13": -145.28662109375,
+                    "value14": 8.057845115661621,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandRing4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 91.16509246826172,
+                    "value13": -145.041748046875,
+                    "value14": 7.983889579772949,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandThumb1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 74.34297180175781,
+                    "value13": -144.85769653320313,
+                    "value14": 4.251877307891846,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandThumb2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 78.3913803100586,
+                    "value13": -143.16836547851563,
+                    "value14": 1.376962661743164,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandThumb3",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 81.11681365966797,
+                    "value13": -142.19749450683595,
+                    "value14": -0.36509305238723757,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightHandThumb4",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 83.16474151611328,
+                    "value13": -141.36599731445313,
+                    "value14": -1.6190824508666993,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.333531379699707,
+                    "value13": -54.31211853027344,
+                    "value14": 5.1258721351623539,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightShoulder",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.741034507751465,
+                    "value13": -144.95509338378907,
+                    "value14": 5.176418781280518,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightToeBase",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.285161972045899,
+                    "value13": 0.0010810234816744924,
+                    "value14": -7.317618370056152,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightToe_End",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.285696029663086,
+                    "value13": 0.0010810234816744924,
+                    "value14": -18.408763885498048,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "RightUpLeg",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 8.372469902038575,
+                    "value13": -96.16943359375,
+                    "value14": 5.027151107788086,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Spine",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": -1.5528248049151713e-17,
+                    "value13": -111.7362289428711,
+                    "value14": 2.6761460304260256,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Spine1",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 3.025462390377207e-17,
+                    "value13": -123.05022430419922,
+                    "value14": 2.0161521434783937,
+                    "value15": 1.0
+                }
+            }
+        },
+        {
+            "Name": "Spine2",
+            "BindPoseInverse": {
+                "m_": {
+                    "value0": 1.0,
+                    "value1": 0.0,
+                    "value2": 0.0,
+                    "value3": 0.0,
+                    "value4": 0.0,
+                    "value5": 1.0,
+                    "value6": 0.0,
+                    "value7": 0.0,
+                    "value8": 0.0,
+                    "value9": 0.0,
+                    "value10": 1.0,
+                    "value11": 0.0,
+                    "value12": 1.133847170570773e-16,
+                    "value13": -133.50680541992188,
+                    "value14": 2.376992702484131,
+                    "value15": 1.0
+                }
+            }
+        }
+    ],
+    "Hips": 0,
+    "Spine": 34,
+    "ShoulderLeft": 30,
+    "UpperArmLeft": 5,
+    "LowerArmLeft": 7,
+    "HandLeft": 8,
+    "ShoulderRight": 62,
+    "UpperArmRight": 37,
+    "LowerArmRight": 39,
+    "HandRight": 40,
+    "UpperLegLeft": 33,
+    "LowerLegLeft": 29,
+    "FootLeft": 6,
+    "ToesLeft": 31,
+    "UpperLegRight": 65,
+    "LowerLegRight": 61,
+    "FootRight": 38,
+    "ToesRight": 63,
+    "MotionNumber": 11,
+    "MotionName": "zombie_crawl",
+    "MotionName": "zombie_idle",
+    "MotionName": "zombie_death",
+    "MotionName": "zombie_kicking",
+    "MotionName": "zombie_punching",
+    "MotionName": "zombie_damaged",
+    "MotionName": "zombie_running",
+    "MotionName": "zombie_scream",
+    "MotionName": "zombie_stand_up",
+    "MotionName": "zombie_walking",
+    "MotionName": "zombie_warning"
