@@ -48,6 +48,8 @@ enum ShaderType
 	kDefaultSkinShader, // SkinShader
 	kJuggernautMeshShader,
 	kJuggernautSkinShader,
+    kDefault2dShader,
+    kDefault2dTextureShader,
     kZombieSkinShader,
 	kShaderMax
 };
