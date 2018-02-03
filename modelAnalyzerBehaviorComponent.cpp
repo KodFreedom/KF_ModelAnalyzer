@@ -567,7 +567,9 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 							"JuggernautSkinShader",
                             "Default2dShader",
                             "Default2dTextureShader",
-                            "ZombieSkinShader"
+                            "ZombieSkinShader",
+                            "DefaultBillboardShader",
+                            "KnightSkinShader"
 						};
 						ImGui::ListBox(kShaderType[current_language_], (int*)&mesh.MyShaderType, listbox_st, kShaderMax, kShaderMax);
 						ImGui::TreePop();
@@ -1178,6 +1180,29 @@ void CModelAnalyzerBehaviorComponent::ShowCurrentAnimationWindow(void)
 				animator_->DeleteOutOfRangeFrames(motion_no_);
 				current_frame_ = current.StartFrame;
 			}
+
+            // FrameˆÊ’uA‰ñ“]AŠgk
+            for (size_t count_frame = 0; count_frame < current.Frames.size(); ++count_frame)
+            {
+                string frame_name = "frame" + to_string(count_frame);
+                if (ImGui::TreeNode(frame_name.c_str()))
+                {
+                    auto& current_bones = current.Frames[count_frame].BoneFrames;
+                    for (size_t count_bone = 0; count_bone < current_bones.size(); ++count_bone)
+                    {
+                        string bone_name = "bone" + to_string(count_bone);
+                        if (ImGui::TreeNode(bone_name.c_str()))
+                        {
+                            auto& current_bone = current_bones[count_bone];
+                            ImGui::InputFloat3(kTranslation[current_language_], &current_bone.Translation.m_fX);
+                            ImGui::InputFloat4(kQuaternion[current_language_], &current_bone.Rotation.m_fX);
+                            ImGui::InputFloat3(kScale[current_language_], &current_bone.Scale.m_fX);
+                            ImGui::TreePop();
+                        }
+                    }
+                    ImGui::TreePop();
+                }
+            }
 
 			ImGui::TreePop();
 		}
