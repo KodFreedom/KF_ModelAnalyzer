@@ -567,7 +567,9 @@ CMyNode* CModelAnalyzerBehaviorComponent::ShowNodeInfo(CMyNode* pNode)
 							"JuggernautSkinShader",
                             "Default2dShader",
                             "Default2dTextureShader",
-                            "ZombieSkinShader"
+                            "ZombieSkinShader",
+                            "DefaultBillboardShader",
+                            "KnightSkinShader"
 						};
 						ImGui::ListBox(kShaderType[current_language_], (int*)&mesh.MyShaderType, listbox_st, kShaderMax, kShaderMax);
 						ImGui::TreePop();

@@ -244,7 +244,7 @@ void CAnimator::saveMotionTransitionsHead(const int motionNo)
 	file << "class " + className + " : public NormalMotionState\n";
 	file << "{\n";
 	file << "public:\n";
-	file << "\t" + className + "(const int start_frame) : NormalMotionState(\"" + motion.Name + "\", start_frame) {}\n";
+	file << "\t" + className + "(const int start_frame) : NormalMotionState(L\"" + motion.Name + "\", start_frame) {}\n";
 	file << "\t~" + className + "() {}\n\n";
 	file << "private:\n";
 	file << "\tvoid ChangeMotion(Animator& animator) override;\n";
