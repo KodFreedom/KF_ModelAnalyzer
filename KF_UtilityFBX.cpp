@@ -21,6 +21,10 @@
 //--------------------------------------------------------------------------------
 MyModel CKFUtilityFBX::Load(const string& strFilePath)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // fbx sdkを利用してfbxファイルを読み込む
+    //
 	MyModel myModel;
 
 	//FBX読込実験コード
@@ -60,25 +64,31 @@ MyModel CKFUtilityFBX::Load(const string& strFilePath)
 	// マテリアルごとにメッシュ分離
 	lConverter.SplitMeshesPerMaterial(lScene, true);
 
-	// Node
+	// Nodeごとに情報を読み込む
 	myModel.pNode = recursiveNode(lSdkManager, lScene->GetRootNode(), nullptr);
 
-	// Material
+	// Material、Textureを読み込む
 	analyzeMaterial(lScene, myModel.mapMaterial);
 
-	// Animator
+	// Animator（骨情報）を読み込む
 	myModel.pAnimator = analyzeAnimator(lImporter, lScene);
 	if (myModel.pAnimator)
-	{
+	{   // 骨あるならモーション情報を読み込む
 		analyzeAnimation(lImporter, lScene, myModel.pAnimator);
+
+        // モーション読込処理から得た骨とモデルの骨情報を比べる
 		matchClusterWithSkeleton(myModel.pAnimator->Clusters, myModel.pNode);
 	}
 
+    // 後片付け
 	lImporter->Destroy();
 	lScene->Destroy();
 	lSdkManager->Destroy();
 
 	return myModel;
+    //
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 //--------------------------------------------------------------------------------
@@ -463,26 +473,53 @@ int CKFUtilityFBX::FindRepetition(const list<VertexDX>& listVtx, const VertexDX&
 //--------------------------------------------------------------------------------
 CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyNode* parent)
 {
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // ノード情報の読込
+    //
 	if (!pNode) { return NULL; }
+
 	auto pMyNode = new CMyNode;
+
+    // ノードの親と名前の設定
 	pMyNode->Parent = parent;
 	pMyNode->Name = pNode->GetName();
+
+    // ローカル行列の取得（親に対するオフセット）
 	auto& local = CKFMtx44::FbxToMtx(pNode->EvaluateLocalTransform());
+
+    // 行列を位置、回転、スケールに転換（IKの計算用）
 	CKFMath::MtxToTransRotScale(local, pMyNode->Translation, pMyNode->Rotation, pMyNode->Scale);
 
+    // ノードの属性からメッシュを探す
 	for (int nCnt = 0; nCnt < pNode->GetNodeAttributeCount(); nCnt++)
 	{
+        // 属性の名前の取得
 		auto type = pNode->GetNodeAttributeByIndex(nCnt)->GetAttributeType();
 		pMyNode->AttributeNames.push_back(getAttributeTypeName(type));
+
+        // メッシュ情報の読込
 		if (type == FbxNodeAttribute::eMesh)
-		{	//Mesh情報
+		{
 			pMyNode->Meshes.push_back(Mesh());              
-			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));        
+			FbxMesh* pMesh = FbxCast<FbxMesh>(pNode->GetNodeAttributeByIndex(nCnt));       
+
+            // 法線マップのためにタンジェント空間を計算する
 			pMesh->GenerateTangentsDataForAllUVSets();
-			pMyNode->analyzePoint(pMesh);              
+
+            // 頂点の取得
+			pMyNode->analyzePoint(pMesh);
+
+            // 法線の取得
 			pMyNode->analyzeNormal(pMesh);              
-			pMyNode->analyzeUV(pMesh);               
-			pMyNode->analyzeMaterial(pMesh);
+			
+            // UV座標の取得
+            pMyNode->analyzeUV(pMesh);               
+			
+            // 使うマテリアルの名前の取得
+            pMyNode->analyzeMaterial(pMesh);
+
+            // 対応の骨情報（名前、比率）の取得
 			pMyNode->analyzeCluster(pMesh);
 		}
 	}
@@ -494,6 +531,9 @@ CMyNode* CKFUtilityFBX::recursiveNode(FbxManager* pManager, FbxNode* pNode, CMyN
 	}
 
 	return pMyNode;
+    //
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 //--------------------------------------------------------------------------------

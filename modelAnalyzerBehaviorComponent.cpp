@@ -130,6 +130,11 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 {
 	if (!root_node_) return;
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Fbxアニメーション更新処理
+    //
+    // モーション更新
 	if (animator_ && !animator_->Motions.empty())
 	{
 		auto& motion = animator_->Motions[motion_no_];
@@ -143,13 +148,18 @@ void CModelAnalyzerBehaviorComponent::Update(void)
 		animator_->UpdateBones(avatar);
 	}
 	
+    // ボーンの世界行列更新
 	root_node_->RecursiveUpdateMatrix(m_pGameObj->GetTransformComponent()->GetMatrix());
 
+    // スキンメッシュの更新
 	if (animator_)
 	{
 		animator_->UpdateClusterWorld();
 		root_node_->RecursiveUpdateSkin(animator_->Clusters);
 	}
+    //
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 //--------------------------------------------------------------------------------
@@ -209,7 +219,10 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 		current_frame_ = 0;
 		motion_no_ = 0;
 
-		//LoadModel
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        // Fbx読み処理
+        //
 		file_name_ = name;
 		MyModel myModel;
 		if (type._Equal("txt"))
@@ -217,22 +230,35 @@ void CModelAnalyzerBehaviorComponent::ChangeModel(const string& strFilePath)
 			myModel = CKFUtilityFBX::LoadFromTxt(strFilePath);
 		}
 		else
-		{
+		{// 読み込み
 			myModel = CKFUtilityFBX::Load(strFilePath);
 		}
+
+        // メンバー変数に保存
 		root_node_ = myModel.pNode;
 		animator_ = myModel.pAnimator;
 		materials_ = myModel.mapMaterial;
+
+        // テクスチャの読み込み
 		for (auto& pair : materials_)
 		{
 			CMain::GetManager()->GetTextureManager()->UseTexture(pair.second.ColorTexture);
 		}
+
+        // メッシュをDirectXデバイスに登録
 		root_node_->RecursiveRecombineMeshes();
+
+        // ツール表示用
 		root_node_->RecursivePush(node_names_, nodes_);
+
+        // ボーンの番号を割り当てる
 		if (animator_)
 		{
 			root_node_->RecursiveMatchClusterID(myModel.pAnimator->Clusters);
 		}
+        //
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
 	}
 	else
 	{//対応してない
